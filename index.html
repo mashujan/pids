@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator - Permanent Bypass GPS</title>
+    <title>Passenger Informasion Display</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * {
@@ -338,7 +338,7 @@
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:#ffffff; font-size: 16px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">🔐 PIDS AUTHENTICATION</h2>
+            <h2 style="color:#ffffff; font-size: 16px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">Login PIDS</h2>
             <div class="form-group"><label>Username</label><input type="text" id="login-user" class="form-control" placeholder="Username"></div>
             <div class="form-group" style="margin-bottom: 20px;"><label>Password</label><input type="password" id="login-pass" class="form-control" placeholder="Password"></div>
             <button class="btn btn-white" style="margin-bottom: 0;" onclick="cekLogin()">MASUK SISTEM</button>
@@ -376,9 +376,9 @@
             </div>
 
             <div class="setting-panel">
-                <div class="setting-title">🚨 OVERSPEED ALARM CONTROLLER</div>
+                <div class="setting-title">Limit Kecepatan</div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <label style="font-size: 13px; color:#aaa;">BATAS:</label>
+                    <label style="font-size: 13px; color:#aaa;">Batas:</label>
                     <input type="number" id="cfg-overspeed-limit" class="speed-input-big" value="50" oninput="saveSettingOverspeed()">
                     <span style="font-size: 14px; font-weight: bold; color: #fff;">Km/h</span>
                 </div>
