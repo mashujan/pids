@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passenger Informasion Display</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * {
@@ -93,16 +92,17 @@
             display: block;
         }
 
-        /* --- LAYOUT MONITOR --- */
+        /* --- LAYOUT MONITOR (KUNCI MATI ANTI SCROLL) --- */
         .pids-dashboard-grid {
             display: grid;
             grid-template-columns: 60% 40%;
             border: 3px solid #ffffff;
             background-color: #000000;
-            min-height: 280px;
+            height: 160px;          /* Tinggi dipatok tetap */
+            max-height: 160px;      /* Pengunci utama anti-melar */
             margin-bottom: 15px;
             border-radius: 4px;
-            overflow: hidden;
+            overflow: hidden;       /* Memotong elemen bocor */
         }
 
         .dashboard-left-col {
@@ -110,18 +110,21 @@
             flex-direction: column;
             border-right: 3px solid #ffffff;
             position: relative;
+            height: 100%;
+            overflow: hidden;
         }
 
         .plat-container {
             background-color: #cc0000;
             border-bottom: 3px solid #ffffff;
             border-right: 3px solid #ffffff;
-            width: 160px;
-            padding: 8px 12px;
+            width: 140px;
+            padding: 6px 10px;
+            z-index: 10;
         }
 
         .plat-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #ffffff;
             text-transform: uppercase;
             display: block;
@@ -133,7 +136,7 @@
             border: none;
             color: #ffffff;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 16px;
             width: 100%;
             text-transform: uppercase;
         }
@@ -146,15 +149,18 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
             text-align: center;
+            overflow: hidden;
         }
 
         .main-text-display {
-            font-size: 42px;
+            font-size: 32px;
             font-weight: bold;
             color: #ffff00; 
             line-height: 1.2;
+            word-wrap: break-word;
+            max-width: 100%;
         }
 
         .dashboard-right-col {
@@ -162,17 +168,19 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
             position: relative;
+            height: 100%;
+            overflow: hidden;
         }
 
         .speedo-wrap {
             text-align: center;
-            margin-top: -20px;
+            margin-top: -10px;
         }
 
         .speedo-value {
-            font-size: 72px;
+            font-size: 56px;
             font-weight: bold;
             color: #00ff00; 
             line-height: 1;
@@ -188,18 +196,18 @@
         }
 
         .speedo-unit {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #ffffff;
-            margin-top: 8px;
+            margin-top: 4px;
             display: block;
         }
 
         .clock-display {
             position: absolute;
-            bottom: 10px;
-            right: 15px;
-            font-size: 24px;
+            bottom: 8px;
+            right: 12px;
+            font-size: 18px;
             font-weight: bold;
             color: #ffffff;
         }
@@ -332,13 +340,43 @@
         .halte-table th, .halte-table td { padding: 10px; text-align: left; border-bottom: 1px solid #222222; }
         .halte-table th { background-color: #111111; color: #ffff00; }
         .edit-mode-indicator { background-color: rgba(255, 183, 3, 0.1); border: 1px solid #ffb703; padding: 8px; border-radius: 6px; margin-bottom: 12px; display: none; font-size: 12px; color: #ffb703; }
+
+        /* --- HANDLING KHUSUS HP PORTRAIT (TEGAK) --- */
+        @media screen and (max-width: 480px) and (orientation: portrait) {
+            .pids-dashboard-grid {
+                height: 130px;      /* Perkecil tinggi kotak di layar portrait */
+                max-height: 130px;
+            }
+            .main-text-display {
+                font-size: 22px;    /* Perkecil font teks halte */
+            }
+            .speedo-value {
+                font-size: 42px;    /* Perkecil font angka speedometer */
+            }
+            .speedo-unit {
+                font-size: 11px;
+                margin-top: 2px;
+            }
+            .clock-display {
+                font-size: 13px;
+                bottom: 6px;
+                right: 8px;
+            }
+            .plat-container {
+                width: 105px;
+                padding: 4px 6px;
+            }
+            .plat-input {
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:#ffffff; font-size: 16px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">Login PIDS</h2>
+            <h2 style="color:#ffffff; font-size: 16px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">🔐 PIDS AUTHENTICATION</h2>
             <div class="form-group"><label>Username</label><input type="text" id="login-user" class="form-control" placeholder="Username"></div>
             <div class="form-group" style="margin-bottom: 20px;"><label>Password</label><input type="password" id="login-pass" class="form-control" placeholder="Password"></div>
             <button class="btn btn-white" style="margin-bottom: 0;" onclick="cekLogin()">MASUK SISTEM</button>
@@ -376,9 +414,9 @@
             </div>
 
             <div class="setting-panel">
-                <div class="setting-title">Limit Kecepatan</div>
+                <div class="setting-title">🚨 OVERSPEED ALARM CONTROLLER</div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <label style="font-size: 13px; color:#aaa;">Batas:</label>
+                    <label style="font-size: 13px; color:#aaa;">BATAS:</label>
                     <input type="number" id="cfg-overspeed-limit" class="speed-input-big" value="50" oninput="saveSettingOverspeed()">
                     <span style="font-size: 14px; font-weight: bold; color: #fff;">Km/h</span>
                 </div>
@@ -462,7 +500,7 @@
 
         let dbLokasi = [];
         let globalGpsWatchId = null; 
-        let isTrackingActiveUI = false; // Hanya kontrol visual state pelacakan
+        let isTrackingActiveUI = false; 
         
         let map = null;
         let markerPeta = null;
@@ -499,7 +537,6 @@
             updateTabelHalte();
             perbaruiDropdownSimulasi();
 
-            // LANSUNG START STREAM SEJAK HALAMAN DIBUKA (BYPASS TOTAL TOMBOL/TAB PERMISSION)
             nyalakanGpsStreamPermanenAwal();
 
             setInterval(() => {
@@ -510,7 +547,6 @@
         function nyalakanGpsStreamPermanenAwal() {
             let statusText = document.getElementById('gps-status');
             if (navigator.geolocation) {
-                // Di-on kan sekali, dibiarkan hidup abadi tanpa pernah di-clear/clearWatch
                 globalGpsWatchId = navigator.geolocation.watchPosition(
                     prosesUpdateKoordinatStreamUtama, 
                     (error) => {
@@ -520,7 +556,7 @@
                     { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
                 );
             } else {
-                alert("Perangkat Anda tidak mendukung fitur GPS Hardware.");
+                alert("Perangkat Anda tidak mendukung fitur GPS.");
             }
         }
 
@@ -539,7 +575,6 @@
             let speedKMH = 0.0;
             if (speedMS && speedMS > 0) { speedKMH = speedMS * 3.6; }
             
-            // JIKA UI PELACAKAN AKTIF, PROSES OUTPUT DATA KE MONITOR
             if (isTrackingActiveUI) {
                 document.getElementById('pids-speed').innerText = speedKMH.toFixed(1);
                 cekOverspeedStatus(speedKMH);
@@ -549,7 +584,6 @@
 
         function toggleGPSLogicOnly() {
             if (isTrackingActiveUI) {
-                // Berhenti Pelacakan (Hanya Reset State Monitor, Tanpa Mematikan Engine GPS Hardware!)
                 if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; }
                 lepasWakeLock();
                 isTrackingActiveUI = false;
@@ -560,17 +594,15 @@
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red-speed');
             } else {
-                // Mulai Pelacakan (Murni Mengubah Status UI Menjadi Listening Ke Data Stream Yang Memang Udah Jalan)
                 if (dbLokasi.length === 0) { alert("Data lokasi kosong!"); return; }
                 
                 mintaWakeLock();
                 isTrackingActiveUI = true;
                 
                 document.getElementById('btn-toggle-gps').innerText = "BERHENTI PELACAKAN RUTE";
-                document.getElementById('pids-state').innerText = "MENCARI LOKASI...";
+                document.getElementById('pids-state').innerText = "MENCARI LOKASI... ";
                 document.getElementById('pids-display').innerText = "MENCARI LOKASI...";
                 
-                // Trigger evaluasi instan dari posisi terakhir yang diketahui
                 prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng);
             }
         }
@@ -627,7 +659,6 @@
             isAlarmEnabled = !isAlarmEnabled;
             saveSettingOverspeed();
             perbaruiTombolSwitchAlarmUI();
-            
             if (!isAlarmEnabled && overspeedLoopInterval) {
                 clearInterval(overspeedLoopInterval);
                 overspeedLoopInterval = null;
@@ -662,7 +693,6 @@
                 document.getElementById('tab-admin').classList.add('active');
                 setTimeout(() => { if(map) map.invalidateSize(); }, 200);
             }
-            // SAMA SEKALI BERSIH DARI LOGIKA INTERUPSI GPS
         }
 
         function inisialisasiPeta() {
@@ -681,10 +711,8 @@
             map.on('click', function(e) {
                 selectedLat = e.latlng.lat; selectedLng = e.latlng.lng;
                 document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-                
                 if (markerPeta) markerPeta.setLatLng(e.latlng);
                 else markerPeta = L.marker(e.latlng).addTo(map);
-
                 perbaruiVisualLingkaranRadius();
             });
         }
@@ -697,7 +725,6 @@
         function perbaruiVisualLingkaranRadius() {
             if (!selectedLat || !selectedLng) return;
             let r = parseInt(document.getElementById('input-radius').value) || 50;
-            
             if (lingkaranRadiusPeta) {
                 lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]);
                 lingkaranRadiusPeta.setRadius(r);
@@ -771,10 +798,8 @@
             idTargetEdit = id;
             document.getElementById('input-nama').value = h.nama;
             document.getElementById('input-display-text').value = h.displayText || h.nama;
-            
             document.getElementById('input-radius').value = h.radius;
             document.getElementById('range-val-preview').innerText = h.radius + " Meter";
-            
             document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
             selectedLat = h.lat; selectedLng = h.lng;
             document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
@@ -787,7 +812,6 @@
                 map.flyTo([selectedLat, selectedLng], 16); 
                 if (markerPeta) markerPeta.setLatLng([selectedLat, selectedLng]);
                 else markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
-                
                 perbaruiVisualLingkaranRadius();
             }
         }
@@ -796,26 +820,19 @@
             let h = dbLokasi.find(i => i.id === id); if (!h) return;
             document.getElementById('input-nama').value = h.nama + " - Copy";
             document.getElementById('input-display-text').value = h.displayText || h.nama;
-            
             document.getElementById('input-radius').value = h.radius;
             document.getElementById('range-val-preview').innerText = h.radius + " Meter";
-            
             document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
             selectedLat = h.lat; selectedLng = h.lng;
             document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-            if (map) { 
-                map.flyTo([selectedLat, selectedLng], 16); 
-                perbaruiVisualLingkaranRadius();
-            }
+            if (map) { map.flyTo([selectedLat, selectedLng], 16); perbaruiVisualLingkaranRadius(); }
         }
 
         function resetFormInput() {
             idTargetEdit = null; selectedLat = null; selectedLng = null;
             document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; document.getElementById('input-audio').value = ""; document.getElementById('input-koordinat').value = "";
-            
             document.getElementById('input-radius').value = 50;
             document.getElementById('range-val-preview').innerText = "50 Meter";
-            
             document.getElementById('edit-indicator').style.display = 'none';
             let b = document.getElementById('btn-simpan'); b.innerText = "SIMPAN DATA LOKASI"; b.className = "btn btn-white";
             document.getElementById('btn-batal-edit').style.display = 'none';
@@ -867,7 +884,6 @@
             }
         }
 
-        /* --- ALARM OVERSPEED BEEP --- */
         function cekOverspeedStatus(currentSpeed) {
             let limit = parseFloat(document.getElementById('cfg-overspeed-limit').value) || 50.0;
             let speedoText = document.getElementById('pids-speed');
@@ -902,7 +918,6 @@
             } catch(e){}
         }
 
-        /* --- SIMULASI --- */
         function simulasiSetSpeed() {
             let speedInput = parseFloat(document.getElementById('sim-input-speed').value) || 0.0;
             document.getElementById('pids-speed').innerText = speedInput.toFixed(1);
