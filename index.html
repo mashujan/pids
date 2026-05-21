@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v2.3 - Rainer BK</title>
+    <title>PIDS Simulator v2.4 - Rainer BK</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -107,7 +107,7 @@
             border: 3px solid #ffffff;
             margin: 0 auto 15px auto;
             width: 100%;
-            max-width: 720px; /* Ukuran normal tidak kebesaran di PC/Web browser */
+            max-width: 720px;
             aspect-ratio: 16 / 9;
         }
 
@@ -124,10 +124,12 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 24px; 
+            font-size: 22px; 
             color: #ffffff;
             text-transform: uppercase;
             border-right: 2px solid #ffffff;
+            overflow: hidden;
+            white-space: nowrap;
         }
         .clock-v2 {
             width: 75%;
@@ -172,10 +174,10 @@
         @keyframes os-strobe { 0% { color: #00ff00; } 50% { color: #ff0000; } }
         .speedo-unit-v2 { font-size: 14px; color: #888888; }
 
-        /* Baris 3: Banner Teks Marquee Jeda Blank 1 Detik */
+        /* Baris 3: Banner Teks Marquee Kecepatan Statis */
         .pids-row-3 {
             background-color: #000000;
-            height: 28%;
+            height: 25%;
             display: flex;
             align-items: center;
             overflow: hidden;
@@ -190,32 +192,33 @@
         }
         .marquee-text {
             display: inline-block;
-            font-size: 36px;
+            font-size: 34px;
             font-weight: bold;
             color: #ffff00;
-            padding-left: 100%; /* Memaksa teks mulai murni dari luar ujung kanan */
-            animation: marquee-blank-engine 13s linear infinite;
+            padding-left: 100%; 
+            /* REVISI: Menggunakan linear-statis murni tanpa dipengaruhi panjang konten */
+            animation: marquee-static-engine 7s linear infinite;
         }
 
-        /* Animasi: Detik 0-1 blank total, lalu jalan dari ujung kanan ke kiri */
-        @keyframes marquee-blank-engine {
+        /* REVISI ANIMASI: Jeda blank dikurangi menjadi 0.5 detik (~7% dari 7 detik) untuk efisiensi lintasan */
+        @keyframes marquee-static-engine {
             0% { transform: translate3d(0, 0, 0); opacity: 0; }
-            7.69% { transform: translate3d(0, 0, 0); opacity: 0; } /* Jeda 1 detik dari total 13 detik (~7.69%) */
-            7.70% { transform: translate3d(0, 0, 0); opacity: 1; } /* Muncul instan tanpa fade */
-            100% { transform: translate3d(-200%, 0, 0); opacity: 1; }
+            7% { transform: translate3d(0, 0, 0); opacity: 0; } 
+            7.01% { transform: translate3d(0, 0, 0); opacity: 1; } 
+            100% { transform: translate3d(-100%, 0, 0); opacity: 1; }
         }
 
         /* Baris 4: Diagnostik Split Bawah */
         .pids-row-4 {
             display: flex;
-            height: 12%;
+            height: 15%;
             font-size: 11px;
             color: #aaaaaa;
             background-color: #050505;
         }
         .diag-left-log {
-            width: 50%;
-            padding: 2px 8px;
+            width: 45%;
+            padding: 4px 8px;
             overflow-y: hidden;
             font-family: monospace !important;
             border-right: 1px dashed #333333;
@@ -225,46 +228,67 @@
         }
         .diag-log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
+        /* REVISI: Kontainer GPS Detail Multi-Baris */
         .diag-right-gps {
-            width: 50%;
-            padding: 0 0 0 8px;
+            width: 55%;
+            padding: 2px 0 2px 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             font-family: monospace !important;
         }
+        .gps-info-lines {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1px;
+            line-height: 1.2;
+            width: calc(100% - 145px); /* Menyediakan ruang rigid buat pasang tombol di kanan */
+        }
+        .gps-info-lines div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        /* REVISI: Tombol Alarm Disamakan dengan Ukuran Foto */
+        .controls-right-group {
+            display: flex;
+            height: 100%;
+            align-items: center;
+        }
+
+        /* REVISI: Tombol Alarm Ukuran Terkunci (Sama Besar) & Warna Switch */
         .btn-overspeed-dashboard {
             height: 100%;
+            width: 110px; /* Lebar dikunci rigid agar layout tidak bergeser saat ganti status */
             border: none;
-            background-color: #00ff00;
+            background-color: #00ff00; /* ON = HIJAU */
             color: #000000;
             font-weight: bold;
             font-size: 11px;
-            padding: 0 14px;
             cursor: pointer;
+            text-align: center;
             text-transform: uppercase;
+            border-left: 1px solid #ffffff;
         }
         .btn-overspeed-dashboard.alarm-off {
-            background-color: #444444;
+            background-color: #ff0000; /* OFF = MERAH */
             color: #ffffff;
         }
 
-        /* Ikon Floating Fullscreen ala YouTube */
+        /* REVISI: Tombol Fullscreen Dipindah ke Pojok Kanan Bawah Baris 4 */
         .fs-toggle-btn {
-            position: absolute;
-            top: 2%;
-            right: 1.5%;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.4);
+            height: 100%;
+            padding: 0 12px;
+            background-color: #222222;
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 4px 10px;
-            font-size: 14px;
+            border: none;
+            border-left: 1px solid #ffffff;
+            font-size: 13px;
+            font-weight: bold;
             cursor: pointer;
-            border-radius: 4px;
         }
+        .fs-toggle-btn:hover { background-color: #333333; }
 
         /* --- STYLING KHUSUS KETIKA FULLSCREEN GEOFENCE DIKETUK --- */
         #pids-monitor-mode:fullscreen {
@@ -274,16 +298,18 @@
             max-height: 100vh;
             aspect-ratio: auto;
         }
-        #pids-monitor-mode:fullscreen .plat-box { font-size: 5vw; }
-        #pids-monitor-mode:fullscreen .clock-v2 { font-size: 5.5vw; }
+        /* REVISI: Plat nomor diatur proporsional max ramah layar kemudi */
+        #pids-monitor-mode:fullscreen .plat-box { font-size: max(24px, 4vw); width: 30%; }
+        #pids-monitor-mode:fullscreen .clock-v2 { font-size: 5.5vw; width: 70%; }
         #pids-monitor-mode:fullscreen .kompas-label { font-size: 1.8vw; }
         #pids-monitor-mode:fullscreen .kompas-value { font-size: 12vw; }
         #pids-monitor-mode:fullscreen .speedo-value-v2 { font-size: 14vw; }
         #pids-monitor-mode:fullscreen .speedo-unit-v2 { font-size: 2vw; }
+        #pids-monitor-mode:fullscreen .pids-row-3 { height: 25%; }
         #pids-monitor-mode:fullscreen .marquee-text { font-size: 8.5vw; }
-        #pids-monitor-mode:fullscreen .pids-row-4 { font-size: 1.8vw; }
-        #pids-monitor-mode:fullscreen .btn-overspeed-dashboard { font-size: 1.6vw; padding: 0 25px; }
-        #pids-monitor-mode:fullscreen .fs-toggle-btn { font-size: 2vw; }
+        #pids-monitor-mode:fullscreen .pids-row-4 { height: 15%; font-size: 1.6vw; }
+        #pids-monitor-mode:fullscreen .btn-overspeed-dashboard { font-size: 1.4vw; width: 15vw; }
+        #pids-monitor-mode:fullscreen .fs-toggle-btn { font-size: 1.6vw; padding: 0 2vw; }
 
         /* --- CONFIG SETTING SUB-PANELS --- */
         .config-card {
@@ -341,26 +367,19 @@
         .map-wrapper { position: relative; width: 100%; height: 280px; margin-bottom: 12px; }
         #map { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #333333; z-index: 1; }
         
-        /* Ikon Custom Pinpoint di Bawah Tombol Zoom */
+        /* REVISI: Style Tombol Pinpoint Native Leaflet di Map */
         .leaflet-control-locate-btn {
-            background-color: #ffffff;
-            width: 30px; height: 30px;
-            line-height: 30px; text-align: center;
-            font-size: 15px; cursor: pointer;
-            font-weight: bold; color: #000000;
-            border-bottom: 1px solid #ccc;
+            background-color: #ffffff !important;
+            width: 30px !important; height: 30px !important;
+            line-height: 30px !important; text-align: center !important;
+            font-size: 16px !important; cursor: pointer !important;
+            font-weight: bold !important; color: #000000 !important;
+            display: block !important; border-bottom: 1px solid #ccc !important;
+            text-decoration: none !important;
         }
-        .leaflet-control-locate-btn:hover { background-color: #f4f4f4; }
+        .leaflet-control-locate-btn:hover { background-color: #f4f4f4 !important; }
 
-        /* LINE PEMBATAS SOLID */
-        .divider-line {
-            border: 0;
-            height: 2px;
-            background: #333333;
-            margin: 20px 0;
-            display: block;
-        }
-
+        .divider-line { border: 0; height: 2px; background: #333333; margin: 20px 0; display: block; }
         .table-wrapper { overflow-x: auto; background-color: #000000; border: 1px solid #222; border-radius: 6px; margin-bottom: 12px; }
         .halte-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .halte-table th, .halte-table td { padding: 10px; text-align: left; border-bottom: 1px solid #111111; }
@@ -368,7 +387,6 @@
         
         .mini-list-box { background: #000; border: 1px dashed #333; padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto; margin-top: 8px; }
         .mini-list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid #111; font-size: 11px; }
-
         .collapse-trigger-btn { background-color: #111; color: #ffffff; border: 1px solid #222; padding: 10px; font-size: 12px; font-weight: bold; text-align: center; border-radius: 4px; cursor: pointer; margin-bottom: 12px; width: 100%; text-transform: uppercase; }
         .sim-card { background-color: #111111; border: 1px dashed #ffff00; border-radius: 6px; padding: 12px; margin-bottom: 12px; display: none; }
         .edit-mode-indicator { background-color: rgba(255, 183, 3, 0.1); border: 1px solid #ffb703; padding: 8px; border-radius: 6px; margin-bottom: 12px; display: none; font-size: 12px; color: #ffb703; }
@@ -416,8 +434,6 @@
         <div id="tab-tracker" class="tab-content active">
             
             <div id="pids-monitor-mode">
-                <button class="fs-toggle-btn" id="btn-fs-floating" onclick="toggleLayarPenuhAPI()">⛶</button>
-
                 <div class="pids-row-1">
                     <div class="plat-box" id="pids-plat-view">B 1234 TGC</div>
                     <div class="clock-v2" id="pids-clock">00:00:00</div>
@@ -444,9 +460,18 @@
                     <div class="diag-left-log" id="log-console">
                         <div class="diag-log-line">[00:00:00] Engine Dashboard Siap.</div>
                     </div>
+                    
                     <div class="diag-right-gps">
-                        <div>GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>) | <span id="pids-distance" style="color:#ffff00;">-</span></div>
-                        <button id="btn-overspeed-dashboard-switch" class="btn-overspeed-dashboard" onclick="toggleOverspeedAlarmButton()">🚨 ALARM: ON</button>
+                        <div class="gps-info-lines">
+                            <div>GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>)</div>
+                            <div>POS: <span id="gps-current-coord" style="color:#aaa;">- , -</span></div>
+                            <div>PROX: <span id="pids-nearest-object" style="color:#ffff00;">Belum Ada Rute</span> (<span id="pids-distance">-</span>)</div>
+                        </div>
+                        
+                        <div class="controls-right-group">
+                            <button id="btn-overspeed-dashboard-switch" class="btn-overspeed-dashboard" onclick="toggleOverspeedAlarmButton()">🚨 ALARM: ON</button>
+                            <button class="fs-toggle-btn" id="btn-fs-floating" onclick="toggleLayarPenuhAPI()">⛶</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -471,7 +496,7 @@
             
             <div id="edit-indicator" class="edit-mode-indicator"><strong>Mode Edit:</strong> Mengubah <span id="edit-target-name"></span>.</div>
 
-            <div class="form-group"><label>Koordinat Terpihal</label><input type="text" id="input-koordinat" class="form-control" readonly placeholder="Klik titik peta / cari lokasi diatas"></div>
+            <div class="form-group"><label>Koordinat Terpilih</label><input type="text" id="input-koordinat" class="form-control" readonly placeholder="Klik titik peta / cari lokasi diatas"></div>
             <div class="form-group"><label>Nama Halte / Objek (Database)</label><input type="text" id="input-nama" class="form-control" placeholder="Contoh: Halte Senayan Mandiri"></div>
             <div class="form-group"><label>Teks Tampilan Layar (Monitor Banner)</label><input type="text" id="input-display-text" class="form-control" placeholder="Contoh: Halte Senayan"></div>
             
@@ -633,6 +658,9 @@
 
             document.getElementById('gps-accuracy').innerText = `${position.coords.accuracy.toFixed(1)}m`;
             
+            // REVISI: Tampilkan koordinat live posisi sekarang di layar diagnostik
+            document.getElementById('gps-current-coord').innerText = `${lastKnownLat.toFixed(5)}, ${lastKnownLng.toFixed(5)}`;
+            
             let speedMS = position.coords.speed;
             let speedKMH = 0.0;
             if (speedMS && speedMS > 0) { speedKMH = speedMS * 3.6; }
@@ -670,6 +698,7 @@
                 document.getElementById('pids-speed').classList.remove('blink-red');
                 document.getElementById('pids-compass').innerText = "-";
                 document.getElementById('pids-distance').innerText = "-";
+                document.getElementById('pids-nearest-object').innerText = "Belum Ada Rute";
                 pushLogKonsol("Pelacakan Rute Dinonaktifkan.");
             } else {
                 bukaModalPilihRute();
@@ -729,21 +758,21 @@
             
             document.getElementById('btn-toggle-gps').innerText = "BERHENTI PELACAKAN RUTE";
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+            document.getElementById('pids-nearest-object').innerText = "Mencari Objek...";
             pushLogKonsol("Mulai rute: " + ruteAktifTeks);
 
             prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, 0);
         }
 
-        // REVISI: Fungsi Update Teks Monitor dengan Mekanisme Cut Jeda Blank 1 Detik murni
+        // REVISI: Mengunci durasi kecepatan gerak konstan statis 7 detik (tidak berdasar panjang teks)
         function updateTeksMonitorUtamaPIDS(teksBaru) {
             let displayNode = document.getElementById('pids-display');
             
-            // Hapus paksa elemen teks untuk merestart css keyframes engine
             displayNode.style.animation = 'none';
-            displayNode.offsetHeight; // Trigger reflow browser
+            displayNode.offsetHeight; // Reflow browser
             
             displayNode.innerText = teksBaru;
-            displayNode.style.animation = 'marquee-blank-engine 13s linear infinite';
+            displayNode.style.animation = 'marquee-static-engine 7s linear infinite';
         }
 
         function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
@@ -758,7 +787,11 @@
             if (hTerdekat) {
                 let rGeofence = hTerdekat.radius;
                 let distText = document.getElementById('pids-distance');
+                let targetText = document.getElementById('pids-nearest-object');
                 
+                // Tampilkan nama objek terdekat aktif di baris log diagnostik
+                targetText.innerText = hTerdekat.nama;
+
                 if (jTerkecil <= rGeofence) {
                     distText.innerText = `In ${Math.round(jTerkecil)}m`;
                     if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
@@ -804,12 +837,10 @@
             if(val !== 'none') document.getElementById('input-audio-local').value = "";
         }
 
-        // REVISI: Mengembalikan search map ke Nominatim OSM Lama & Membuat Native Pinpoint Control Button
         function inisialisasiPeta() {
             map = L.map('map').setView([-6.1754, 106.8272], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
             
-            // Balik ke Nominatim Lama bawaan plugin yang fokus ke detail data jalan
             L.Control.geocoder({
                 geocoder: L.Control.Geocoder.nominatim(),
                 defaultMarkGeocode: false,
@@ -825,13 +856,14 @@
                 perbaruiVisualLingkaranRadius();
             }).addTo(map);
 
-            // Bikin Tombol Pinpoint Native Leaflet Control tepat di bawah tombol zoom (+ / -)
+            // REVISI TOTAL: Membuat Tombol Pinpoint Mandiri Leaflet Control (Bukan sekadar tautan kosong)
             let CustomLocateControl = L.Control.extend({
                 options: { position: 'topleft' },
                 onAdd: function (map) {
                     let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
                     let button = L.DomUtil.create('a', 'leaflet-control-locate-btn', container);
                     button.innerHTML = '⚙️';
+                    button.href = '#';
                     button.title = 'Arahkan ke Lokasi GPS Saya';
                     
                     L.DomEvent.on(button, 'click', function (e) {
@@ -853,22 +885,38 @@
             });
         }
 
-        // REVISI: Fix Fungsi Pinpoint Native
-        function arahanPetaKeLokasiSayaNative() {
+        // REVISI TOTAL: Konstruksi API Geolocation agar Tombol Pinpoint Berfungsi Sempurna 
+        function arahkanPetaKeLokasiSayaNative() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    let myLat = pos.coords.latitude;
-                    let myLng = pos.coords.longitude;
-                    selectedLat = myLat; selectedLng = myLng;
-                    document.getElementById('input-koordinat').value = `${myLat.toFixed(6)}, ${myLng.toFixed(6)}`;
-                    map.flyTo([myLat, myLng], 16);
-                    if (markerPeta) markerPeta.setLatLng([myLat, myLng]);
-                    else markerPeta = L.marker([myLat, myLng]).addTo(map);
-                    perbaruiVisualLingkaranRadius();
-                    pushLogKonsol("Peta digeser ke koordinat pinpoint GPS aktif.");
-                }, () => { alert("Gagal mengambil posisi GPS terkini. Pastikan izin lokasi aktif."); });
+                pushLogKonsol("Mengecek koordinat GPS saat ini...");
+                navigator.geolocation.getCurrentPosition(
+                    function(pos) {
+                        let myLat = pos.coords.latitude;
+                        let myLng = pos.coords.longitude;
+                        selectedLat = myLat; selectedLng = myLng;
+                        
+                        document.getElementById('input-koordinat').value = `${myLat.toFixed(6)}, ${myLng.toFixed(6)}`;
+                        
+                        // Perbarui Visual Marker dan Radius Geofence di Peta
+                        if (markerPeta) {
+                            markerPeta.setLatLng([myLat, myLng]);
+                        } else {
+                            markerPeta = L.marker([myLat, myLng]).addTo(map);
+                        }
+                        perbaruiVisualLingkaranRadius();
+                        
+                        // Geser Kamera Map ke Titik Koordinat Pengguna secara halus
+                        map.flyTo([myLat, myLng], 16);
+                        pushLogKonsol(`Peta digeser ke lokasi Anda: ${myLat.toFixed(5)}, ${myLng.toFixed(5)}`);
+                    }, 
+                    function(err) { 
+                        alert("Gagal membaca GPS. Izinkan lokasi di browser/perangkat Anda."); 
+                        pushLogKonsol("Gagal pinpoint lokasi: " + err.message);
+                    }, 
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
             } else {
-                alert("Browser tidak mendukung geolokasi.");
+                alert("Browser tidak mendukung penentuan posisi.");
             }
         }
 
@@ -1078,7 +1126,6 @@
             renderListRuteBuiltInDanAudioUI();
         }
 
-        /* --- LOGIKA FULLSCREEN API --- */
         function toggleLayarPenuhAPI() {
             let areaMonitor = document.getElementById('pids-monitor-mode');
             if (!document.fullscreenElement) {
@@ -1147,10 +1194,17 @@
         }
 
         function togglePanelSimulasiField() { let p = document.getElementById('panel-simulasi-box'); p.style.display = (p.style.display === 'block') ? 'none' : 'block'; }
-        function simulasiSetSpeed() { let s = parseFloat(document.getElementById('sim-input-speed').value) || 0.0; document.getElementById('pids-speed').innerText = s.toFixed(1); cekOverspeedStatus(s); updateKompasArahMataAngin(90, s); }
+        
+        function simulasiSetSpeed() { 
+            let s = parseFloat(document.getElementById('sim-input-speed').value) || 0.0; 
+            document.getElementById('pids-speed').innerText = s.toFixed(1); 
+            cekOverspeedStatus(s); 
+            updateKompasArahMataAngin(90, s); 
+        }
+        
         function perbaruiDropdownSimulasi() { let select = document.getElementById('sim-select-halte'); if(!select) return; select.innerHTML = ""; dbLokasi.forEach(item => { let opt = document.createElement('option'); opt.value = item.id; opt.innerText = item.nama; select.appendChild(opt); }); }
         
-        // REVISI: Fungsi Switch Alarm Solid Box Style
+        // REVISI: Kontrol Tombol Alarm (ON = Hijau, OFF = Merah) dengan Ukuran rigid 110px
         function toggleOverspeedAlarmButton() { 
             isAlarmEnabled = !isAlarmEnabled; 
             let btnDash = document.getElementById('btn-overspeed-dashboard-switch');
@@ -1188,6 +1242,7 @@
             if (h) {
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 document.getElementById('pids-distance').innerText = `In (Simulated)`;
+                document.getElementById('pids-nearest-object').innerText = h.nama;
                 updateTeksMonitorUtamaPIDS(h.displayText || h.nama);
                 if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) {
                     if(h.audioData) putarAnnouncer(h.audioData); lastPlayedHalteId = h.id;
@@ -1202,6 +1257,7 @@
             let h = dbLokasi.find(i => i.id == id);
             if (h) {
                 document.getElementById('pids-distance').innerText = `Far (Simulated)`;
+                document.getElementById('pids-nearest-object').innerText = h.nama;
                 if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) {
                     if(h.audioData) putarAnnouncer(h.audioData); lastPlayedHalteId = h.id;
                     pushLogKonsol(`[SIMULASI] Keluar ${h.nama}`);
