@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v2.9 - Rainer BK</title>
+    <title>PIDS Simulator v3.0 - Rainer BK</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -209,7 +209,7 @@
             100% { transform: translate3d(-100%, 0, 0); }
         }
 
-        /* Baris 4: Diagnostik & Komponen Penunjuk (DIKUNCI DAN FIX LEBAR KANAN) */
+        /* Baris 4: Diagnostik & Komponen Penunjuk */
         .pids-row-4 {
             display: flex;
             height: 15%;
@@ -243,7 +243,6 @@
             overflow: hidden;
         }
         
-        /* Area Informasi Teks Terkunci agar Teks Panjang Terpotong Otomatis */
         .gps-info-lines {
             display: flex;
             flex-direction: column;
@@ -262,7 +261,6 @@
             width: 100%;
         }
 
-        /* Kontrol Kanan Dipatok Statis Supaya Tidak Tergeser */
         .controls-right-group {
             display: flex;
             height: 100%;
@@ -303,20 +301,6 @@
             text-align: center;
         }
 
-        /* Custom Pinpoint Button Layout */
-        .leaflet-control-locate {
-            background: #fff;
-            width: 30px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.6);
-            border-radius: 5px;
-            display: block;
-        }
-
         /* --- MODE FULLSCREEN RESPONSIVE --- */
         #pids-monitor-mode:fullscreen {
             width: 100vw !important;
@@ -339,7 +323,7 @@
         #pids-monitor-mode:fullscreen .btn-overspeed-dashboard { font-size: 1.4vw; width: 14vw; }
         #pids-monitor-mode:fullscreen .fs-toggle-btn { font-size: 2.5vw; width: 11vw; }
 
-        /* --- CONFIG SETTING --- */
+        /* --- CONFIG SETTING CARD --- */
         .config-card {
             background-color: #111111;
             border: 1px solid #333333;
@@ -383,11 +367,14 @@
             color: #ffffff; font-size: 18px; font-weight: bold;
             cursor: pointer;
         }
-        .modal-close-btn:hover { color: #ff0000; }
 
-        /* --- GENERAL COMPONENTS & WHITE TEXTBOXES --- */
+        /* --- BUTTONS SYSTEM --- */
         .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; margin-bottom: 12px; text-transform: uppercase; }
-        .btn-white { background-color: #ffffff; color: #000000; }
+        
+        /* Warna Baru Tombol Utama */
+        .btn-tracker-start { background-color: #0066cc; color: #ffffff; } /* Biru Transit */
+        .btn-database-save { background-color: #107c41; color: #ffffff; } /* Hijau Simpan */
+        
         .btn-warning { background-color: #ffb703; color: #000000; }
         .btn-danger { background-color: #cc0000; color: #ffffff; }
 
@@ -399,31 +386,45 @@
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 4px; font-size: 11px; color: #aaaaaa; }
         
-        /* Modifikasi: Semua Text Box & Dropdown Menjadi Putih Bersih */
+        /* Ralat Warna: Default Textbox Kembali Abu-abu Gelap (Anti-Silo) */
         .form-control { 
             width: 100%; 
             padding: 12px; 
-            background-color: #ffffff !important; 
-            border: 1px solid #cccccc; 
+            background-color: #1c1c1c !important; 
+            border: 1px solid #333333; 
             border-radius: 6px; 
-            color: #000000 !important; 
+            color: #ffffff !important; 
             font-size: 13px; 
             font-weight: bold;
         }
 
-        .range-container { display: flex; align-items: center; gap: 15px; background-color: #000000; padding: 10px 12px; border: 1px solid #333333; border-radius: 6px; }
-        .map-wrapper { position: relative; width: 100%; height: 280px; margin-bottom: 12px; }
-        #map { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #333333; z-index: 1; }
-        
-        .table-wrapper { overflow-x: auto; background-color: #000000; border: 1px solid #222; border-radius: 6px; margin-bottom: 12px; }
-        .halte-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .halte-table th, .halte-table td { padding: 10px; text-align: left; border-bottom: 1px solid #111111; }
-        .halte-table th { background-color: #111111; color: #ffff00; }
-        
-        .mini-list-box { background: #000; border: 1px dashed #333; padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto; margin-top: 8px; }
-        .mini-list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid #111; font-size: 11px; }
-        
-        /* Modifikasi Layout Panel Uji Manual - Solid border, Abu-abu Lebih Terang */
+        /* Spesifik Layout Database Manajemen Lokasi Tunggal (Fix Textbox Panjang, Tombol Plus Kecil) */
+        .single-location-input-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        .single-location-input-group .form-control {
+            flex: 1 !important; /* Text box otomatis memanjang penuh */
+        }
+        .btn-plus-fixed {
+            width: 45px !important;
+            min-width: 45px !important;
+            height: 43px;
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- PANEL UJI MANUAL COMPONENTS (Tetap Putih & Abu Terang) --- */
         .collapse-trigger-btn { 
             background-color: #333333; 
             color: #ffffff; 
@@ -446,6 +447,12 @@
             margin-bottom: 12px; 
             display: none; 
         }
+        /* Textbox di dalam panel simulasi tetap dipaksa putih bersih */
+        .sim-card .form-control {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #cccccc;
+        }
         .btn-sim { 
             background-color: #444444; 
             color: #ffff00; 
@@ -453,8 +460,22 @@
             padding: 10px; 
             font-size: 12px; 
             font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
         }
 
+        .range-container { display: flex; align-items: center; gap: 15px; background-color: #000000; padding: 10px 12px; border: 1px solid #333333; border-radius: 6px; }
+        .map-wrapper { position: relative; width: 100%; height: 280px; margin-bottom: 12px; }
+        #map { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #333333; z-index: 1; }
+        
+        .table-wrapper { overflow-x: auto; background-color: #000000; border: 1px solid #222; border-radius: 6px; margin-bottom: 12px; }
+        .halte-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .halte-table th, .halte-table td { padding: 10px; text-align: left; border-bottom: 1px solid #111111; }
+        .halte-table th { background-color: #111111; color: #ffff00; }
+        
+        .mini-list-box { background: #000; border: 1px dashed #333; padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto; margin-top: 8px; }
+        .mini-list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid #111; font-size: 11px; }
         .edit-mode-indicator { background-color: rgba(255, 183, 3, 0.1); border: 1px solid #ffb703; padding: 8px; border-radius: 6px; margin-bottom: 12px; display: none; font-size: 12px; color: #ffb703; }
         .divider-line { border: 0; height: 1px; background: #222; margin: 15px 0; }
     </style>
@@ -466,7 +487,7 @@
             <h2 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">PIDS AUTHENTICATION</h2>
             <div class="form-group"><label>Username</label><input type="text" id="login-user" class="form-control" placeholder="Username"></div>
             <div class="form-group" style="margin-bottom: 20px;"><label>Password</label><input type="password" id="login-pass" class="form-control" placeholder="Password"></div>
-            <button class="btn btn-white" style="margin-bottom: 0;" onclick="cekLogin()">MASUK SISTEM</button>
+            <button class="btn btn-tracker-start" style="margin-bottom: 0;" onclick="cekLogin()">MASUK SISTEM</button>
         </div>
     </div>
 
@@ -489,7 +510,7 @@
                 <input type="text" id="modal-input-tujuan-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik nama lokasi tujuan baru (Boleh Kosong)">
             </div>
 
-            <button class="btn btn-white" style="margin-bottom: 0; margin-top: 15px;" onclick="konfirmasiMulaiTrackingRute()">KONFIRMASI DAN JALANKAN</button>
+            <button class="btn btn-tracker-start" style="margin-bottom: 0; margin-top: 15px;" onclick="konfirmasiMulaiTrackingRute()">KONFIRMASI DAN JALANKAN</button>
         </div>
     </div>
 
@@ -547,12 +568,12 @@
                 </div>
             </div>
 
-            <button id="btn-toggle-gps" class="btn btn-white" onclick="klikTombolPemicuGpsUtama()">MULAI PELACAKAN RUTE</button>
+            <button id="btn-toggle-gps" class="btn btn-tracker-start" onclick="klikTombolPemicuGpsUtama()">MULAI PELACAKAN RUTE</button>
 
             <div class="collapse-trigger-btn" onclick="togglePanelSimulasiField()">PANEL UJI MANUAL (SIMULASI PC)</div>
             <div id="panel-simulasi-box" class="sim-card">
-                <div class="form-group"><label style="color:#fff;">Pilih Target Geofence:</label><select id="sim-select-halte" class="form-control"></select></div>
-                <div class="form-group"><label style="color:#fff;">Set Speed Simulasi:</label><input type="number" id="sim-input-speed" class="form-control" value="0.0" step="0.1" oninput="simulasiSetSpeed()"></div>
+                <div class="form-group"><label>Pilih Target Geofence:</label><select id="sim-select-halte" class="form-control"></select></div>
+                <div class="form-group"><label>Set Speed Simulasi:</label><input type="number" id="sim-input-speed" class="form-control" value="0.0" step="0.1" oninput="simulasiSetSpeed()"></div>
                 <div style="display: flex; gap: 8px; margin-top: 10px;">
                     <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMasukRadius()">1. Masuk Radius</button>
                     <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMenjauh()">2. Keluar Radius</button>
@@ -587,11 +608,11 @@
                 <label style="color:#ffff00; font-weight:bold; margin-bottom: 6px; text-transform: uppercase;">SETTING AUDIO ANNOUNCER LOKAL</label>
                 <div class="form-group" id="group-upload-lokal-file">
                     <label>Upload File Suara (.mp3):</label>
-                    <input type="file" id="input-audio-local" class="form-control" accept="audio/mpeg, audio/mp3, .mp3">
+                    <input type="file" id="input-audio-local" class="form-control" accept="audio/mpeg, audio/mp3, .mp3" style="background-color: #1c1c1c !important; color:#fff !important;">
                 </div>
             </div>
 
-            <button id="btn-simpan" class="btn btn-white" onclick="eksekusiSimpan()">SIMPAN DATA LOKASI</button>
+            <button id="btn-simpan" class="btn btn-database-save" onclick="eksekusiSimpan()">SIMPAN DATA LOKASI</button>
             <button id="btn-batal-edit" class="btn btn-danger" style="display: none; padding: 8px; margin-top: -4px;" onclick="resetFormInput()">BATALKAN EDIT</button>
 
             <hr class="divider-line">
@@ -636,9 +657,9 @@
 
             <div class="config-card">
                 <h3>Database Manajemen Nama Lokasi Tunggal</h3>
-                <div style="display: flex; gap: 6px;">
-                    <input type="text" id="cfg-add-lokasi-nama" style="flex:1;" class="form-control" placeholder="Masukkan nama lokasi (Misal: Rumah, Gereja, Terminal)">
-                    <button class="btn btn-white" style="padding:0 18px; margin:0; height:auto; font-size:16px;" onclick="tambahLokasiBuiltIn()">+</button>
+                <div class="single-location-input-group">
+                    <input type="text" id="cfg-add-lokasi-nama" class="form-control" placeholder="Masukkan nama lokasi (Misal: Rumah, Gereja, Terminal)">
+                    <button class="btn-plus-fixed" onclick="tambahLokasiBuiltIn()">+</button>
                 </div>
                 <div class="mini-list-box" id="cfg-lokasi-list-container"></div>
             </div>
@@ -1100,7 +1121,7 @@
             document.getElementById('input-radius').value = 50;
             document.getElementById('range-val-preview').innerText = "50 Meter"; document.getElementById('edit-indicator').style.display = 'none';
             
-            let b = document.getElementById('btn-simpan'); b.innerText = "SIMPAN DATA LOKASI"; b.className = "btn btn-white";
+            let b = document.getElementById('btn-simpan'); b.innerText = "SIMPAN DATA LOKASI"; b.className = "btn btn-database-save";
             document.getElementById('btn-batal-edit').style.display = 'none';
             if (markerPeta) { map.removeLayer(markerPeta); markerPeta = null; }
             if (lingkaranRadiusPeta) { map.removeLayer(lingkaranRadiusPeta); lingkaranRadiusPeta = null; }
