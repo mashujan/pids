@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIDS Simulator v2.3 - Rainer BK</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: Tahoma, sans-serif !important;
+            font-family: Tahoma, Arial, sans-serif !important;
         }
 
         body {
@@ -34,22 +38,23 @@
 
         .login-box {
             background-color: #111111;
-            border: 2px solid #ff0000;
+            border: 2px solid #cc0000;
             padding: 30px;
             border-radius: 12px;
             width: 100%;
             max-width: 360px;
         }
 
+        /* --- HEADER & NAVIGATION --- */
         header {
             background-color: #111111;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
             border-bottom: 2px solid #ffffff;
         }
 
         header h1 {
-            font-size: 16px;
+            font-size: 14px;
             color: #ffffff;
             letter-spacing: 2px;
         }
@@ -62,25 +67,26 @@
 
         .tab-btn {
             flex: 1;
-            padding: 15px;
+            padding: 15px 5px;
             background: none;
             border: none;
             color: #888888;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: bold;
             cursor: pointer;
             border-bottom: 3px solid transparent;
+            text-transform: uppercase;
         }
 
         .tab-btn.active {
             color: #ffffff;
-            border-bottom: 3px solid #ff0000;
+            border-bottom: 3px solid #cc0000;
             background-color: #222222;
         }
 
         .content-container {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             overflow-y: auto;
         }
 
@@ -92,416 +98,488 @@
             display: block;
         }
 
-        /* --- LAYOUT MONITOR (KUNCI MATI ANTI SCROLL) --- */
-        .pids-dashboard-grid {
-            display: grid;
-            grid-template-columns: 60% 40%;
-            border: 3px solid #ffffff;
+        /* --- MONITOR LAYOUT RESPONSIF (NORMAL VS FULLSCREEN) --- */
+        #pids-monitor-mode {
+            position: relative;
+            display: flex;
+            flex-direction: column;
             background-color: #000000;
-            height: 160px;          /* Tinggi dipatok tetap */
-            max-height: 160px;      /* Pengunci utama anti-melar */
-            margin-bottom: 15px;
-            border-radius: 4px;
-            overflow: hidden;       /* Memotong elemen bocor */
-        }
-
-        .dashboard-left-col {
-            display: flex;
-            flex-direction: column;
-            border-right: 3px solid #ffffff;
-            position: relative;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .plat-container {
-            background-color: #cc0000;
-            border-bottom: 3px solid #ffffff;
-            border-right: 3px solid #ffffff;
-            width: 140px;
-            padding: 6px 10px;
-            z-index: 10;
-        }
-
-        .plat-label {
-            font-size: 9px;
-            color: #ffffff;
-            text-transform: uppercase;
-            display: block;
-            font-weight: bold;
-        }
-
-        .plat-input {
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-weight: bold;
-            font-size: 16px;
+            border: 3px solid #ffffff;
+            margin: 0 auto 15px auto;
             width: 100%;
+            max-width: 720px; /* Ukuran normal tidak kebesaran di PC/Web browser */
+            aspect-ratio: 16 / 9;
+        }
+
+        /* Baris 1: Plat & Jam */
+        .pids-row-1 {
+            display: flex;
+            height: 15%;
+            border-bottom: 2px solid #ffffff;
+        }
+        .plat-box {
+            background-color: #ff0000;
+            width: 25%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px; 
+            color: #ffffff;
+            text-transform: uppercase;
+            border-right: 2px solid #ffffff;
+        }
+        .clock-v2 {
+            width: 75%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        /* Baris 2: Speedometer & Kompas */
+        .pids-row-2 {
+            display: flex;
+            height: 45%;
+            border-bottom: 2px solid #ffffff;
+        }
+        .kompas-wrap {
+            width: 50%;
+            border-right: 2px solid #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #151515;
+        }
+        .kompas-label { font-size: 12px; color: #888888; text-transform: uppercase; margin-bottom: 2px; }
+        .kompas-value { font-size: 54px; font-weight: bold; color: #ffb703; line-height: 1; }
+
+        .speedo-wrap-v2 {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #151515;
+        }
+        .speedo-value-v2 { font-size: 64px; font-weight: bold; color: #00ff00; line-height: 1; }
+        .speedo-value-v2.blink-red { animation: os-strobe 0.3s steps(1) infinite; }
+        @keyframes os-strobe { 0% { color: #00ff00; } 50% { color: #ff0000; } }
+        .speedo-unit-v2 { font-size: 14px; color: #888888; }
+
+        /* Baris 3: Banner Teks Marquee Jeda Blank 1 Detik */
+        .pids-row-3 {
+            background-color: #000000;
+            height: 28%;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            padding: 0;
+            border-bottom: 2px solid #ffffff;
+        }
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-text {
+            display: inline-block;
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffff00;
+            padding-left: 100%; /* Memaksa teks mulai murni dari luar ujung kanan */
+            animation: marquee-blank-engine 13s linear infinite;
+        }
+
+        /* Animasi: Detik 0-1 blank total, lalu jalan dari ujung kanan ke kiri */
+        @keyframes marquee-blank-engine {
+            0% { transform: translate3d(0, 0, 0); opacity: 0; }
+            7.69% { transform: translate3d(0, 0, 0); opacity: 0; } /* Jeda 1 detik dari total 13 detik (~7.69%) */
+            7.70% { transform: translate3d(0, 0, 0); opacity: 1; } /* Muncul instan tanpa fade */
+            100% { transform: translate3d(-200%, 0, 0); opacity: 1; }
+        }
+
+        /* Baris 4: Diagnostik Split Bawah */
+        .pids-row-4 {
+            display: flex;
+            height: 12%;
+            font-size: 11px;
+            color: #aaaaaa;
+            background-color: #050505;
+        }
+        .diag-left-log {
+            width: 50%;
+            padding: 2px 8px;
+            overflow-y: hidden;
+            font-family: monospace !important;
+            border-right: 1px dashed #333333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .diag-log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .diag-right-gps {
+            width: 50%;
+            padding: 0 0 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: monospace !important;
+        }
+
+        /* REVISI: Tombol Alarm Disamakan dengan Ukuran Foto */
+        .btn-overspeed-dashboard {
+            height: 100%;
+            border: none;
+            background-color: #00ff00;
+            color: #000000;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 0 14px;
+            cursor: pointer;
             text-transform: uppercase;
         }
-
-        .plat-input:focus { outline: none; }
-
-        .halte-display-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        .main-text-display {
-            font-size: 32px;
-            font-weight: bold;
-            color: #ffff00; 
-            line-height: 1.2;
-            word-wrap: break-word;
-            max-width: 100%;
-        }
-
-        .dashboard-right-col {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            position: relative;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .speedo-wrap {
-            text-align: center;
-            margin-top: -10px;
-        }
-
-        .speedo-value {
-            font-size: 56px;
-            font-weight: bold;
-            color: #00ff00; 
-            line-height: 1;
-        }
-
-        .speedo-value.blink-red-speed {
-            animation: speed-strobe-red 0.3s steps(1) infinite;
-        }
-
-        @keyframes speed-strobe-red {
-            0% { color: #00ff00; }
-            50% { color: #ff0000; }
-        }
-
-        .speedo-unit {
-            font-size: 14px;
-            font-weight: bold;
+        .btn-overspeed-dashboard.alarm-off {
+            background-color: #444444;
             color: #ffffff;
-            margin-top: 4px;
-            display: block;
         }
 
-        .clock-display {
+        /* Ikon Floating Fullscreen ala YouTube */
+        .fs-toggle-btn {
             position: absolute;
-            bottom: 8px;
-            right: 12px;
-            font-size: 18px;
-            font-weight: bold;
+            top: 2%;
+            right: 1.5%;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.4);
             color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 4px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
         }
 
-        /* --- CONTROLLER OVERSPEED PANEL --- */
-        .setting-panel {
+        /* --- STYLING KHUSUS KETIKA FULLSCREEN GEOFENCE DIKETUK --- */
+        #pids-monitor-mode:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw;
+            max-height: 100vh;
+            aspect-ratio: auto;
+        }
+        #pids-monitor-mode:fullscreen .plat-box { font-size: 5vw; }
+        #pids-monitor-mode:fullscreen .clock-v2 { font-size: 5.5vw; }
+        #pids-monitor-mode:fullscreen .kompas-label { font-size: 1.8vw; }
+        #pids-monitor-mode:fullscreen .kompas-value { font-size: 12vw; }
+        #pids-monitor-mode:fullscreen .speedo-value-v2 { font-size: 14vw; }
+        #pids-monitor-mode:fullscreen .speedo-unit-v2 { font-size: 2vw; }
+        #pids-monitor-mode:fullscreen .marquee-text { font-size: 8.5vw; }
+        #pids-monitor-mode:fullscreen .pids-row-4 { font-size: 1.8vw; }
+        #pids-monitor-mode:fullscreen .btn-overspeed-dashboard { font-size: 1.6vw; padding: 0 25px; }
+        #pids-monitor-mode:fullscreen .fs-toggle-btn { font-size: 2vw; }
+
+        /* --- CONFIG SETTING SUB-PANELS --- */
+        .config-card {
             background-color: #111111;
-            border: 2px solid #333333;
+            border: 1px solid #333333;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
         }
-
-        .setting-title {
-            font-size: 14px;
+        .config-card h3 {
+            font-size: 13px;
             color: #ffff00;
-            font-weight: bold;
-        }
-
-        .speed-input-big {
-            width: 90px;
-            padding: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            background-color: #000;
-            border: 2px solid #ffffff;
-            color: #fff;
-            border-radius: 6px;
-        }
-
-        .switch-btn {
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-transform: uppercase;
-            min-width: 110px;
-            text-align: center;
-        }
-        .switch-on { background-color: #00ff00; color: #000000; }
-        .switch-off { background-color: #cc0000; color: #ffffff; }
-
-        /* --- PANEL CONTROL SIMULASI --- */
-        .collapse-trigger-btn {
-            background-color: #222222;
-            color: #ffffff;
-            border: 1px solid #444444;
-            padding: 10px;
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-            border-radius: 4px;
-            cursor: pointer;
             margin-bottom: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #222;
+            padding-bottom: 6px;
+        }
+
+        /* --- MODAL INPUT RUTE FIXED --- */
+        .rute-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .rute-modal-box {
+            background-color: #111111;
+            border: 2px solid #ffff00;
+            padding: 25px;
+            border-radius: 10px;
             width: 100%;
-            text-transform: uppercase;
+            max-width: 420px;
         }
 
-        .sim-card { 
-            background-color: #111111; 
-            border: 1px dashed #ffff00; 
-            border-radius: 6px; 
-            padding: 12px; 
-            margin-bottom: 12px;
-            display: none; 
-        }
-
-        /* --- UTILITY & FORM --- */
-        .info-card { background-color: #111111; border-radius: 6px; padding: 12px; margin-bottom: 12px; border: 1px solid #222; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #aaaaaa; }
-        .info-value { font-weight: bold; color: #ffff00; }
-        
-        .status-gps-on { color: #00ff00 !important; }
-        .status-gps-off { color: #cc0000 !important; }
-
-        .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; margin-bottom: 12px; }
+        /* --- GENERAL UI COMPONENTS --- */
+        .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; margin-bottom: 12px; text-transform: uppercase; }
         .btn-white { background-color: #ffffff; color: #000000; }
         .btn-warning { background-color: #ffb703; color: #000000; }
         .btn-danger { background-color: #cc0000; color: #ffffff; }
         .btn-sim { background-color: #222222; color: #ffff00; border: 1px solid #ffff00; padding: 10px; font-size: 12px; }
 
-        .btn-action { color: #000000; padding: 6px 8px; font-size: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 2px; }
+        .btn-action { color: #000000; padding: 6px 8px; font-size: 11px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 2px; }
         .btn-action-edit { background-color: #ffffff; }
-        .btn-action-dup { background-color: #ffb703; }
         .btn-action-delete { background-color: #cc0000; color: #ffffff; }
 
         .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 4px; font-size: 12px; color: #aaaaaa; }
-        .form-control { width: 100%; padding: 12px; background-color: #111111; border: 1px solid #333333; border-radius: 6px; color: #fff; font-size: 14px; }
+        .form-group label { display: block; margin-bottom: 4px; font-size: 11px; color: #aaaaaa; }
+        .form-control { width: 100%; padding: 12px; background-color: #000000; border: 1px solid #333333; border-radius: 6px; color: #fff; font-size: 13px; }
 
-        .range-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background-color: #111111;
-            padding: 10px 12px;
-            border: 1px solid #333333;
-            border-radius: 6px;
-        }
-        .range-slider {
-            flex: 1;
-            accent-color: #ffb703;
-            cursor: pointer;
-        }
-        .range-value-indicator {
-            font-size: 15px;
-            font-weight: bold;
-            color: #ffff00;
-            min-width: 75px;
-            text-align: right;
-        }
-
-        #map { width: 100%; height: 220px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #333333; }
+        .range-container { display: flex; align-items: center; gap: 15px; background-color: #000000; padding: 10px 12px; border: 1px solid #333333; border-radius: 6px; }
+        .map-wrapper { position: relative; width: 100%; height: 280px; margin-bottom: 12px; }
+        #map { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #333333; z-index: 1; }
         
-        .leaflet-control-locate {
-            background: #fff; width: 34px; height: 34px; line-height: 34px; text-align: center;
-            cursor: pointer; border-radius: 4px; box-shadow: 0 1px 5px rgba(0,0,0,0.5);
-            font-weight: bold; color: #000; font-size: 18px;
+        /* Ikon Custom Pinpoint di Bawah Tombol Zoom */
+        .leaflet-control-locate-btn {
+            background-color: #ffffff;
+            width: 30px; height: 30px;
+            line-height: 30px; text-align: center;
+            font-size: 15px; cursor: pointer;
+            font-weight: bold; color: #000000;
+            border-bottom: 1px solid #ccc;
+        }
+        .leaflet-control-locate-btn:hover { background-color: #f4f4f4; }
+
+        /* LINE PEMBATAS SOLID */
+        .divider-line {
+            border: 0;
+            height: 2px;
+            background: #333333;
+            margin: 20px 0;
+            display: block;
         }
 
-        .halte-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
-        .halte-table th, .halte-table td { padding: 10px; text-align: left; border-bottom: 1px solid #222222; }
+        .table-wrapper { overflow-x: auto; background-color: #000000; border: 1px solid #222; border-radius: 6px; margin-bottom: 12px; }
+        .halte-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .halte-table th, .halte-table td { padding: 10px; text-align: left; border-bottom: 1px solid #111111; }
         .halte-table th { background-color: #111111; color: #ffff00; }
-        .edit-mode-indicator { background-color: rgba(255, 183, 3, 0.1); border: 1px solid #ffb703; padding: 8px; border-radius: 6px; margin-bottom: 12px; display: none; font-size: 12px; color: #ffb703; }
+        
+        .mini-list-box { background: #000; border: 1px dashed #333; padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto; margin-top: 8px; }
+        .mini-list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid #111; font-size: 11px; }
 
-        /* --- HANDLING KHUSUS HP PORTRAIT (TEGAK) --- */
-        @media screen and (max-width: 480px) and (orientation: portrait) {
-            .pids-dashboard-grid {
-                height: 130px;      /* Perkecil tinggi kotak di layar portrait */
-                max-height: 130px;
-            }
-            .main-text-display {
-                font-size: 22px;    /* Perkecil font teks halte */
-            }
-            .speedo-value {
-                font-size: 42px;    /* Perkecil font angka speedometer */
-            }
-            .speedo-unit {
-                font-size: 11px;
-                margin-top: 2px;
-            }
-            .clock-display {
-                font-size: 13px;
-                bottom: 6px;
-                right: 8px;
-            }
-            .plat-container {
-                width: 105px;
-                padding: 4px 6px;
-            }
-            .plat-input {
-                font-size: 13px;
-            }
-        }
+        .collapse-trigger-btn { background-color: #111; color: #ffffff; border: 1px solid #222; padding: 10px; font-size: 12px; font-weight: bold; text-align: center; border-radius: 4px; cursor: pointer; margin-bottom: 12px; width: 100%; text-transform: uppercase; }
+        .sim-card { background-color: #111111; border: 1px dashed #ffff00; border-radius: 6px; padding: 12px; margin-bottom: 12px; display: none; }
+        .edit-mode-indicator { background-color: rgba(255, 183, 3, 0.1); border: 1px solid #ffb703; padding: 8px; border-radius: 6px; margin-bottom: 12px; display: none; font-size: 12px; color: #ffb703; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:#ffffff; font-size: 16px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">🔐 PIDS AUTHENTICATION</h2>
+            <h2 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">🔐 PIDS AUTHENTICATION</h2>
             <div class="form-group"><label>Username</label><input type="text" id="login-user" class="form-control" placeholder="Username"></div>
             <div class="form-group" style="margin-bottom: 20px;"><label>Password</label><input type="password" id="login-pass" class="form-control" placeholder="Password"></div>
             <button class="btn btn-white" style="margin-bottom: 0;" onclick="cekLogin()">MASUK SISTEM</button>
         </div>
     </div>
 
-    <header><h1>PASSENGER INFORMATION DISPLAY SYSTEM</h1></header>
+    <div id="modal-rute-prompt" class="rute-modal">
+        <div class="rute-modal-box">
+            <h3 style="color:#ffff00; font-size: 14px; margin-bottom: 15px; text-align: center;">🗺️ ATUR RUTE PERJALANAN AKTIF</h3>
+            <div class="form-group">
+                <label>Pilih Preset Jalur Terdaftar:</label>
+                <select id="modal-select-preset" class="form-control" onchange="handlePresetRuteDropdownChange(this.value)">
+                    </select>
+            </div>
+            <div id="modal-manual-rute-inputs" style="display: block;">
+                <div class="form-group"><label>Titik Asal (Mulai)</label><input type="text" id="modal-input-asal" class="form-control" placeholder="Contoh: Rumah"></div>
+                <div class="form-group"><label>Titik Tujuan (Akhir)</label><input type="text" id="modal-input-tujuan" class="form-control" placeholder="Contoh: Gereja (Boleh Kosong)"></div>
+            </div>
+            <button class="btn btn-white" style="margin-bottom: 0; margin-top: 15px;" onclick="konfirmasiMulaiTrackingRute()">KONFIRMASI & JALANKAN</button>
+        </div>
+    </div>
+
+    <header>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM</h1>
+    </header>
 
     <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('tracker')">MONITORING DASHBOARD</button>
-        <button class="tab-btn" onclick="switchTab('admin')">DATA ATUR LOKASI</button>
+        <button class="tab-btn active" onclick="switchTab('tracker')">1. Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('admin')">2. Database</button>
+        <button class="tab-btn" onclick="switchTab('config')">3. Pengaturan</button>
     </div>
 
     <div class="content-container">
         
         <div id="tab-tracker" class="tab-content active">
             
-            <div id="dashboard-pids" class="pids-dashboard-grid">
-                <div class="dashboard-left-col">
-                    <div class="plat-container">
-                        <span class="plat-label">No. Plat / Unit</span>
-                        <input type="text" id="pids-plat-no" class="plat-input" value="B 1234 TGC" oninput="simpanPlatNomor()">
+            <div id="pids-monitor-mode">
+                <button class="fs-toggle-btn" id="btn-fs-floating" onclick="toggleLayarPenuhAPI()">⛶</button>
+
+                <div class="pids-row-1">
+                    <div class="plat-box" id="pids-plat-view">B 1234 TGC</div>
+                    <div class="clock-v2" id="pids-clock">00:00:00</div>
+                </div>
+
+                <div class="pids-row-2">
+                    <div class="kompas-wrap">
+                        <span class="kompas-label">🧭 Arah</span>
+                        <span class="kompas-value" id="pids-compass">-</span>
                     </div>
-                    <div class="halte-display-area">
-                        <div class="main-text-display" id="pids-display">Silakan Klik Mulai</div>
+                    <div class="speedo-wrap-v2">
+                        <span class="speedo-value-v2" id="pids-speed">0.0</span>
+                        <span class="speedo-unit-v2">Km/h</span>
                     </div>
                 </div>
-                <div class="dashboard-right-col">
-                    <div class="speedo-wrap">
-                        <span class="speedo-value" id="pids-speed">0.0</span>
-                        <span class="speedo-unit">Km/h</span>
+
+                <div class="pids-row-3">
+                    <div class="marquee-container">
+                        <div class="marquee-text" id="pids-display">KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN</div>
                     </div>
-                    <div class="clock-display" id="pids-clock">00:00:00</div>
+                </div>
+
+                <div class="pids-row-4">
+                    <div class="diag-left-log" id="log-console">
+                        <div class="diag-log-line">[00:00:00] Engine Dashboard Siap.</div>
+                    </div>
+                    <div class="diag-right-gps">
+                        <div>GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>) | <span id="pids-distance" style="color:#ffff00;">-</span></div>
+                        <button id="btn-overspeed-dashboard-switch" class="btn-overspeed-dashboard" onclick="toggleOverspeedAlarmButton()">🚨 ALARM: ON</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="setting-panel">
-                <div class="setting-title">🚨 OVERSPEED ALARM CONTROLLER</div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <label style="font-size: 13px; color:#aaa;">BATAS:</label>
-                    <input type="number" id="cfg-overspeed-limit" class="speed-input-big" value="50" oninput="saveSettingOverspeed()">
-                    <span style="font-size: 14px; font-weight: bold; color: #fff;">Km/h</span>
-                </div>
-                <div>
-                    <button id="btn-overspeed-switch" class="switch-btn switch-on" onclick="toggleOverspeedAlarmButton()">ALARM: ON</button>
-                </div>
-            </div>
-
-            <button id="btn-toggle-gps" class="btn btn-white" onclick="toggleGPSLogicOnly()">MULAI DUKUNGAN GPS AKTIF</button>
+            <button id="btn-toggle-gps" class="btn btn-white" onclick="klikTombolPemicuGpsUtama()">%MULAI PELACAKAN RUTE%</button>
 
             <div class="collapse-trigger-btn" onclick="togglePanelSimulasiField()">🛠️ PANEL UJI MANUAL (SIMULASI PC)</div>
-
             <div id="panel-simulasi-box" class="sim-card">
-                <div class="form-group" style="margin-bottom: 8px;">
-                    <label>Pilih Target Lokasi Halte:</label>
-                    <select id="sim-select-halte" class="form-control" style="padding: 8px; font-size: 13px;"></select>
-                </div>
-                <div class="form-group" style="margin-bottom: 8px;">
-                    <label>Set Speed Simulasi:</label>
-                    <input type="number" id="sim-input-speed" class="form-control" style="padding: 8px; font-size: 13px;" value="0.0" step="0.1" oninput="simulasiSetSpeed()">
-                </div>
+                <div class="form-group"><label>Pilih Target Geofence:</label><select id="sim-select-halte" class="form-control"></select></div>
+                <div class="form-group"><label>Set Speed Simulasi:</label><input type="number" id="sim-input-speed" class="form-control" value="0.0" step="0.1" oninput="simulasiSetSpeed()"></div>
                 <div style="display: flex; gap: 8px; margin-top: 10px;">
                     <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMasukRadius()">1. Masuk Radius</button>
                     <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMenjauh()">2. Keluar Radius</button>
                 </div>
             </div>
-
-            <div class="info-card">
-                <div class="info-row"><span>Status Geofence:</span><span id="pids-state" class="info-value" style="color: #ffffff;">Sistem Belum Aktif</span></div>
-                <div class="info-row"><span>Status GPS Perangkat:</span><span id="gps-status" class="info-value status-gps-off">Menghubungkan GPS...</span></div>
-                <div class="info-row"><span>Jarak Tracker Ke Objek:</span><span id="pids-distance" class="info-value">-</span></div>
-                <div class="info-row"><span>Akurasi Sinyal Perangkat:</span><span id="gps-accuracy" class="info-value">-</span></div>
-                <div class="info-row"><span>Koordinat Posisi:</span><span id="gps-coords" class="info-value" style="font-size: 11px;">-, -</span></div>
-            </div>
-            
-            <div class="info-card">
-                <div id="log-console" style="font-size: 11px; font-family: monospace; color: #666; max-height: 50px; overflow-y: auto;">Sistem PIDS Siap.</div>
-            </div>
         </div>
 
         <div id="tab-admin" class="tab-content">
-            <div id="map"></div>
-            <div id="edit-indicator" class="edit-mode-indicator"><strong>Mode Edit Aktif:</strong> Mengubah data <span id="edit-target-name"></span>.</div>
-
-            <div class="form-group"><label>Koordinat Terpilih</label><input type="text" id="input-koordinat" class="form-control" readonly></div>
+            <div class="map-wrapper">
+                <div id="map"></div>
+            </div>
             
-            <div class="form-group"><label>Nama Halte (Untuk Database Internal)</label><input type="text" id="input-nama" class="form-control" placeholder="Contoh: Halte Senayan Mandiri"></div>
-            <div class="form-group"><label>Teks Tampilan Layar (Tulisan yang Muncul di Monitor)</label><input type="text" id="input-display-text" class="form-control" placeholder="Contoh: Halte Senayan"></div>
+            <div id="edit-indicator" class="edit-mode-indicator"><strong>Mode Edit:</strong> Mengubah <span id="edit-target-name"></span>.</div>
+
+            <div class="form-group"><label>Koordinat Terpihal</label><input type="text" id="input-koordinat" class="form-control" readonly placeholder="Klik titik peta / cari lokasi diatas"></div>
+            <div class="form-group"><label>Nama Halte / Objek (Database)</label><input type="text" id="input-nama" class="form-control" placeholder="Contoh: Halte Senayan Mandiri"></div>
+            <div class="form-group"><label>Teks Tampilan Layar (Monitor Banner)</label><input type="text" id="input-display-text" class="form-control" placeholder="Contoh: Halte Senayan"></div>
             
             <div class="form-group">
                 <label>Radius Geofence (50m - 500m)</label>
                 <div class="range-container">
-                    <input type="range" id="input-radius" class="range-slider" min="50" max="500" step="10" value="50" oninput="handleSliderRadiusChange(this.value)">
-                    <span id="range-val-preview" class="range-value-indicator">50 Meter</span>
+                    <input type="range" id="input-radius" style="flex:1; accent-color:#ffb703;" min="50" max="500" step="10" value="50" oninput="document.getElementById('range-val-preview').innerText = this.value + ' Meter'; perbaruiVisualLingkaranRadius();">
+                    <span id="range-val-preview" style="font-weight:bold; color:#ffff00; min-width:70px; text-align:right;">50 Meter</span>
                 </div>
             </div>
             <div class="form-group">
-                <label>Trigger Kondisi</label>
+                <label>Condition Trigger</label>
                 <select id="input-trigger-type" class="form-control"><option value="masuk" selected>Masuk Radius</option><option value="keluar">Keluar Radius</option></select>
             </div>
-            <div class="form-group"><label id="label-audio">File Suara Announcer (.mp3)</label><input type="file" id="input-audio" class="form-control" accept="audio/mpeg, audio/mp3, .mp3"></div>
+
+            <div class="form-group" style="background: #111; padding: 12px; border-radius: 6px; border: 1px solid #222;">
+                <label style="color:#ffff00; font-weight:bold; margin-bottom: 6px;">🔊 SETTING AUDIO ANNOUNCER</label>
+                <div class="form-group">
+                    <label>Pilih File Audio Terdaftar (.mp3 GitHub):</label>
+                    <select id="input-audio-github" class="form-control" onchange="handleAudioSourceToggleUI()"></select>
+                </div>
+                <div class="form-group" id="group-upload-lokal-file">
+                    <label>Atau Upload Emergency File Lokal (.mp3):</label>
+                    <input type="file" id="input-audio-local" class="form-control" accept="audio/mpeg, audio/mp3, .mp3">
+                </div>
+            </div>
 
             <button id="btn-simpan" class="btn btn-white" onclick="eksekusiSimpan()">SIMPAN DATA LOKASI</button>
-            <button id="btn-batal-edit" class="btn btn-danger" style="width: 100%; display: none; padding: 8px; margin-top: -4px;" onclick="resetFormInput()">BATALKAN EDIT</button>
+            <button id="btn-batal-edit" class="btn btn-danger" style="display: none; padding: 8px; margin-top: -4px;" onclick="resetFormInput()">BATALKAN EDIT</button>
 
-            <h3 style="font-size: 14px; color: #ffffff; margin-top: 15px; margin-bottom: 8px;">Daftar Lokasi Terdaftar</h3>
-            <div style="overflow-x: auto; background-color: #111111; border-radius: 6px;">
+            <hr class="divider-line">
+
+            <h3 style="font-size: 13px; color: #ffff00; margin-bottom: 10px; text-transform: uppercase;">📋 Daftar Geofence Terdaftar</h3>
+            <div class="table-wrapper">
                 <table class="halte-table">
                     <thead><tr><th>Nama Lokasi</th><th>Teks Layar</th><th>Radius</th><th>Trigger</th><th>Audio</th><th>Aksi</th></tr></thead>
                     <tbody id="list-halte-body"></tbody>
                 </table>
+            </div>
+
+            <hr class="divider-line">
+
+            <div class="json-tools-area" style="display:flex; gap: 10px;">
+                <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJson()">📥 Export JSON</button>
+                <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">📤 Import JSON</button>
+                <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJson(event)">
+            </div>
+        </div>
+
+        <div id="tab-config" class="tab-content">
+            <div class="config-card">
+                <h3>🆔 Identitas Kendaraan & Default Banner</h3>
+                <div class="form-group">
+                    <label>Plat Nomor / ID Unit Bus:</label>
+                    <input type="text" id="cfg-plat-no" class="form-control" value="B 1234 TGC" style="text-transform:uppercase;" oninput="simpanPengaturanUmumKeStorage()">
+                </div>
+                <div class="form-group">
+                    <label>Preset Teks Default (Jika Input Rute Dikosongkan):</label>
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS SIMULATOR" oninput="simpanPengaturanUmumKeStorage()">
+                </div>
+            </div>
+
+            <div class="config-card">
+                <h3>🚨 Batas Alarm Overspeed</h3>
+                <div class="form-group">
+                    <label>Batas Kecepatan Maksimal (Km/h):</label>
+                    <input type="number" id="cfg-overspeed-limit" class="form-control" value="50" oninput="simpanPengaturanUmumKeStorage()">
+                </div>
+            </div>
+
+            <div class="config-card">
+                <h3>🗺️ Daftar Manajemen Rute Built-In</h3>
+                <div style="display: grid; grid-template-columns: 45% 45% 10%; gap: 6px;">
+                    <input type="text" id="cfg-add-rute-asal" class="form-control" placeholder="Asal (Misal: Rumah)">
+                    <input type="text" id="cfg-add-rute-tujuan" class="form-control" placeholder="Tujuan (Misal: Gereja)">
+                    <button class="btn btn-white" style="padding:0; margin:0; height:100%; font-size:16px;" onclick="tambahRuteBuiltIn()">+</button>
+                </div>
+                <div class="mini-list-box" id="cfg-rute-list-container"></div>
+            </div>
+
+            <div class="config-card">
+                <h3>📁 Registrasi Manifest Audio File (.mp3 GitHub)</h3>
+                <p style="font-size:10px; color:#888; margin-bottom:8px;">Mendaftarkan path agar tersimpan di dropdown halaman database.</p>
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="cfg-add-audio-path" class="form-control" placeholder="Contoh: audio/senayan.mp3">
+                    <button class="btn btn-white" style="padding:0 15px; margin:0; font-size:16px;" onclick="tambahAudioGitHubRegistry()">+</button>
+                </div>
+                <div class="mini-list-box" id="cfg-audio-list-container"></div>
             </div>
         </div>
 
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    
     <script>
         const LOGIN_USER = "admin";
         const LOGIN_PASS = "admin123";
 
         let dbLokasi = [];
-        let globalGpsWatchId = null; 
-        let isTrackingActiveUI = false; 
+        let ruteBuiltInList = ["Rumah - Gereja", "Ciledug - Tendean", "Stasiun - Terminal"];
+        let audioGitHubRegistry = ["audio/senayan.mp3", "audio/blok_m.mp3", "audio/kuningan.mp3"];
         
+        let isTrackingActiveUI = false; 
+        let ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
+        let fallbackTimerId = null;
+
         let map = null;
         let markerPeta = null;
         let lingkaranRadiusPeta = null; 
@@ -515,7 +593,6 @@
 
         let audioCtx = null;
         let overspeedLoopInterval = null; 
-        
         let lastKnownLat = -6.1754;
         let lastKnownLng = 106.8272;
 
@@ -523,53 +600,38 @@
             if(sessionStorage.getItem('pids_logged_in') === 'true') {
                 document.getElementById('login-screen').style.display = 'none';
             }
-            let savedPlat = localStorage.getItem('pids_plat_nomor');
-            if(savedPlat) document.getElementById('pids-plat-no').value = savedPlat;
+            muatSemuaDataDariStorage();
+            
+            document.getElementById('pids-plat-view').innerText = document.getElementById('cfg-plat-no').value;
 
-            if(localStorage.getItem('pids_os_limit')) document.getElementById('cfg-overspeed-limit').value = localStorage.getItem('pids_os_limit');
-            if(localStorage.getItem('pids_os_toggle')) {
-                isAlarmEnabled = localStorage.getItem('pids_os_toggle') === 'true';
-                perbaruiTombolSwitchAlarmUI();
-            }
-
-            muatDataDariStorage();
             inisialisasiPeta();
             updateTabelHalte();
+            perbaruiDropdownAudioAdminPage();
             perbaruiDropdownSimulasi();
+            monitorFullscreenStateChange();
 
-            nyalakanGpsStreamPermanenAwal();
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    prosesUpdateKoordinatStreamUtama, 
+                    (err) => { pushLogKonsol("GPS Error / Izin Ditolak"); }, 
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
+                );
+            }
 
             setInterval(() => {
                 document.getElementById('pids-clock').innerText = new Date().toLocaleTimeString('id-ID');
             }, 1000);
         };
 
-        function nyalakanGpsStreamPermanenAwal() {
-            let statusText = document.getElementById('gps-status');
-            if (navigator.geolocation) {
-                globalGpsWatchId = navigator.geolocation.watchPosition(
-                    prosesUpdateKoordinatStreamUtama, 
-                    (error) => {
-                        statusText.innerText = "Akses Ditolak/Error";
-                        statusText.className = "info-value status-gps-off";
-                    }, 
-                    { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
-                );
-            } else {
-                alert("Perangkat Anda tidak mendukung fitur GPS.");
-            }
-        }
-
         function prosesUpdateKoordinatStreamUtama(position) {
             lastKnownLat = position.coords.latitude;
             lastKnownLng = position.coords.longitude;
             
-            let statusText = document.getElementById('gps-status');
-            statusText.innerText = "Terhubung";
-            statusText.className = "info-value status-gps-on";
+            let statusGPSNode = document.getElementById('gps-status');
+            statusGPSNode.innerText = "ON";
+            statusGPSNode.style.color = "#00ff00";
 
-            document.getElementById('gps-accuracy').innerText = `${position.coords.accuracy.toFixed(1)} m`;
-            document.getElementById('gps-coords').innerText = `${lastKnownLat.toFixed(6)}, ${lastKnownLng.toFixed(6)}`;
+            document.getElementById('gps-accuracy').innerText = `${position.coords.accuracy.toFixed(1)}m`;
             
             let speedMS = position.coords.speed;
             let speedKMH = 0.0;
@@ -578,36 +640,115 @@
             if (isTrackingActiveUI) {
                 document.getElementById('pids-speed').innerText = speedKMH.toFixed(1);
                 cekOverspeedStatus(speedKMH);
-                prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng);
+                updateKompasArahMataAngin(position.coords.heading, speedKMH);
+                prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, speedKMH);
             }
         }
 
-        function toggleGPSLogicOnly() {
+        function updateKompasArahMataAngin(headingDeg, speed) {
+            let compassNode = document.getElementById('pids-compass');
+            if (speed <= 3 || headingDeg === null || headingDeg === undefined || isNaN(headingDeg)) {
+                compassNode.innerText = "-";
+                return;
+            }
+            const mataAngin = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+            let index = Math.round(headingDeg / 45) % 8;
+            compassNode.innerText = mataAngin[index];
+        }
+
+        function klikTombolPemicuGpsUtama() {
             if (isTrackingActiveUI) {
                 if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; }
+                if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock();
                 isTrackingActiveUI = false;
                 
-                document.getElementById('btn-toggle-gps').innerText = "MULAI DUKUNGAN GPS AKTIF";
-                document.getElementById('pids-state').innerText = "Sistem Nonaktif";
-                document.getElementById('pids-display').innerText = "Silakan Klik Mulai"; 
+                document.getElementById('btn-toggle-gps').innerText = "MULAI PELACAKAN RUTE";
+                ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
+                updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
-                document.getElementById('pids-speed').classList.remove('blink-red-speed');
+                document.getElementById('pids-speed').classList.remove('blink-red');
+                document.getElementById('pids-compass').innerText = "-";
+                document.getElementById('pids-distance').innerText = "-";
+                pushLogKonsol("Pelacakan Rute Dinonaktifkan.");
             } else {
-                if (dbLokasi.length === 0) { alert("Data lokasi kosong!"); return; }
-                
-                mintaWakeLock();
-                isTrackingActiveUI = true;
-                
-                document.getElementById('btn-toggle-gps').innerText = "BERHENTI PELACAKAN RUTE";
-                document.getElementById('pids-state').innerText = "MENCARI LOKASI... ";
-                document.getElementById('pids-display').innerText = "MENCARI LOKASI...";
-                
-                prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng);
+                bukaModalPilihRute();
             }
         }
 
-        function prosesEvaluasiGeofenceRealtime(lat, lng) {
+        function bukaModalPilihRute() {
+            let select = document.getElementById('modal-select-preset');
+            select.innerHTML = `
+                <option value="" selected>-- Pilih Rute / Ketik Baru Dibawah --</option>
+                <option value="custom">✍️ Tulis Manual Rute Baru...</option>
+            `;
+            ruteBuiltInList.forEach(r => {
+                let opt = document.createElement('option');
+                opt.value = r; opt.innerText = r;
+                select.appendChild(opt);
+            });
+            
+            document.getElementById('modal-manual-rute-inputs').style.display = 'block';
+            document.getElementById('modal-rute-prompt').style.display = 'flex';
+        }
+
+        function handlePresetRuteDropdownChange(val) {
+            if (val === 'custom' || val === '') {
+                document.getElementById('modal-manual-rute-inputs').style.display = 'block';
+            } else {
+                document.getElementById('modal-manual-rute-inputs').style.display = 'none';
+            }
+        }
+
+        function konfirmasiMulaiTrackingRute() {
+            let selectVal = document.getElementById('modal-select-preset').value;
+            let asal = ""; let tujuan = "";
+
+            if (selectVal === 'custom' || selectVal === '') {
+                asal = document.getElementById('modal-input-asal').value.trim();
+                tujuan = document.getElementById('modal-input-tujuan').value.trim();
+            } else {
+                let splitStr = selectVal.split(" - ");
+                asal = splitStr[0] || "";
+                tujuan = splitStr[1] || "";
+            }
+
+            let defText = document.getElementById('cfg-preset-default-text').value.trim() || "PIDS SIMULATOR";
+
+            if (asal !== "" && tujuan === "") {
+                ruteAktifTeks = asal + " - ";
+            } else if (asal !== "" && tujuan !== "") {
+                ruteAktifTeks = asal + " - " + tujuan;
+            } else {
+                ruteAktifTeks = defText;
+            }
+
+            document.getElementById('modal-rute-prompt').style.display = 'none';
+            mintaWakeLock();
+            isTrackingActiveUI = true;
+            
+            document.getElementById('btn-toggle-gps').innerText = "BERHENTI PELACAKAN RUTE";
+            updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+            pushLogKonsol("Mulai rute: " + ruteAktifTeks);
+
+            prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, 0);
+        }
+
+        // REVISI: Fungsi Update Teks Monitor dengan Mekanisme Cut Jeda Blank 1 Detik murni
+        function updateTeksMonitorUtamaPIDS(teksBaru) {
+            let displayNode = document.getElementById('pids-display');
+            
+            // Hapus paksa elemen teks untuk merestart css keyframes engine
+            displayNode.style.animation = 'none';
+            displayNode.offsetHeight; // Trigger reflow browser
+            
+            displayNode.innerText = teksBaru;
+            displayNode.style.animation = 'marquee-blank-engine 13s linear infinite';
+        }
+
+        function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
+            if (dbLokasi.length === 0) return;
+            
             let hTerdekat = null; let jTerkecil = Infinity;
             dbLokasi.forEach(h => {
                 let j = hitungJarakHaversine(lat, lng, h.lat, h.lng);
@@ -616,97 +757,92 @@
 
             if (hTerdekat) {
                 let rGeofence = hTerdekat.radius;
+                let distText = document.getElementById('pids-distance');
+                
                 if (jTerkecil <= rGeofence) {
-                    document.getElementById('pids-state').innerText = "DI DALAM RADIUS DETEKSI";
-                    document.getElementById('pids-display').innerText = hTerdekat.displayText || hTerdekat.nama;
-                    document.getElementById('pids-distance').innerText = `${Math.round(jTerkecil)} meter`;
+                    distText.innerText = `In ${Math.round(jTerkecil)}m`;
+                    if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
+                    
+                    let namaTarget = hTerdekat.displayText || hTerdekat.nama;
+                    if (document.getElementById('pids-display').innerText !== namaTarget) {
+                        updateTeksMonitorUtamaPIDS(namaTarget);
+                    }
+
                     if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
-                        if(hTerdekat.audioData) putarAnnouncer(hTerdekat.audioData); lastPlayedHalteId = hTerdekat.id;
+                        if(hTerdekat.audioData) putarAnnouncer(hTerdekat.audioData); 
+                        lastPlayedHalteId = hTerdekat.id;
+                        pushLogKonsol(`Masuk Geofence: ${hTerdekat.nama}`);
                     }
                     statusGeofenceSebelumnya = "dalam";
                 } else {
-                    document.getElementById('pids-state').innerText = "MENCARI LOKASI...";
-                    document.getElementById('pids-display').innerText = "MENCARI LOKASI...";
-                    document.getElementById('pids-distance').innerText = `Ke ${hTerdekat.nama}: ${Math.round(jTerkecil)}m`;
+                    distText.innerText = `${Math.round(jTerkecil)}m`;
+                    
                     if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
-                        if(hTerdekat.audioData) putarAnnouncer(hTerdekat.audioData); lastPlayedHalteId = hTerdekat.id;
+                        if(hTerdekat.audioData) putarAnnouncer(hTerdekat.audioData); 
+                        lastPlayedHalteId = hTerdekat.id;
+                        pushLogKonsol(`Keluar Geofence: ${hTerdekat.nama}`);
                     }
-                    if (jTerkecil > (rGeofence + 50) && lastPlayedHalteId === hTerdekat.id) { lastPlayedHalteId = null; }
+
+                    if (statusGeofenceSebelumnya === "dalam") {
+                        pushLogKonsol("Keluar radius. Hitung mundur 90 detik dimulai.");
+                        if (fallbackTimerId) clearTimeout(fallbackTimerId);
+                        fallbackTimerId = setTimeout(() => {
+                            updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+                            pushLogKonsol("Timer Habis. Teks kembali ke rute.");
+                        }, 90000); 
+                    }
+
+                    if (jTerkecil > (rGeofence + 60) && lastPlayedHalteId === hTerdekat.id) { lastPlayedHalteId = null; }
                     statusGeofenceSebelumnya = "luar";
                 }
             }
         }
 
-        function cekLogin() {
-            let user = document.getElementById('login-user').value;
-            let pass = document.getElementById('login-pass').value;
-            if(user === LOGIN_USER && pass === LOGIN_PASS) {
-                sessionStorage.setItem('pids_logged_in', 'true');
-                document.getElementById('login-screen').style.display = 'none';
-            } else { alert("Akses ditolak!"); }
+        function handleAudioSourceToggleUI() {
+            let val = document.getElementById('input-audio-github').value;
+            document.getElementById('group-upload-lokal-file').style.display = (val === 'none') ? 'block' : 'none';
+            if(val !== 'none') document.getElementById('input-audio-local').value = "";
         }
 
-        function simpanPlatNomor() {
-            localStorage.setItem('pids_plat_nomor', document.getElementById('pids-plat-no').value);
-        }
-
-        function togglePanelSimulasiField() {
-            let panel = document.getElementById('panel-simulasi-box');
-            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
-        }
-
-        function toggleOverspeedAlarmButton() {
-            isAlarmEnabled = !isAlarmEnabled;
-            saveSettingOverspeed();
-            perbaruiTombolSwitchAlarmUI();
-            if (!isAlarmEnabled && overspeedLoopInterval) {
-                clearInterval(overspeedLoopInterval);
-                overspeedLoopInterval = null;
-            }
-        }
-
-        function perbaruiTombolSwitchAlarmUI() {
-            let btn = document.getElementById('btn-overspeed-switch');
-            if(isAlarmEnabled) {
-                btn.innerText = "ALARM: ON";
-                btn.className = "switch-btn switch-on";
-            } else {
-                btn.innerText = "ALARM: OFF";
-                btn.className = "switch-btn switch-off";
-            }
-        }
-
-        function saveSettingOverspeed() {
-            localStorage.setItem('pids_os_limit', document.getElementById('cfg-overspeed-limit').value);
-            localStorage.setItem('pids_os_toggle', isAlarmEnabled);
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            if (tabName === 'tracker') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('tab-tracker').classList.add('active');
-                perbaruiDropdownSimulasi();
-            } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('tab-admin').classList.add('active');
-                setTimeout(() => { if(map) map.invalidateSize(); }, 200);
-            }
-        }
-
+        // REVISI: Mengembalikan search map ke Nominatim OSM Lama & Membuat Native Pinpoint Control Button
         function inisialisasiPeta() {
             map = L.map('map').setView([-6.1754, 106.8272], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
             
-            let locateControl = L.control({position: 'topleft'});
-            locateControl.onAdd = function() {
-                let div = L.DomUtil.create('div', 'leaflet-control-locate');
-                div.innerHTML = '🎯';
-                div.onclick = function(e) { e.stopPropagation(); dapatkanLokasiSekarangSaja(); };
-                return div;
-            };
-            locateControl.addTo(map);
+            // Balik ke Nominatim Lama bawaan plugin yang fokus ke detail data jalan
+            L.Control.geocoder({
+                geocoder: L.Control.Geocoder.nominatim(),
+                defaultMarkGeocode: false,
+                placeholder: "Cari nama jalan / wilayah...",
+                collapsed: false
+            }).on('markgeocode', function(e) {
+                let center = e.geocode.center;
+                selectedLat = center.lat; selectedLng = center.lng;
+                document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
+                map.fitBounds(e.geocode.bbox);
+                if (markerPeta) markerPeta.setLatLng(center);
+                else markerPeta = L.marker(center).addTo(map);
+                perbaruiVisualLingkaranRadius();
+            }).addTo(map);
+
+            // Bikin Tombol Pinpoint Native Leaflet Control tepat di bawah tombol zoom (+ / -)
+            let CustomLocateControl = L.Control.extend({
+                options: { position: 'topleft' },
+                onAdd: function (map) {
+                    let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                    let button = L.DomUtil.create('a', 'leaflet-control-locate-btn', container);
+                    button.innerHTML = '⚙️';
+                    button.title = 'Arahkan ke Lokasi GPS Saya';
+                    
+                    L.DomEvent.on(button, 'click', function (e) {
+                        L.DomEvent.stopPropagation(e);
+                        L.DomEvent.preventDefault(e);
+                        arahkanPetaKeLokasiSayaNative();
+                    });
+                    return container;
+                }
+            });
+            map.addControl(new CustomLocateControl());
 
             map.on('click', function(e) {
                 selectedLat = e.latlng.lat; selectedLng = e.latlng.lng;
@@ -717,40 +853,35 @@
             });
         }
 
-        function handleSliderRadiusChange(val) {
-            document.getElementById('range-val-preview').innerText = val + " Meter";
-            perbaruiVisualLingkaranRadius();
+        // REVISI: Fix Fungsi Pinpoint Native
+        function arahanPetaKeLokasiSayaNative() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    let myLat = pos.coords.latitude;
+                    let myLng = pos.coords.longitude;
+                    selectedLat = myLat; selectedLng = myLng;
+                    document.getElementById('input-koordinat').value = `${myLat.toFixed(6)}, ${myLng.toFixed(6)}`;
+                    map.flyTo([myLat, myLng], 16);
+                    if (markerPeta) markerPeta.setLatLng([myLat, myLng]);
+                    else markerPeta = L.marker([myLat, myLng]).addTo(map);
+                    perbaruiVisualLingkaranRadius();
+                    pushLogKonsol("Peta digeser ke koordinat pinpoint GPS aktif.");
+                }, () => { alert("Gagal mengambil posisi GPS terkini. Pastikan izin lokasi aktif."); });
+            } else {
+                alert("Browser tidak mendukung geolokasi.");
+            }
         }
 
         function perbaruiVisualLingkaranRadius() {
             if (!selectedLat || !selectedLng) return;
             let r = parseInt(document.getElementById('input-radius').value) || 50;
             if (lingkaranRadiusPeta) {
-                lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]);
-                lingkaranRadiusPeta.setRadius(r);
+                lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]).setRadius(r);
             } else {
                 lingkaranRadiusPeta = L.circle([selectedLat, selectedLng], {
-                    radius: r,
-                    color: '#ffb703',
-                    fillColor: '#ffb703',
-                    fillOpacity: 0.25,
-                    weight: 2
+                    radius: r, color: '#ffb703', fillColor: '#ffb703', fillOpacity: 0.25, weight: 2
                 }).addTo(map);
             }
-        }
-
-        function dapatkanLokasiSekarangSaja() {
-            selectedLat = lastKnownLat; selectedLng = lastKnownLng;
-            document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-            map.setView([selectedLat, selectedLng], 16);
-            if (markerPeta) markerPeta.setLatLng([selectedLat, selectedLng]);
-            else markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
-            perbaruiVisualLingkaranRadius();
-        }
-
-        function muatDataDariStorage() {
-            let dataMentah = localStorage.getItem('pids_lokasi_data');
-            if (dataMentah) { try { dbLokasi = JSON.parse(dataMentah); } catch(e) { dbLokasi = []; } }
         }
 
         function eksekusiSimpan() {
@@ -758,39 +889,63 @@
             let displayText = document.getElementById('input-display-text').value.trim();
             let radius = parseInt(document.getElementById('input-radius').value);
             let triggerType = document.getElementById('input-trigger-type').value;
-            let audioFile = document.getElementById('input-audio').files[0];
+            let githubAudio = document.getElementById('input-audio-github').value;
+            let localAudioFile = document.getElementById('input-audio-local').files[0];
 
             if (displayText === "") displayText = nama;
-            if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi koordinat & nama objek!"); return; }
+            if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi data koordinat & nama!"); return; }
 
-            if (idTargetEdit === null) {
-                if (audioFile) {
-                    let reader = new FileReader();
-                    reader.onload = function(e) {
-                        dbLokasi.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: e.target.result });
-                        prosesSelesaiSimpan();
-                    };
-                    reader.readAsDataURL(audioFile);
-                } else {
-                    dbLokasi.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: null });
-                    prosesSelesaiSimpan();
-                }
+            if (githubAudio !== 'none') {
+                lanjutProsesSimpanDB(nama, displayText, radius, triggerType, githubAudio);
+            } else if (localAudioFile) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    lanjutProsesSimpanDB(nama, displayText, radius, triggerType, e.target.result);
+                };
+                reader.readAsDataURL(localAudioFile);
             } else {
-                let idx = dbLokasi.findIndex(i => i.id === idTargetEdit);
-                if (idx === -1) return;
-                dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText; dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng; dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
-                if (audioFile) {
-                    let reader = new FileReader();
-                    reader.onload = function(e) { dbLokasi[idx].audioData = e.target.result; prosesSelesaiSimpan(); };
-                    reader.readAsDataURL(audioFile);
-                } else { prosesSelesaiSimpan(); }
+                lanjutProsesSimpanDB(nama, displayText, radius, triggerType, null);
             }
         }
 
-        function prosesSelesaiSimpan() {
+        function lanjutProsesSimpanDB(nama, displayText, radius, triggerType, audioVal) {
+            if (idTargetEdit === null) {
+                dbLokasi.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: audioVal });
+            } else {
+                let idx = dbLokasi.findIndex(i => i.id === idTargetEdit);
+                if (idx !== -1) {
+                    dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText; dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng; dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
+                    if (audioVal || (document.getElementById('input-audio-github').value === 'none' && !document.getElementById('input-audio-local').files[0])) {
+                        if (audioVal) dbLokasi[idx].audioData = audioVal;
+                    }
+                }
+            }
             localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
             resetFormInput(); updateTabelHalte(); perbaruiDropdownSimulasi();
-            alert("Data rute tersimpan!");
+            alert("Data tersimpan sukses!");
+        }
+
+        function updateTabelHalte() {
+            let tbody = document.getElementById('list-halte-body'); tbody.innerHTML = "";
+            if (dbLokasi.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#555;">Database kosong.</td></tr>`; return;
+            }
+            dbLokasi.forEach(item => {
+                let statusAudio = (item.audioData && item.audioData.startsWith('audio/')) ? "☁️ GH" : (item.audioData ? "🔊 Local" : "❌");
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:bold; color:#fff;">${item.nama}</td>
+                    <td>${item.displayText||item.nama}</td>
+                    <td>${item.radius}m</td>
+                    <td>${item.triggerType}</td>
+                    <td>${statusAudio}</td>
+                    <td>
+                        <button class="btn-action btn-action-edit" onclick="masukkanKeModeEdit(${item.id})">✏️</button>
+                        <button class="btn-action btn-action-delete" onclick="hapusLokasi(${item.id})">❌</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function masukkanKeModeEdit(id) {
@@ -801,138 +956,242 @@
             document.getElementById('input-radius').value = h.radius;
             document.getElementById('range-val-preview').innerText = h.radius + " Meter";
             document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
+            
+            if (h.audioData && h.audioData.startsWith('audio/')) {
+                document.getElementById('input-audio-github').value = h.audioData;
+            } else {
+                document.getElementById('input-audio-github').value = 'none';
+            }
+            handleAudioSourceToggleUI();
+
             selectedLat = h.lat; selectedLng = h.lng;
             document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
             document.getElementById('edit-target-name').innerText = h.nama;
             document.getElementById('edit-indicator').style.display = 'block';
+            
             let b = document.getElementById('btn-simpan'); b.innerText = "PERBARUI DATA"; b.className = "btn btn-warning";
             document.getElementById('btn-batal-edit').style.display = 'block';
             
-            if (map) { 
-                map.flyTo([selectedLat, selectedLng], 16); 
-                if (markerPeta) markerPeta.setLatLng([selectedLat, selectedLng]);
-                else markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
-                perbaruiVisualLingkaranRadius();
-            }
-        }
-
-        function duplikatLokasi(id) {
-            let h = dbLokasi.find(i => i.id === id); if (!h) return;
-            document.getElementById('input-nama').value = h.nama + " - Copy";
-            document.getElementById('input-display-text').value = h.displayText || h.nama;
-            document.getElementById('input-radius').value = h.radius;
-            document.getElementById('range-val-preview').innerText = h.radius + " Meter";
-            document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
-            selectedLat = h.lat; selectedLng = h.lng;
-            document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-            if (map) { map.flyTo([selectedLat, selectedLng], 16); perbaruiVisualLingkaranRadius(); }
+            map.flyTo([selectedLat, selectedLng], 16);
+            perbaruiVisualLingkaranRadius();
         }
 
         function resetFormInput() {
             idTargetEdit = null; selectedLat = null; selectedLng = null;
-            document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; document.getElementById('input-audio').value = ""; document.getElementById('input-koordinat').value = "";
-            document.getElementById('input-radius').value = 50;
-            document.getElementById('range-val-preview').innerText = "50 Meter";
-            document.getElementById('edit-indicator').style.display = 'none';
+            document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; 
+            document.getElementById('input-audio-local').value = ""; document.getElementById('input-koordinat').value = "";
+            document.getElementById('input-audio-github').value = 'none'; document.getElementById('input-radius').value = 50;
+            document.getElementById('range-val-preview').innerText = "50 Meter"; document.getElementById('edit-indicator').style.display = 'none';
+            handleAudioSourceToggleUI();
+            
             let b = document.getElementById('btn-simpan'); b.innerText = "SIMPAN DATA LOKASI"; b.className = "btn btn-white";
             document.getElementById('btn-batal-edit').style.display = 'none';
-            
-            if (markerPeta && map) { map.removeLayer(markerPeta); markerPeta = null; }
-            if (lingkaranRadiusPeta && map) { map.removeLayer(lingkaranRadiusPeta); lingkaranRadiusPeta = null; }
-        }
-
-        function updateTabelHalte() {
-            let tbody = document.getElementById('list-halte-body'); tbody.innerHTML = "";
-            let oldTools = document.getElementById('data-tools-container'); if (oldTools) oldTools.remove();
-
-            let toolsDiv = document.createElement('div'); toolsDiv.id = 'data-tools-container'; toolsDiv.style = "display: flex; gap: 10px; margin-top: 15px;";
-            toolsDiv.innerHTML = `
-                <button class="btn btn-sim" style="flex:1; background-color:#111111;" onclick="exportDataKeJson()">📥 Export JSON</button>
-                <button class="btn btn-sim" style="flex:1; background-color:#111111;" onclick="triggerImportJson()">📤 Import JSON</button>
-                <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJson(event)">
-            `;
-            tbody.closest('div').after(toolsDiv);
-
-            if (dbLokasi.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666666;">Data kosong.</td></tr>`; return;
-            }
-            dbLokasi.forEach(item => {
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:bold;">${item.nama}</td><td>${item.displayText||item.nama}</td><td>${item.radius}m</td><td>${item.triggerType}</td><td>${item.audioData?'🔊':'❌'}</td>
-                    <td>
-                        <button class="btn-action btn-action-edit" onclick="masukkanKeModeEdit(${item.id})">✏️</button>
-                        <button class="btn-action btn-action-dup" onclick="duplikatLokasi(${item.id})">📋</button>
-                        <button class="btn-action btn-action-delete" onclick="hapusLokasi(${item.id})">❌</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function perbaruiDropdownSimulasi() {
-            let select = document.getElementById('sim-select-halte'); if(!select) return;
-            select.innerHTML = ""; if (dbLokasi.length === 0) return;
-            dbLokasi.forEach(item => {
-                let opt = document.createElement('option'); opt.value = item.id; opt.innerText = item.nama; select.appendChild(opt);
-            });
+            if (markerPeta) { map.removeLayer(markerPeta); markerPeta = null; }
+            if (lingkaranRadiusPeta) { map.removeLayer(lingkaranRadiusPeta); lingkaranRadiusPeta = null; }
         }
 
         function hapusLokasi(id) {
-            if (confirm("Hapus objek ini?")) {
+            if (confirm("Hapus objek geofence ini?")) {
                 dbLokasi = dbLokasi.filter(i => i.id !== id); localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); updateTabelHalte(); perbaruiDropdownSimulasi();
             }
+        }
+
+        function simpanPengaturanUmumKeStorage() {
+            let platValue = document.getElementById('cfg-plat-no').value.trim().toUpperCase();
+            localStorage.setItem('pids_plat_nomor', platValue);
+            document.getElementById('pids-plat-view').innerText = platValue; 
+
+            localStorage.setItem('pids_preset_default_text', document.getElementById('cfg-preset-default-text').value.trim());
+            localStorage.setItem('pids_os_limit', document.getElementById('cfg-overspeed-limit').value);
+        }
+
+        function perbaruiDropdownAudioAdminPage() {
+            let select = document.getElementById('input-audio-github'); select.innerHTML = "";
+            let optNone = document.createElement('option'); optNone.value = 'none'; optNone.innerText = "-- Menggunakan File Upload Lokal --";
+            select.appendChild(optNone);
+            
+            audioGitHubRegistry.forEach(a => {
+                let opt = document.createElement('option'); opt.value = a; opt.innerText = a;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderListRuteBuiltInDanAudioUI() {
+            let rContainer = document.getElementById('cfg-rute-list-container'); rContainer.innerHTML = "";
+            ruteBuiltInList.forEach((r, idx) => {
+                let div = document.createElement('div'); div.className = "mini-list-item";
+                div.innerHTML = `<span>📍 ${r}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusRuteBuiltIn(${idx})">X</button>`;
+                rContainer.appendChild(div);
+            });
+
+            let aContainer = document.getElementById('cfg-audio-list-container'); aContainer.innerHTML = "";
+            audioGitHubRegistry.forEach((a, idx) => {
+                let div = document.createElement('div'); div.className = "mini-list-item";
+                div.innerHTML = `<span>🎵 ${a}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusAudioRegistry(${idx})">X</button>`;
+                aContainer.appendChild(div);
+            });
+        }
+
+        function tambahRuteBuiltIn() {
+            let asal = document.getElementById('cfg-add-rute-asal').value.trim();
+            let tujuan = document.getElementById('cfg-add-rute-tujuan').value.trim();
+            if (asal === "") { alert("Minimal isi titik asal!"); return; }
+            let stringRute = tujuan !== "" ? `${asal} - ${tujuan}` : `${asal} - `;
+            
+            ruteBuiltInList.push(stringRute);
+            localStorage.setItem('pids_rute_builtin', JSON.stringify(ruteBuiltInList));
+            document.getElementById('cfg-add-rute-asal').value = ""; document.getElementById('cfg-add-rute-tujuan').value = "";
+            renderListRuteBuiltInDanAudioUI();
+        }
+
+        function hapusRuteBuiltIn(idx) {
+            ruteBuiltInList.splice(idx, 1);
+            localStorage.setItem('pids_rute_builtin', JSON.stringify(ruteBuiltInList));
+            renderListRuteBuiltInDanAudioUI();
+        }
+
+        function tambahAudioGitHubRegistry() {
+            let path = document.getElementById('cfg-add-audio-path').value.trim();
+            if (path === "") return;
+            audioGitHubRegistry.push(path);
+            localStorage.setItem('pids_audio_registry', JSON.stringify(audioGitHubRegistry));
+            document.getElementById('cfg-add-audio-path').value = "";
+            renderListRuteBuiltInDanAudioUI();
+            perbaruiDropdownAudioAdminPage();
+        }
+
+        function hapusAudioRegistry(idx) {
+            audioGitHubRegistry.splice(idx, 1);
+            localStorage.setItem('pids_audio_registry', JSON.stringify(audioGitHubRegistry));
+            renderListRuteBuiltInDanAudioUI();
+            perbaruiDropdownAudioAdminPage();
+        }
+
+        function muatSemuaDataDariStorage() {
+            let dm = localStorage.getItem('pids_lokasi_data'); if (dm) { try { dbLokasi = JSON.parse(dm); } catch(e){} }
+            if (localStorage.getItem('pids_plat_nomor')) document.getElementById('cfg-plat-no').value = localStorage.getItem('pids_plat_nomor');
+            if (localStorage.getItem('pids_preset_default_text')) document.getElementById('cfg-preset-default-text').value = localStorage.getItem('pids_preset_default_text');
+            if (localStorage.getItem('pids_os_limit')) document.getElementById('cfg-overspeed-limit').value = localStorage.getItem('pids_os_limit');
+            
+            let rStorage = localStorage.getItem('pids_rute_builtin'); if (rStorage) { try { ruteBuiltInList = JSON.parse(rStorage); } catch(e){} }
+            let aStorage = localStorage.getItem('pids_audio_registry'); if (aStorage) { try { audioGitHubRegistry = JSON.parse(aStorage); } catch(e){} }
+            renderListRuteBuiltInDanAudioUI();
+        }
+
+        /* --- LOGIKA FULLSCREEN API --- */
+        function toggleLayarPenuhAPI() {
+            let areaMonitor = document.getElementById('pids-monitor-mode');
+            if (!document.fullscreenElement) {
+                if (areaMonitor.requestFullscreen) areaMonitor.requestFullscreen();
+                else if (areaMonitor.webkitRequestFullscreen) areaMonitor.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function monitorFullscreenStateChange() {
+            document.addEventListener('fullscreenchange', () => {
+                let btn = document.getElementById('btn-fs-floating');
+                if (document.fullscreenElement) {
+                    btn.innerText = "✕";
+                } else {
+                    btn.innerText = "⛶";
+                }
+            });
+        }
+
+        function pushLogKonsol(teks) {
+            let consoleNode = document.getElementById('log-console');
+            let d = document.createElement('div'); d.className = "diag-log-line";
+            d.innerText = `[${new Date().toLocaleTimeString('id-ID')}] ${teks}`;
+            consoleNode.appendChild(d); consoleNode.scrollTop = consoleNode.scrollHeight;
         }
 
         function cekOverspeedStatus(currentSpeed) {
             let limit = parseFloat(document.getElementById('cfg-overspeed-limit').value) || 50.0;
             let speedoText = document.getElementById('pids-speed');
-
             if (currentSpeed > limit) {
-                speedoText.classList.add('blink-red-speed');
+                speedoText.classList.add('blink-red');
                 if (isAlarmEnabled && !overspeedLoopInterval) {
-                    bunyikanBeepAlarm(); 
-                    overspeedLoopInterval = setInterval(bunyikanBeepAlarm, 300); 
+                    bunyikanBeepAlarm(); overspeedLoopInterval = setInterval(bunyikanBeepAlarm, 300); 
                 }
             } else {
-                speedoText.classList.remove('blink-red-speed');
-                if (overspeedLoopInterval) {
-                    clearInterval(overspeedLoopInterval);
-                    overspeedLoopInterval = null;
-                }
+                speedoText.classList.remove('blink-red');
+                if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; }
             }
         }
 
         function bunyikanBeepAlarm() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1100, audioCtx.currentTime); 
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.12); 
+                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1150, audioCtx.currentTime); gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1); 
             } catch(e){}
         }
 
-        function simulasiSetSpeed() {
-            let speedInput = parseFloat(document.getElementById('sim-input-speed').value) || 0.0;
-            document.getElementById('pids-speed').innerText = speedInput.toFixed(1);
-            cekOverspeedStatus(speedInput);
+        function putarAnnouncer(audioDataStr) {
+            try { let a = new Audio(audioDataStr); a.play(); } catch (e) { pushLogKonsol("Audio error: " + e.message); }
         }
 
+        function hitungJarakHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371000; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        }
+
+        function cekLogin() {
+            if(document.getElementById('login-user').value === LOGIN_USER && document.getElementById('login-pass').value === LOGIN_PASS) {
+                sessionStorage.setItem('pids_logged_in', 'true'); document.getElementById('login-screen').style.display = 'none';
+            } else { alert("Akses ditolak!"); }
+        }
+
+        function togglePanelSimulasiField() { let p = document.getElementById('panel-simulasi-box'); p.style.display = (p.style.display === 'block') ? 'none' : 'block'; }
+        function simulasiSetSpeed() { let s = parseFloat(document.getElementById('sim-input-speed').value) || 0.0; document.getElementById('pids-speed').innerText = s.toFixed(1); cekOverspeedStatus(s); updateKompasArahMataAngin(90, s); }
+        function perbaruiDropdownSimulasi() { let select = document.getElementById('sim-select-halte'); if(!select) return; select.innerHTML = ""; dbLokasi.forEach(item => { let opt = document.createElement('option'); opt.value = item.id; opt.innerText = item.nama; select.appendChild(opt); }); }
+        
+        // REVISI: Fungsi Switch Alarm Solid Box Style
+        function toggleOverspeedAlarmButton() { 
+            isAlarmEnabled = !isAlarmEnabled; 
+            let btnDash = document.getElementById('btn-overspeed-dashboard-switch');
+            if(isAlarmEnabled) {
+                btnDash.innerText = "🚨 ALARM: ON"; btnDash.classList.remove('alarm-off');
+            } else {
+                btnDash.innerText = "🚨 ALARM: OFF"; btnDash.classList.add('alarm-off');
+                if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; }
+            }
+        }
+
+        async function mintaWakeLock() { if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} } }
+        function lepasWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); } }
+        function exportDataKeJson() { let s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbLokasi, null, 2)); let a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", "pids_v2_database.json"); a.click(); }
+        function importDataDariJson(event) { let f = event.target.files[0]; if (!f) return; let r = new FileReader(); r.onload = function(e) { try { dbLokasi = JSON.parse(e.target.result); localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); updateTabelHalte(); perbaruiDropdownSimulasi(); alert("Restore Database Sukses!"); } catch (err) { alert("Format JSON Salah!"); } }; r.readAsText(f); }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'tracker') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active'); document.getElementById('tab-tracker').classList.add('active');
+            } else if (tabName === 'admin') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active'); document.getElementById('tab-admin').classList.add('active');
+                setTimeout(() => { if(map) map.invalidateSize(); }, 200);
+            } else {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active'); document.getElementById('tab-config').classList.add('active');
+            }
+        }
+
+        // SIMULASI PC MODE
         function simulasiMasukRadius() {
             let id = document.getElementById('sim-select-halte').value; if (!id) return;
             let h = dbLokasi.find(i => i.id == id);
             if (h) {
-                document.getElementById('pids-state').innerText = "DI DALAM RADIUS DETEKSI";
-                document.getElementById('pids-display').innerText = h.displayText || h.nama;
-                document.getElementById('pids-distance').innerText = `${h.radius - 5} meter`;
+                if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
+                document.getElementById('pids-distance').innerText = `In (Simulated)`;
+                updateTeksMonitorUtamaPIDS(h.displayText || h.nama);
                 if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) {
                     if(h.audioData) putarAnnouncer(h.audioData); lastPlayedHalteId = h.id;
+                    pushLogKonsol(`[SIMULASI] Masuk ${h.nama}`);
                 }
                 statusGeofenceSebelumnya = "dalam";
             }
@@ -942,38 +1201,22 @@
             let id = document.getElementById('sim-select-halte').value; if (!id) return;
             let h = dbLokasi.find(i => i.id == id);
             if (h) {
-                document.getElementById('pids-state').innerText = "MENCARI LOKASI...";
-                document.getElementById('pids-display').innerText = "MENCARI LOKASI...";
-                document.getElementById('pids-distance').innerText = `${h.radius + 60} meter`;
+                document.getElementById('pids-distance').innerText = `Far (Simulated)`;
                 if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) {
                     if(h.audioData) putarAnnouncer(h.audioData); lastPlayedHalteId = h.id;
-                } else if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId === h.id) { lastPlayedHalteId = null; }
+                    pushLogKonsol(`[SIMULASI] Keluar ${h.nama}`);
+                }
+                if (statusGeofenceSebelumnya === "dalam") {
+                    pushLogKonsol("[SIMULASI] Keluar radius. Timer 90s aktif.");
+                    if (fallbackTimerId) clearTimeout(fallbackTimerId);
+                    fallbackTimerId = setTimeout(() => {
+                        updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+                        pushLogKonsol("[SIMULASI] Kembali ke rute.");
+                    }, 90000);
+                }
+                if (lastPlayedHalteId === h.id) lastPlayedHalteId = null;
                 statusGeofenceSebelumnya = "luar";
             }
-        }
-
-        function putarAnnouncer(base64) {
-            try { let a = new Audio(base64); a.play(); } catch (e) {}
-        }
-
-        function hitungJarakHaversine(lat1, lon1, lat2, lon2) {
-            const R = 6371000; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-        }
-
-        async function mintaWakeLock() { if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} } }
-        function lepasWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); } }
-        function exportDataKeJson() {
-            let s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbLokasi, null, 2));
-            let a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", "pids_backup.json"); a.click();
-        }
-        function triggerImportJson() { document.getElementById('input-import-json').click(); }
-        function importDataDariJson(event) {
-            let f = event.target.files[0]; if (!f) return;
-            let r = new FileReader(); r.onload = function(e) {
-                try { dbLokasi = JSON.parse(e.target.result); localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); updateTabelHalte(); perbaruiDropdownSimulasi(); alert("Restore Sukses!"); } catch (err) { alert("Format salah!"); }
-            }; r.readAsText(f);
         }
     </script>
 </body>
