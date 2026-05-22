@@ -165,6 +165,13 @@
             color: #ffffff;
             letter-spacing: 1px;
         }
+		
+		.date-v2 {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
 
         .pids-row-2 {
             display: flex;
@@ -351,6 +358,7 @@
         #pids-monitor-mode:fullscreen .right-header-group { width: 70%; }
         #pids-monitor-mode:fullscreen .weather-v2 { font-size: 4.5vw; }
         #pids-monitor-mode:fullscreen .clock-v2 { font-size: 5.5vw; }
+		#pids-monitor-mode:fullscreen .date-v2 { font-size: 5.5vw; }
         #pids-monitor-mode:fullscreen .kompas-label { font-size: 1.8vw; }
         #pids-monitor-mode:fullscreen .kompas-value { font-size: 12vw; }
         #pids-monitor-mode:fullscreen .speedo-value-v2 { font-size: 14vw; }
@@ -753,6 +761,7 @@
                     <div class="plat-box" id="pids-plat-view">Nomor Plat</div>
                     <div class="right-header-group">
                         <div class="weather-v2" id="pids-weather">--°C ☁️</div>
+						<div class="date-v2" id="pids-date">00/00/0000</div>
                         <div class="clock-v2" id="pids-clock">00:00:00</div>
                     </div>
                 </div>
@@ -994,7 +1003,7 @@
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("Engine Dashboard v3.8 Ready.");
+            pushLogKonsol("PIDS v3.0.10 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1004,14 +1013,20 @@
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(
                     prosesUpdateKoordinatStreamUtama, 
-                    (err) => { pushLogKonsol("GPS Error / Izin Ditolak"); }, 
+                    (err) => { pushLogKonsol("GPS Tidak Terdeteksi!"); }, 
                     { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
                 );
             }
 
             setInterval(() => {
-                document.getElementById('pids-clock').innerText = new Date().toLocaleTimeString('id-ID');
-            }, 1000);
+    let sekarang = new Date();
+    
+    // 1. Update Jam bawaan lo
+    document.getElementById('pids-clock').innerText = sekarang.toLocaleTimeString('id-ID');
+    
+    // 2. Update Tanggal baru (Format otomatis: DD/MM/YYYY, misal: 22/05/2026)
+    document.getElementById('pids-date').innerText = sekarang.toLocaleDateString('id-ID');
+}, 1000);
             
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
         };
@@ -1137,20 +1152,20 @@
                 if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; }
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
-                document.getElementById('btn-toggle-gps').innerText = "MULAI PELACAKAN RUTE";
-                ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
+                document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
+                ruteAktifTeks = "Selamat Datang di PIDS v3.0.10 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
                 document.getElementById('pids-compass').innerText = "-";
                 document.getElementById('pids-distance').innerText = "-";
-                document.getElementById('pids-nearest-object').innerText = "Belum Ada Rute";
+                document.getElementById('pids-nearest-object').innerText = "Rute Tidak Tersedia";
                 
                 // --- FIX: Kosongkan input text rute manual saat berhenti ---
                 document.getElementById('modal-input-asal-manual').value = "";
                 document.getElementById('modal-input-tujuan-manual').value = "";
                 
-                pushLogKonsol("Pelacakan Rute Dinonaktifkan. Input manual direset.");
+                pushLogKonsol("Perjalanan Selesai. Rute manual direset.");
             } else { bukaModalPilihRute(); }
         }
 
@@ -1184,16 +1199,16 @@
             // Menggunakan regex untuk potong spasi ujung luar saja, spasi ganda di dalam TETAP AMAN
             let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
             let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS SIMULATOR";
+            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.0.10 - Hati-Hati Di Jalan, Utamakan Keselamatan";
 
             if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
             else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
             else ruteAktifTeks = defText;
 
             tutupModalRute(); mintaWakeLock(); isTrackingActiveUI = true;
-            document.getElementById('btn-toggle-gps').innerText = "BERHENTI PELACAKAN RUTE";
+            document.getElementById('btn-toggle-gps').innerText = "SELESAIKAN PERJALANAN";
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
-            document.getElementById('pids-nearest-object').innerText = "Mencari Objek...";
+            document.getElementById('pids-nearest-object').innerText = "Mencari Titik...";
             prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, 0);
         }
 
@@ -1224,14 +1239,14 @@
 
                     if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
                         if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Masuk Geofence: ${hTerdekat.nama}`);
+                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Masuk Titik: ${hTerdekat.nama}`);
                     }
                     statusGeofenceSebelumnya = "dalam";
                 } else {
                     document.getElementById('pids-distance').innerText = `${Math.round(jTerkecil)}m`;
                     if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
                         if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Keluar Geofence: ${hTerdekat.nama}`);
+                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Keluar Titik: ${hTerdekat.nama}`);
                     }
                     if (statusGeofenceSebelumnya === "dalam") {
                         if (fallbackTimerId) clearTimeout(fallbackTimerId);
@@ -1345,7 +1360,7 @@
             if (type === 'geofence') { dbLokasi = activeList; localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); renderTabelGeofenceUI(); perbaruiDropdownSimulasi(); }
             else if (type === 'lokasi') { lokasiSingleList = activeList; localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList)); renderListLokasiBuiltInUI(); }
             else if (type === 'audio') { audioAssetList = activeList; localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList)); renderListAudioAssetsUI(); renderDropdownAudioDb(); }
-            pushLogKonsol(`Urutan manual ${type} diperbarui.`);
+            pushLogKonsol(`Rute manual ${type} diperbarui.`);
         }
 
         // ==================== RENDERING UI MANAGEMENT ====================
@@ -1460,7 +1475,7 @@ function editLokasiBuiltIn(id) {
         function renderDropdownAudioDb() {
             let select = document.getElementById('input-audio-asset-dropdown'); if(!select) return;
             let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
-            let html = `<option value="none">-- Tanpa Suara / Mute --</option>`;
+            let html = `<option value="none">-- Tanpa Suara --</option>`;
             listProses.forEach(item => { html += `<option value="${item.nama}">${item.nama}</option>`; });
             select.innerHTML = html;
         }
@@ -1496,7 +1511,7 @@ function editLokasiBuiltIn(id) {
             
             localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
             resetFormInput(); renderSemuaTampilanKomponenUI();
-            alert("Data lokasi geofence berhasil disimpan!");
+            alert("Data lokasi titik berhasil disimpan!");
         }
 
         function duplikatLokasi(id) {
@@ -1730,12 +1745,12 @@ downloadAnchor.click();
         }
 
         function putarAnnouncer(audioPathUrl) {
-            if (!isAudioEnabled) { pushLogKonsol("Announcer Mute."); return; }
+            if (!isAudioEnabled) { pushLogKonsol("Announcer Dinonaktifkan."); return; }
             try { 
                 unlockAudioAutoplayContext(); 
                 if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject.src = ""; currentAudioObject = null; }
                 currentAudioObject = new Audio(); currentAudioObject.src = audioPathUrl;
-                currentAudioObject.play().then(() => { pushLogKonsol(`Memutar: ${audioPathUrl.substring(0,40)}...`); }).catch(err => { pushLogKonsol("Gagal autoplay."); });
+                currentAudioObject.play().then(() => { pushLogKonsol(`Memutar: ${audioPathUrl.substring(0,40)}...`); }).catch(err => { pushLogKonsol("Gagal memutar audio."); });
             } catch (e) { pushLogKonsol("Audio error."); }
         }
 
@@ -1785,7 +1800,7 @@ downloadAnchor.click();
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 document.getElementById('pids-distance').innerText = `In (Simulated)`; document.getElementById('pids-nearest-object').innerText = h.nama;
                 updateTeksMonitorUtamaPIDS(h.displayText || h.nama);
-                if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Masuk Radius: ${h.nama}`); }
+                if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Masuk Titik: ${h.nama}`); }
                 statusGeofenceSebelumnya = "dalam";
             }
         }
@@ -1795,13 +1810,13 @@ downloadAnchor.click();
             let h = dbLokasi.find(i => i.id == id);
             if (h) {
                 document.getElementById('pids-distance').innerText = `Far (Simulated)`; document.getElementById('pids-nearest-object').innerText = h.nama;
-                if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Radius: ${h.nama}`); }
+                if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Titik: ${h.nama}`); }
                 if (statusGeofenceSebelumnya === "dalam") {
                     if (fallbackTimerId) clearTimeout(fallbackTimerId);
                     fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000);
                 }
                 lastPlayedHalteId = null; statusGeofenceSebelumnya = "luar";
-                pushLogKonsol(`[SIMULASI] Geofence Reset.`);
+                pushLogKonsol(`[SIMULASI] Titik Reset.`);
             }
         }
 		// Penampung audio biar kalau lo play audio lain, audio sebelumnya langsung mati otomatis
