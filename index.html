@@ -152,7 +152,7 @@
             gap: 15px;
         }
         .weather-v2 {
-            font-size: 20px;
+            font-size: 14px;
             font-weight: bold;
             color: #ffb703;
             display: flex;
@@ -160,14 +160,14 @@
             gap: 5px;
         }
         .clock-v2 {
-            font-size: 26px;
+            font-size: 20px;
             font-weight: bold;
             color: #ffffff;
             letter-spacing: 1px;
         }
 		
 		.date-v2 {
-            font-size: 26px;
+            font-size: 20px;
             font-weight: bold;
             color: #ffffff;
             letter-spacing: 1px;
@@ -1711,13 +1711,12 @@ downloadAnchor.click();
     let areaMonitor = document.getElementById('pids-monitor-mode');
     
     if (!document.fullscreenElement) { 
-        // 1. MASUK FULLSCREEN
+        // 1. MASUK FULLSCREEN & PAKSA LANDSCAPE
         if (areaMonitor.requestFullscreen) {
             areaMonitor.requestFullscreen().then(() => {
-                // 2. PAKSA LANDSCAPE (Hanya berjalan setelah berhasil masuk fullscreen)
                 if (screen.orientation && screen.orientation.lock) {
                     screen.orientation.lock('landscape').catch(err => {
-                        console.warn("[PIDS v3.0.8] Orientasi landscape ditolak/tidak didukung di HP ini:", err);
+                        console.warn("[PIDS v3.0.8] Orientasi landscape ditolak:", err);
                     });
                 }
             }).catch(err => {
@@ -1725,10 +1724,18 @@ downloadAnchor.click();
             });
         } 
     } else { 
-        // 3. KELUAR FULLSCREEN & LEPASKAN KUNCI ORIENTASI
-        if (screen.orientation && screen.orientation.unlock) {
-            screen.orientation.unlock();
+        // 2. KELUAR FULLSCREEN & PAKSA BALIK KE PORTRAIT
+        if (screen.orientation && screen.orientation.lock) {
+            // Kita paksa putar balik ke portrait dulu biar HP tegak lagi
+            screen.orientation.lock('portrait').then(() => {
+                // Baru kita lepas kuncian total biar balik ke pengaturan auto-rotate bawaan HP
+                if (screen.orientation.unlock) screen.orientation.unlock();
+            }).catch(err => {
+                // Kalau lock portrait gagal, minimal tetep usahakan unlock
+                if (screen.orientation.unlock) screen.orientation.unlock();
+            });
         }
+        
         if (document.exitFullscreen) document.exitFullscreen(); 
     }
 }
