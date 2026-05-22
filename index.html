@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.0.8</title>
+    <title>PIDS Simulator v3.0.9</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -650,50 +650,99 @@
             color: #ffffff !important;
         }
         .divider-line { border: 0; height: 1px; background: #222; margin: 15px 0; }
+		
+		#maps-search-box {
+    position: absolute;
+    top: 20px;
+    left: 50px;
+    z-index: 1000;
+    background: white;
+    padding: 8px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    width: 250px; /* Dikunci lebarnya biar rapi */
+}
+
+#input-cari-lokasi {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Style wadah pilihan drop-down */
+#search-results-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    margin-top: 5px;
+}
+
+/* Style tiap baris pilihan */
+.search-item {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    text-align: left;
+}
+
+.search-item:hover {
+    background-color: #f0f0f0;
+}
+
+.hidden-dropdown {
+    display: none;
+}
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">PIDS AUTHENTICATION</h2>
+            <h2 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">Masukkan Identitas Anda</h2>
             <div class="form-group"><label>Username</label><input type="text" id="login-user" class="form-control" placeholder="Username"></div>
             <div class="form-group" style="margin-bottom: 20px;"><label>Password</label><input type="password" id="login-pass" class="form-control" placeholder="Password"></div>
-            <button class="btn btn-tracker-start" style="margin-bottom: 0;" onclick="cekLogin()">MASUK SISTEM</button>
+            <button class="btn btn-tracker-start" style="margin-bottom: 0;" onclick="cekLogin()">Masuk</button>
         </div>
     </div>
 
     <div id="modal-rute-prompt" class="rute-modal" onkeydown="handleModalKeyDown(event)">
         <div class="rute-modal-box">
             <button class="modal-close-btn" onclick="tutupModalRute()">X</button>
-            <h3 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; text-transform: uppercase;">Atur Rute Perjalanan</h3>
+            <h3 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; text-transform: uppercase;">Pilih Rute Perjalanan</h3>
             
             <div class="form-group">
-                <label>Pilih Titik Asal:</label>
+                <label>Titik Asal:</label>
                 <select id="modal-select-asal" class="form-control" onchange="handleDropdownAsalManualCheck(this.value)">
                 </select>
-                <input type="text" id="modal-input-asal-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik nama lokasi asal baru">
+                <input type="text" id="modal-input-asal-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik lokasi asal baru (wajib diisi)">
             </div>
 
             <div class="form-group">
-                <label>Pilih Titik Tujuan:</label>
+                <label>Titik Tujuan:</label>
                 <select id="modal-select-tujuan" class="form-control" onchange="handleDropdownTujuanManualCheck(this.value)">
                 </select>
-                <input type="text" id="modal-input-tujuan-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik nama lokasi tujuan baru (Boleh Kosong)">
+                <input type="text" id="modal-input-tujuan-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik lokasi tujuan baru">
             </div>
 
-            <button class="btn btn-tracker-start" style="margin-bottom: 0; margin-top: 15px;" onclick="konfirmasiMulaiTrackingRute()">KONFIRMASI DAN JALANKAN</button>
+            <button class="btn btn-tracker-start" style="margin-bottom: 0; margin-top: 15px;" onclick="konfirmasiMulaiTrackingRute()">Konfirmasi dan Mulai Perjalanan</button>
         </div>
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.0.9</h1>
     </header>
 
     <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('tracker')">1. Dashboard</button>
-        <button class="tab-btn" onclick="switchTab('admin')">2. Database</button>
-        <button class="tab-btn" onclick="switchTab('config')">3. Pengaturan</button>
+        <button class="tab-btn active" onclick="switchTab('tracker')">Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('admin')">Database</button>
+        <button class="tab-btn" onclick="switchTab('config')">Pengaturan</button>
     </div>
 
     <div class="content-container">
@@ -701,7 +750,7 @@
         <div id="tab-tracker" class="tab-content active">
             <div id="pids-monitor-mode">
                 <div class="pids-row-1">
-                    <div class="plat-box" id="pids-plat-view">B 1234 TGC</div>
+                    <div class="plat-box" id="pids-plat-view">Nomor Plat</div>
                     <div class="right-header-group">
                         <div class="weather-v2" id="pids-weather">--°C ☁️</div>
                         <div class="clock-v2" id="pids-clock">00:00:00</div>
@@ -710,18 +759,18 @@
 
                 <div class="pids-row-2">
                     <div class="kompas-wrap">
-                        <span class="kompas-label">Arah</span>
+                        <span class="kompas-label">Arah Mata Angin</span>
                         <span class="kompas-value" id="pids-compass">-</span>
                     </div>
                     <div class="speedo-wrap-v2">
                         <span class="speedo-value-v2" id="pids-speed">0.0</span>
-                        <span class="speedo-unit-v2">Km/h</span>
+                        <span class="speedo-unit-v2">km/j</span>
                     </div>
                 </div>
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.0.9 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -732,13 +781,13 @@
                         <div class="gps-info-lines">
                             <div>Status GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>)</div>
                             <div>Posisi Anda: <span id="gps-current-coord" style="color:#aaa;">- , -</span></div>
-                            <div>Titik Terdekat: (<span id="pids-distance">-</span>) <span id="pids-nearest-object" style="color:#ffff00;">Belum Ada Rute</span></div>
+                            <div>Titik Terdekat: <span id="pids-distance">-</span> <span id="pids-nearest-object" style="color:#ffff00;">Rute Tidak Tersedia</span></div>
                         </div>
                         
                         <div class="controls-right-group">
                             <div class="vertical-button-stack">
-                                <button id="btn-overspeed-dashboard-switch" class="btn-dash-sub" onclick="toggleOverspeedAlarmButton()">ALM: ON</button>
-                                <button id="btn-audio-dashboard-switch" class="btn-dash-sub" onclick="toggleAudioAnnouncerButton()">AUD: ON</button>
+                                <button id="btn-overspeed-dashboard-switch" class="btn-dash-sub" onclick="toggleOverspeedAlarmButton()">ALARM: ON</button>
+                                <button id="btn-audio-dashboard-switch" class="btn-dash-sub audio-off" onclick="toggleAudioAnnouncerButton()">ANNOUNCER: OFF</button>
                             </div>
                             <button class="fs-toggle-btn" id="btn-fs-floating" onclick="toggleLayarPenuhAPI()">⛶</button>
                         </div>
@@ -746,16 +795,16 @@
                 </div>
             </div>
 
-            <button id="btn-toggle-gps" class="btn btn-tracker-start" onclick="klikTombolPemicuGpsUtama()">MULAI PELACAKAN RUTE</button>
+            <button id="btn-toggle-gps" class="btn btn-tracker-start" onclick="klikTombolPemicuGpsUtama()">Mulai Perjalanan</button>
 
             <div class="manual-test-container">
-                <div class="collapse-trigger-btn" onclick="togglePanelSimulasiField()">PANEL UJI MANUAL (SIMULASI PC)</div>
+                <div class="collapse-trigger-btn" onclick="togglePanelSimulasiField()">Uji Coba Titik</div>
                 <div id="panel-simulasi-box" class="sim-card">
-                    <div class="form-group"><label>Pilih Target Geofence:</label><select id="sim-select-halte" class="form-control"></select></div>
-                    <div class="form-group"><label>Set Speed Simulasi:</label><input type="number" id="sim-input-speed" class="form-control" value="0.0" step="0.1" oninput="simulasiSetSpeed()"></div>
+                    <div class="form-group"><label>Pilih Titik Simulasi:</label><select id="sim-select-halte" class="form-control"></select></div>
+                    <div class="form-group"><label>Atur Kecepatan Simulasi:</label><input type="number" id="sim-input-speed" class="form-control" value="0.0" step="0.1" oninput="simulasiSetSpeed()"></div>
                     <div style="display: flex; gap: 8px; margin-top: 10px;">
-                        <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMasukRadius()">1. Masuk Radius</button>
-                        <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMenjauh()">2. Keluar Radius</button>
+                        <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMasukRadius()">Masuk Titik</button>
+                        <button class="btn btn-sim" style="flex: 1;" onclick="simulasiMenjauh()">Keluar Titik</button>
                     </div>
                 </div>
             </div>
@@ -763,42 +812,47 @@
 
         <div id="tab-admin" class="tab-content">
             <div class="map-wrapper">
-                <div id="map"></div>
+                <div id="map">
+				<div id="maps-search-box">
+    <input type="text" id="input-cari-lokasi" placeholder="Cari lokasi/halte..." oninput="autoCompleteLokasi()" autocomplete="off" />
+    <div id="search-results-dropdown" class="hidden-dropdown"></div>
+</div>
+				</div>
             </div>
+			
             
-            <div id="edit-indicator" class="edit-mode-indicator"><strong>Mode Edit Active:</strong> Mengubah <span id="edit-target-name"></span>.</div>
+            <div id="edit-indicator" class="edit-mode-indicator"><strong>MODE EDIT AKTIF:</strong> Mengubah <span id="edit-target-name"></span></div>
 
-            <div class="form-group"><label>Koordinat Terpilih</label><input type="text" id="input-koordinat" class="form-control" readonly placeholder="Klik titik peta / cari lokasi diatas / klik target 🎯"></div>
-            <div class="form-group"><label>Nama Halte / Objek (Database)</label><input type="text" id="input-nama" class="form-control" placeholder="Contoh: Halte Senayan Mandiri"></div>
-            <div class="form-group"><label>Teks Tampilan Layar (Monitor Banner)</label><input type="text" id="input-display-text" class="form-control" placeholder="Contoh: Halte Senayan"></div>
+            <div class="form-group"><label>Koordinat Terpilih</label><input type="text" id="input-koordinat" class="form-control" readonly placeholder="Klik titik peta / cari lokasi di atas / klik tombol 🎯"></div>
+            <div class="form-group"><label>Nama Titik</label><input type="text" id="input-nama" class="form-control" placeholder="Masukkan nama titik untuk internal..."></div>
+            <div class="form-group"><label>Tampilan Di Layar</label><input type="text" id="input-display-text" class="form-control" placeholder="Masukkan tulisan untuk ditampilkan di layar..."></div>
             
             <div class="form-group">
-                <label>Radius Geofence (50m - 500m)</label>
+                <label>Radius Geofence (50m-500m)</label>
                 <div class="range-container">
                     <input type="range" id="input-radius" style="flex:1; accent-color:#ffb703;" min="50" max="500" step="10" value="50" oninput="document.getElementById('range-val-preview').innerText = this.value + ' Meter'; perbaruiVisualLingkaranRadius();">
                     <span id="range-val-preview" style="font-weight:bold; color:#ffff00; min-width:70px; text-align:right;">50 Meter</span>
                 </div>
             </div>
             <div class="form-group">
-                <label>Condition Trigger</label>
-                <select id="input-trigger-type" class="form-control"><option value="masuk" selected>Masuk Radius</option><option value="keluar">Keluar Radius</option></select>
+                <label>Dibunyikan Saat</label>
+                <select id="input-trigger-type" class="form-control"><option value="masuk" selected>Masuk Titik</option><option value="keluar">Keluar Titik</option></select>
             </div>
 
-            <div class="form-group" style="background: #111; padding: 12px; border-radius: 6px; border: 1px solid #222;">
-                <label style="color:#ffff00; font-weight:bold; margin-bottom: 2px; text-transform: uppercase;">Pilih Audio Announcer</label>
+            <div class="form-group">
                 <div class="form-group" style="margin-bottom:0;">
                     <label>Pilih File Audio Announcer:</label>
                     <select id="input-audio-asset-dropdown" class="form-control"></select>
                 </div>
             </div>
 
-            <button id="btn-simpan" class="btn btn-database-save" onclick="eksekusiSimpan()">SIMPAN DATA LOKASI</button>
-            <button id="btn-batal-edit" class="btn btn-danger" style="display: none; padding: 8px; margin-top: -4px;" onclick="resetFormInput()">BATALKAN EDIT</button>
+            <button id="btn-simpan" class="btn btn-database-save" onclick="eksekusiSimpan()">SIMPAN Titik</button>
+            <button id="btn-batal-edit" class="btn btn-danger" style="display: none; padding: 8px; margin-top: -4px;" onclick="resetFormInput()">BATAL EDIT Titik</button>
 
             <hr class="divider-line">
 
             <div class="sort-control-container">
-                <h3 style="font-size: 12px; color: #ffff00; text-transform: uppercase; margin: 0;">Daftar Geofence Terdaftar</h3>
+                <h3 style="font-size: 12px; color: #ffff00; text-transform: uppercase; margin: 0;">Daftar Titik</h3>
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <label style="font-size: 11px; color: #aaa; white-space: nowrap;">Urutan:</label>
                     <select id="cfg-sort-engine-select" class="form-control" style="width: 140px; padding: 4px 8px; font-size: 11px; height: 26px;" onchange="handleSortMethodChangeTrigger('geofence', this.value)">
@@ -811,7 +865,7 @@
 
             <div class="table-wrapper">
                 <table class="halte-table" id="table-geofence-sortable">
-                    <thead><tr><th>Nama Lokasi</th><th>Teks Layar</th><th>Radius</th><th>Trigger</th><th>Audio File</th><th>Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Titik</th><th>Teks Di Layar</th><th>Radius</th><th>Dibunyikan Saat</th><th>File Audio</th><th>Aksi</th></tr></thead>
                     <tbody id="list-halte-body"></tbody>
                 </table>
             </div>
@@ -828,28 +882,28 @@
         <div id="tab-config" class="tab-content">
             
             <div class="config-card">
-                <h3>Identitas Kendaraan & Default Banner</h3>
+                <h3>Identitas Kendaraan & Tampilan Bawaan</h3>
                 <div class="form-group">
-                    <label>Plat Nomor / ID Unit Bus:</label>
+                    <label>Plat Nomor Kendaraan:</label>
                     <input type="text" id="cfg-plat-no" class="form-control" value="Nomor Plat" style="text-transform:uppercase;" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
                 <div class="form-group">
-                    <label>Preset Teks Default (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS SIMULATOR" oninput="simpanPengaturanUmumKeStorage()">
+                    <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.0.9 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
             <div class="config-card">
-                <h3>Batas Alarm Overspeed</h3>
+                <h3>Batas Alarm Kecepatan Maksimal</h3>
                 <div class="form-group">
-                    <label>Batas Kecepatan Maksimal (Km/h):</label>
+                    <label>Batas Kecepatan Maksimal (km/j):</label>
                     <input type="number" id="cfg-overspeed-limit" class="form-control" value="60" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
             <div class="config-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:6px;">
-                    <h3 style="margin:0;">Database Manajemen Nama Lokasi Tunggal</h3>
+                    <h3 style="margin:0;">Daftar Lokasi Asal & Tujuan</h3>
                     <select id="sort-lokasi-select" class="form-control" style="width:110px; padding:2px; font-size:11px; height:22px;" onchange="handleSortMethodChangeTrigger('lokasi', this.value)">
                         <option value="manual" selected>Custom</option>
                         <option value="az">A-Z</option>
@@ -857,7 +911,7 @@
                     </select>
                 </div>
                 <div class="single-location-input-group">
-                    <input type="text" id="cfg-add-lokasi-nama" class="form-control" placeholder="Masukkan nama lokasi (Misal: Rumah, Terminal)">
+                    <input type="text" id="cfg-add-lokasi-nama" class="form-control" placeholder="Masukkan nama lokasi (Misal: Rumah, Gereja)">
                     <button class="btn-plus-fixed" onclick="tambahLokasiBuiltIn()">+</button>
                 </div>
                 <div class="mini-list-box" id="cfg-lokasi-list-container"></div>
@@ -865,7 +919,7 @@
 
             <div class="config-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:6px;">
-                    <h3 style="color: #ffff00; margin:0;">PIDS Audio Asset Manager</h3>
+                    <h3 style="color: #ffff00; margin:0;">Daftar File Audio Announcer</h3>
                     <select id="sort-audio-select" class="form-control" style="width:110px; padding:2px; font-size:11px; height:22px;" onchange="handleSortMethodChangeTrigger('audio', this.value)">
                         <option value="manual" selected>Custom</option>
                         <option value="az">A-Z</option>
@@ -873,10 +927,10 @@
                     </select>
                 </div>
                 <p style="font-size: 11px; color:#aaa; margin-bottom: 8px; line-height: 1.3;">
-                    Ketik nama/path file MP3 lo (Contoh: <code style="color:#fff;">audio/senayan.mp3</code> atau Base64 data).
+                    Ketik nama/path file audio dengan format <code style="color:#fff;">audio/<i>nama_file</i>.mp3</code>
                 </p>
                 <div class="single-location-input-group">
-                    <input type="text" id="cfg-add-audio-path" class="form-control" placeholder="Contoh: audio/announcer-senayan.mp3">
+                    <input type="text" id="cfg-add-audio-path" class="form-control" placeholder="Contoh: audio/Gereja Santo Yakobus.mp3">
                     <button class="btn-plus-fixed" style="background-color: #ff7b00; color:#fff;" onclick="tambahAudioAssetLokal()">+</button>
                 </div>
                 <div class="mini-list-box" id="cfg-audio-list-container"></div>
@@ -890,7 +944,7 @@
     
     <script>
         const LOGIN_USER = "admin";
-        const LOGIN_PASS = "admin123";
+        const LOGIN_PASS = "mashujan";
 
         // MASTER STATE (Masing-masing penampung membawa orderIndex internal kustom)
         let dbLokasi = [];
@@ -903,7 +957,7 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.0.9 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
@@ -918,7 +972,7 @@
         let wakeLock = null;
         let idTargetEdit = null;
         let isAlarmEnabled = true; 
-        let isAudioEnabled = true; 
+        let isAudioEnabled = false; 
 
         let audioCtx = null;
         let currentAudioObject = null; 
@@ -1600,8 +1654,8 @@
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-                osc.type = 'sine'; osc.frequency.setValueAtTime(1150, audioCtx.currentTime); gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1); 
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1150, audioCtx.currentTime); gain.gain.setValueAtTime(1, audioCtx.currentTime);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.15); 
             } catch(e){}
         }
 
@@ -1633,14 +1687,14 @@
         
         function toggleOverspeedAlarmButton() { 
             isAlarmEnabled = !isAlarmEnabled; let btnDash = document.getElementById('btn-overspeed-dashboard-switch');
-            if(isAlarmEnabled) { btnDash.innerText = "ALM: ON"; btnDash.classList.remove('alarm-off'); } 
-            else { btnDash.innerText = "ALM: OFF"; btnDash.classList.add('alarm-off'); if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; } }
+            if(isAlarmEnabled) { btnDash.innerText = "ALARM: ON"; btnDash.classList.remove('alarm-off'); } 
+            else { btnDash.innerText = "ALARM: OFF"; btnDash.classList.add('alarm-off'); if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; } }
         }
 
         function toggleAudioAnnouncerButton() {
             isAudioEnabled = !isAudioEnabled; let btnAudio = document.getElementById('btn-audio-dashboard-switch');
-            if(isAudioEnabled) { btnAudio.innerText = "AUD: ON"; btnAudio.classList.remove('audio-off'); } 
-            else { btnAudio.innerText = "AUD: OFF"; btnAudio.classList.add('audio-off'); if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject = null; } }
+            if(isAudioEnabled) { btnAudio.innerText = "ANNOUNCER: ON"; btnAudio.classList.remove('audio-off'); } 
+            else { btnAudio.innerText = "ANNOUNCER: OFF"; btnAudio.classList.add('audio-off'); if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject = null; } }
         }
 
         async function mintaWakeLock() { if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} } }
@@ -1674,7 +1728,7 @@
                 if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Radius: ${h.nama}`); }
                 if (statusGeofenceSebelumnya === "dalam") {
                     if (fallbackTimerId) clearTimeout(fallbackTimerId);
-                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 1000);
+                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000);
                 }
                 lastPlayedHalteId = null; statusGeofenceSebelumnya = "luar";
                 pushLogKonsol(`[SIMULASI] Geofence Reset.`);
@@ -1710,6 +1764,89 @@
                 console.error(e);
             }
         }
+		
+		// VARIABEL AMAN (DITARUH DI LUAR FUNGSI)
+let timerPencarian = null;
+
+function autoCompleteLokasi() {
+    // Gunakan try-catch biar kalau ada error, fungsi lain (seperti login) TETEP JALAN AMAN
+    try {
+        let inputEl = document.getElementById('input-cari-lokasi');
+        let dropdown = document.getElementById('search-results-dropdown');
+        
+        // Proteksi 1: Kalau elemen HTML-nya belum ke-render, stop biar gak error
+        if (!inputEl || !dropdown) return;
+
+        let query = inputEl.value;
+
+        if (query.length < 3) {
+            dropdown.innerHTML = "";
+            dropdown.classList.add('hidden-dropdown');
+            return;
+        }
+
+        clearTimeout(timerPencarian);
+        timerPencarian = setTimeout(() => {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+                    dropdown.innerHTML = "";
+                    
+                    if (data && data.length > 0) {
+                        dropdown.classList.remove('hidden-dropdown');
+                        
+                        data.forEach(tempat => {
+                            let item = document.createElement('div');
+                            item.className = 'search-item';
+                            item.innerText = tempat.display_name.split(',').slice(0, 3).join(','); 
+                            
+                            item.onclick = function() {
+                                let lat = parseFloat(tempat.lat);
+                                let lon = parseFloat(tempat.lon);
+                                
+                                document.getElementById('input-cari-lokasi').value = item.innerText;
+                                
+                                // Proteksi 2: Deteksi nama variabel peta lo secara dinamis
+                                // Biar gak crash mau nama peta lo 'map', 'peta', atau 'mymap'
+                                if (typeof map !== 'undefined') {
+                                    map.flyTo([lat, lon], 16);
+                                } else if (typeof peta !== 'undefined') {
+                                    peta.flyTo([lat, lon], 16);
+                                } else if (typeof mymap !== 'undefined') {
+                                    mymap.flyTo([lat, lon], 16);
+                                } else {
+                                    console.log("Peta ditemukan tapi nama variabel tidak cocok.");
+                                }
+                                
+                                dropdown.innerHTML = "";
+                                dropdown.classList.add('hidden-dropdown');
+                            };
+                            
+                            dropdown.appendChild(item);
+                        });
+                    } else {
+                        dropdown.classList.add('hidden-dropdown');
+                    }
+                })
+                .catch(err => console.error("API Search Error:", err));
+        }, 400);
+
+    } catch (e) {
+        // Kalau ada error di dalam fungsi ini, log di console aja, jangan bikin web mati
+        console.error("Error pada fitur autocomplete:", e);
+    }
+}
+
+// Proteksi 3: Pengecekan klik luar yang aman
+document.addEventListener('click', function(e) {
+    try {
+        let box = document.getElementById('maps-search-box');
+        let dropdown = document.getElementById('search-results-dropdown');
+        if (box && dropdown && !box.contains(e.target)) {
+            dropdown.classList.add('hidden-dropdown');
+        }
+    } catch(err){}
+});
     </script>
 </body>
 </html>
