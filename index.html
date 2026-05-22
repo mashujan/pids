@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.0.9</title>
+    <title>PIDS Simulator v3.0.10</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -521,7 +521,7 @@
 		
 		.map-wrapper { 
             position: relative; 
-            width: 80%; /* Lebar kustom lo */
+            width: 90%; /* Lebar kustom lo */
             height: 280px; 
             margin-bottom: 12px; 
             padding: 0 10px; 
@@ -736,7 +736,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.0.9</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.0.10</h1>
     </header>
 
     <div class="tab-bar">
@@ -770,7 +770,7 @@
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.0.9 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.0.10 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -814,7 +814,7 @@
             <div class="map-wrapper">
                 <div id="map">
 				<div id="maps-search-box">
-    <input type="text" id="input-cari-lokasi" placeholder="Cari lokasi/halte..." oninput="autoCompleteLokasi()" autocomplete="off" />
+    <input type="text" id="input-cari-lokasi" placeholder="Cari lokasi..." oninput="autoCompleteLokasi()" autocomplete="off" />
     <div id="search-results-dropdown" class="hidden-dropdown"></div>
 </div>
 				</div>
@@ -828,7 +828,7 @@
             <div class="form-group"><label>Tampilan Di Layar</label><input type="text" id="input-display-text" class="form-control" placeholder="Masukkan tulisan untuk ditampilkan di layar..."></div>
             
             <div class="form-group">
-                <label>Radius Geofence (50m-500m)</label>
+                <label>Radius (50m-500m)</label>
                 <div class="range-container">
                     <input type="range" id="input-radius" style="flex:1; accent-color:#ffb703;" min="50" max="500" step="10" value="50" oninput="document.getElementById('range-val-preview').innerText = this.value + ' Meter'; perbaruiVisualLingkaranRadius();">
                     <span id="range-val-preview" style="font-weight:bold; color:#ffff00; min-width:70px; text-align:right;">50 Meter</span>
@@ -889,7 +889,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.0.9 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.0.10 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -957,7 +957,7 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "Selamat Datang di PIDS v3.0.9 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.0.10 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1386,19 +1386,49 @@
 
         // 2. RENDER MANAJEMEN LOKASI TUNGGAL (TAB CONFIG) - PURE NAMA TANPA PREFIX
         function renderListLokasiBuiltInUI() {
-            let container = document.getElementById('cfg-lokasi-list-container'); container.innerHTML = "";
-            let listProses = dapatkanArrayTerfilterDanTersortir('lokasi', sortModeLokasi);
+    let container = document.getElementById('cfg-lokasi-list-container'); container.innerHTML = "";
+    let listProses = dapatkanArrayTerfilterDanTersortir('lokasi', sortModeLokasi);
 
-            listProses.forEach((item, index) => {
-                let div = document.createElement('div'); div.className = "mini-list-item";
-                if (sortModeLokasi === "manual") {
-                    div.draggable = true; div.setAttribute('data-index', index);
-                    attachDragAndDropListeners(div, 'lokasi');
-                }
-                div.innerHTML = `<span>📍 ${item.nama}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusLokasiBuiltIn('${item.id}')">X</button>`;
-                container.appendChild(div);
-            });
+    listProses.forEach((item, index) => {
+        let div = document.createElement('div'); div.className = "mini-list-item";
+        if (sortModeLokasi === "manual") {
+            div.draggable = true; div.setAttribute('data-index', index);
+            attachDragAndDropListeners(div, 'lokasi');
         }
+        
+        // DISESUAIKAN: Menambahkan tombol pensil (✏️) dengan class btn-action-edit di sebelah tombol hapus (X)
+        div.innerHTML = `
+            <span>📍 ${item.nama}</span>
+            <div style="display: flex; gap: 4px; align-items: center;">
+                <button class="btn-action" style="padding:2px 6px; background-color: #ffaa00; color: #fff; border: none; border-radius: 3px; cursor: pointer;" onclick="editLokasiBuiltIn('${item.id}')">✏️</button>
+                <button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusLokasiBuiltIn('${item.id}')">X</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// FUNGSI EKSEKUSI EDIT LOKASI (Taruh di bawah atau di atas fungsi render)
+function editLokasiBuiltIn(id) {
+    // 1. Cari data lokasi berdasarkan ID uniknya di array utama lo
+    let lokasi = lokasiSingleList.find(item => item.id === id);
+    if (!lokasi) return alert("Data lokasi tidak ditemukan!");
+
+    // 2. Munculkan prompt browser dengan isi nama lamanya
+    let namaBaru = prompt("Edit Nama Lokasi:", lokasi.nama);
+
+    // 3. Validasi input
+    if (namaBaru === null) return; // Batalkan jika klik Cancel
+    namaBaru = namaBaru.trim();
+    if (namaBaru === "") return alert("Nama lokasi tidak boleh kosong!");
+
+    // 4. Update nama baru ke array & save ke database LocalStorage lo
+    lokasi.nama = namaBaru;
+    localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
+
+    // 5. Render ulang UI biar langsung berubah di layar simulator
+    renderListLokasiBuiltInUI();
+}
 
         // 3. RENDER PIDS AUDIO ASSET MANAGER (TAB CONFIG)
         function renderListAudioAssetsUI() {
@@ -1445,7 +1475,7 @@
             let audioSelection = document.getElementById('input-audio-asset-dropdown').value;
 
             if (displayText === "") displayText = nama;
-            if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi koordinat peta & nama objek!"); return; }
+            if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi koordinat peta & nama titik!"); return; }
 
             if (idTargetEdit === null) {
                 dbLokasi.push({ 
@@ -1513,7 +1543,7 @@
         }
 
         function hapusLokasi(id) {
-            if (confirm("Hapus objek geofence ini?")) {
+            if (confirm("Hapus titik ini?")) {
                 dbLokasi = dbLokasi.filter(i => i.id !== id);
                 dbLokasi.forEach((item, index) => { item.orderIndex = index; }); // Peta ulang index
                 localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); renderTabelGeofenceUI(); perbaruiDropdownSimulasi();
@@ -1531,12 +1561,23 @@
         }
 
         function tambahLokasiBuiltIn() {
-            let namaLokasi = document.getElementById('cfg-add-lokasi-nama').value.trim();
-            if (namaLokasi === "") { alert("Nama lokasi kosong!"); return; }
-            lokasiSingleList.push({ id: 'loc_' + Date.now(), nama: namaLokasi, orderIndex: lokasiSingleList.length });
-            localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
-            document.getElementById('cfg-add-lokasi-nama').value = ""; renderListLokasiBuiltInUI();
-        }
+    let namaLokasi = document.getElementById('cfg-add-lokasi-nama').value.trim();
+    if (namaLokasi === "") { alert("Nama titik kosong!"); return; }
+    
+    // Proses push data ke array dan save database bawaan lo
+    lokasiSingleList.push({ id: 'loc_' + Date.now(), nama: namaLokasi, orderIndex: lokasiSingleList.length });
+    localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
+    
+    // Reset input dan render ulang UI bawaan lo
+    document.getElementById('cfg-add-lokasi-nama').value = ""; 
+    renderListLokasiBuiltInUI();
+
+    // MASUKKAN KODE AUTO-SCROLL DI SINI (Ditembak tepat setelah UI beres di-render)
+    let container = document.getElementById('cfg-lokasi-list-container');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
 
         function hapusLokasiBuiltIn(id) {
             lokasiSingleList = lokasiSingleList.filter(i => i.id !== id);
@@ -1545,14 +1586,25 @@
         }
 
         function tambahAudioAssetLokal() {
-            let path = document.getElementById('cfg-add-audio-path').value.trim();
-            if (path === "") { alert("Path audio kosong!"); return; }
-            if (audioAssetList.some(i => i.nama === path)) { alert("File audio sudah terdaftar!"); return; }
-            audioAssetList.push({ id: 'aud_' + Date.now(), nama: path, orderIndex: audioAssetList.length });
-            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
-            document.getElementById('cfg-add-audio-path').value = ""; 
-            renderListAudioAssetsUI(); renderDropdownAudioDb();
-        }
+    let path = document.getElementById('cfg-add-audio-path').value.trim();
+    if (path === "") { alert("Path audio kosong!"); return; }
+    if (audioAssetList.some(i => i.nama === path)) { alert("File audio sudah terdaftar!"); return; }
+    
+    // Proses push data ke array dan save database bawaan lo
+    audioAssetList.push({ id: 'aud_' + Date.now(), nama: path, orderIndex: audioAssetList.length });
+    localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
+    
+    // Reset input dan render ulang UI bawaan lo
+    document.getElementById('cfg-add-audio-path').value = ""; 
+    renderListAudioAssetsUI(); 
+    renderDropdownAudioDb();
+
+    // MASUKKAN KODE AUTO-SCROLL DI SINI (Ditembak tepat setelah list audio beres di-render)
+    let container = document.getElementById('cfg-audio-list-container');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
 
         function hapusAudioAssetLokal(id) {
             audioAssetList = audioAssetList.filter(i => i.id !== id);
@@ -1591,7 +1643,25 @@
                 geofenceDatabase: dbLokasi
             };
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configPackage, null, 2));
-            let downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "backup_pids_v3.0.8.json"); downloadAnchor.click();
+			// Ambil tanggal dan jam saat ini
+let sekarang = new Date();
+let tahun = sekarang.getFullYear();
+let bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
+let tanggal = String(sekarang.getDate()).padStart(2, '0');
+let jam = String(sekarang.getHours()).padStart(2, '0');
+let menit = String(sekarang.getMinutes()).padStart(2, '0');
+let detik = String(sekarang.getSeconds()).padStart(2, '0');
+
+// Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
+let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
+let namaFile = `${formatWaktu}_backup-pids-v3.0.10.json`;
+
+// KODE BAWAAN LO YANG SUDAH MODIFIKASI:
+let downloadAnchor = document.createElement('a'); 
+downloadAnchor.setAttribute("href", dataStr); 
+downloadAnchor.setAttribute("download", namaFile); // <-- Di sini diganti pake variabel namaFile
+downloadAnchor.click();
+        
         }
 
         function importDataDariJsonCombinedAllInOne(event) {
@@ -1614,7 +1684,7 @@
                     localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
                     
                     simpanPengaturanUmumKeStorage(); renderSemuaTampilanKomponenUI();
-                    alert("Restore Database Engine Sukses!");
+                    alert("Restore Database Sukses!");
                 } catch (err) { alert("File JSON Rusak atau Format Salah!"); }
             };
             reader.readAsText(file);
@@ -1756,7 +1826,7 @@
                         console.log("Berhasil memutar audio tes: " + pathAudio);
                     })
                     .catch((error) => {
-                        alert("Gagal memutar suara!\n\nPastikan file '" + pathAudio + "' beneran sudah lo taruh di dalam folder lokal komputer lo.");
+                        alert("Gagal memutar suara!\n\nPastikan file '" + pathAudio + "' berada di komputer Anda.");
                         console.error(error);
                     });
             } catch (e) {
@@ -1847,6 +1917,14 @@ document.addEventListener('click', function(e) {
         }
     } catch(err){}
 });
+
+// Fungsi otomatis scroll ke bawah untuk list lokasi & audio v3.0.8
+function autoScrollKeBawahPIDS(idContainer) {
+    let container = document.getElementById(idContainer);
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
     </script>
 </body>
 </html>
