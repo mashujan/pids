@@ -1707,35 +1707,59 @@ downloadAnchor.click();
 
         // ==================== SYSTEM PERIPHERAL SIMULATION ====================
 
-        function toggleLayarPenuhAPI() {
+        // Siapkan variabel global di paling atas script lo untuk menampung status kunci layar
+let pidsWakeLock = null;
+
+// Fungsi untuk mengaktifkan Always On
+async function aktifkanAlwaysOn() {
+    try {
+        if ('wakeLock' in navigator) {
+            pidsWakeLock = await navigator.wakeLock.request('screen');
+            pushLogKonsol('Layar akan menyala selama mode full screen.');
+        }
+    } catch (err) {
+        pushLogKonsol(`Gagal mengaktifkan Always On: ${err.message}`);
+    }
+}
+
+// Fungsi untuk mematikan Always On
+function matikanAlwaysOn() {
+    if (pidsWakeLock !== null) {
+        pidsWakeLock.release().then(() => {
+            pidsWakeLock = null;
+            pushLogKonsol('Layar kembali ke mode normal.');
+        });
+    }
+}
+
+// UPDATE FUNGSI TOGGLE FULLSCREEN LO JADI SEPERTI INI:
+function toggleLayarPenuhAPI() {
     let areaMonitor = document.getElementById('pids-monitor-mode');
     
     if (!document.fullscreenElement) { 
-        // 1. MASUK FULLSCREEN & PAKSA LANDSCAPE
+        // 1. MASUK FULLSCREEN, PAKSA LANDSCAPE, & ALWAYS ON
         if (areaMonitor.requestFullscreen) {
             areaMonitor.requestFullscreen().then(() => {
+                // Paksa Landscape
                 if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(err => {
-                        console.warn("[PIDS v3.0.8] Orientasi landscape ditolak:", err);
-                    });
+                    screen.orientation.lock('landscape').catch(err => console.warn(err));
                 }
-            }).catch(err => {
-                console.error("[PIDS v3.0.8] Gagal masuk Fullscreen:", err);
-            });
+                // NYALAKAN ALWAYS ON DI SINI
+                aktifkanAlwaysOn();
+            }).catch(err => console.error(err));
         } 
     } else { 
-        // 2. KELUAR FULLSCREEN & PAKSA BALIK KE PORTRAIT
+        // 2. KELUAR FULLSCREEN, BALIK PORTRAIT, & MATIKAN ALWAYS ON
+        // MATIKAN ALWAYS ON DI SINI
+        matikanAlwaysOn();
+
         if (screen.orientation && screen.orientation.lock) {
-            // Kita paksa putar balik ke portrait dulu biar HP tegak lagi
             screen.orientation.lock('portrait').then(() => {
-                // Baru kita lepas kuncian total biar balik ke pengaturan auto-rotate bawaan HP
                 if (screen.orientation.unlock) screen.orientation.unlock();
-            }).catch(err => {
-                // Kalau lock portrait gagal, minimal tetep usahakan unlock
+            }).catch(() => {
                 if (screen.orientation.unlock) screen.orientation.unlock();
             });
         }
-        
         if (document.exitFullscreen) document.exitFullscreen(); 
     }
 }
@@ -1867,7 +1891,7 @@ function monitorFullscreenStateChange() {
                 
                 audioTestingSekarang.play()
                     .then(() => {
-                        console.log("Berhasil memutar audio tes: " + pathAudio);
+                        pushLogKonsol("Berhasil memutar audio tes: " + pathAudio);
                     })
                     .catch((error) => {
                         alert("Gagal memutar suara!\n\nPastikan file '" + pathAudio + "' berada di komputer Anda.");
@@ -1929,7 +1953,7 @@ function autoCompleteLokasi() {
                                 } else if (typeof mymap !== 'undefined') {
                                     mymap.flyTo([lat, lon], 16);
                                 } else {
-                                    console.log("Peta ditemukan tapi nama variabel tidak cocok.");
+                                    pushLogKonsol("Peta ditemukan tapi nama variabel tidak cocok.");
                                 }
                                 
                                 dropdown.innerHTML = "";
