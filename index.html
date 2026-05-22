@@ -789,7 +789,7 @@
                     <div class="diag-right-gps">
                         <div class="gps-info-lines">
                             <div>Status GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>)</div>
-                            <div>Posisi Anda: <span id="gps-current-coord" style="color:#aaa;">- , -</span></div>
+                            <div>Posisi Anda: <span id="gps-current-coord" style="color:#aaa;">Data Tidak Tersedia</span></div>
                             <div>Titik Terdekat: <span id="pids-distance">-</span> <span id="pids-nearest-object" style="color:#ffff00;">Rute Tidak Tersedia</span></div>
                         </div>
                         
@@ -1089,13 +1089,14 @@
         function prosesUpdateKoordinatStreamUtama(position) {
             lastKnownLat = position.coords.latitude;
             lastKnownLng = position.coords.longitude;
+			lastKnownAltitude = position.coords.altitude || 0;
             let accuracy = position.coords.accuracy;
             
             let statusGPSNode = document.getElementById('gps-status');
             statusGPSNode.innerText = "ON"; statusGPSNode.style.color = "#00ff00";
 
             document.getElementById('gps-accuracy').innerText = `${accuracy.toFixed(1)}m`;
-            document.getElementById('gps-current-coord').innerText = `${lastKnownLat.toFixed(5)}, ${lastKnownLng.toFixed(5)}`;
+            document.getElementById('gps-current-coord').innerText = `Lat: ${lastKnownLat.toFixed(5)}, Lng: ${lastKnownLng.toFixed(5)}, Alt: ${lastKnownAltitude.toFixed(1)} m`;
             
             if (map) {
                 if (livePositionMarker) livePositionMarker.setLatLng([lastKnownLat, lastKnownLng]);
