@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.7 - Audio Asset Manager</title>
+    <title>PIDS Simulator v3.0.8</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -392,14 +392,29 @@
             align-items: center;
             padding: 20px;
         }
+        /* Ubah warna border box modal rute */
         .rute-modal-box {
             background-color: #111111;
-            border: 2px solid #ffff00;
+            border: 2px solid #ffffff; /* Ganti dari kuning ke putih tegas */
             padding: 25px;
             border-radius: 10px;
             width: 100%;
             max-width: 420px;
             position: relative;
+        }
+
+        /* Tambahkan style khusus ini biar tombol di dalam modal ikut berubah jadi putih-hitam */
+        .rute-modal-box .btn-tracker-start {
+            background-color: #ffffff !important; /* Ganti dari biru ke putih */
+            color: #000000 !important; /* Tulisan jadi hitam tegas */
+            border: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        /* Efek pas tombol ditekan atau di-hover */
+        .rute-modal-box .btn-tracker-start:hover {
+            background-color: #cccccc !important;
         }
         .modal-close-btn {
             position: absolute;
@@ -503,7 +518,20 @@
         }
 
         .range-container { display: flex; align-items: center; gap: 15px; background-color: #000000; padding: 10px 12px; border: 1px solid #333333; border-radius: 6px; }
-        .map-wrapper { position: relative; width: 100%; height: 280px; margin-bottom: 12px; }
+		
+		.map-wrapper { 
+            position: relative; 
+            width: 80%; /* Lebar kustom lo */
+            height: 280px; 
+            margin-bottom: 12px; 
+            padding: 0 10px; 
+            box-sizing: border-box;
+            
+            /* TAMBAHKAN DUA BARIS INI UNTUK MENGETENGAHKAN MAP */
+            margin-left: auto;
+            margin-right: auto;
+        }
+		
         #map { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #333333; z-index: 1; }
         
         .table-wrapper { 
@@ -513,39 +541,45 @@
             border-radius: 6px; 
             margin-bottom: 12px; 
         }
-        .halte-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .halte-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
         .halte-table th, .halte-table td { 
             padding: 10px; 
             text-align: left; 
             border-bottom: 1px solid #222222; 
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
         .halte-table th { 
             background-color: #222222; 
-            color: #ffff00; 
+            color: #ffffff; 
         }
-        .halte-table th, .halte-table td { 
-            padding: 10px; 
-            text-align: left; 
-            border-bottom: 1px solid #222222; 
+        .halte-table td {
+            color: #ffffff;
         }
-        /* Tambahkan aturan ini untuk membatasi kolom audio */
-        .halte-table td:nth-child(5) {
-            max-width: 180px; /* Batas lebar kolom audio */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+
+        /* FIX LEBAR KOLOM DAN TRUNCATE TEXT AUDIO (FIX ISU GAMBAR BARIS MELAR) */
+        .halte-table th:nth-child(1), .halte-table td:nth-child(1) { width: 22%; }
+        .halte-table th:nth-child(2), .halte-table td:nth-child(2) { width: 22%; }
+        .halte-table th:nth-child(3), .halte-table td:nth-child(3) { width: 11%; }
+        .halte-table th:nth-child(4), .halte-table td:nth-child(4) { width: 13%; }
+        .halte-table th:nth-child(5), .halte-table td:nth-child(5) { 
+            width: 17%; 
+            font-family: monospace !important;
+            font-size: 11px;
+            color: #aaeebd;
         }
+        .halte-table th:nth-child(6), .halte-table td:nth-child(6) { width: 15%; overflow: visible; }
         
-        .halte-table tbody tr {
+        .halte-table tbody tr[draggable="true"] {
             cursor: grab;
-            transition: background-color 0.2s;
         }
-        .halte-table tbody tr:active {
+        .halte-table tbody tr[draggable="true"]:active {
             cursor: grabbing;
             background-color: #444444 !important;
         }
         .halte-table tbody tr.drag-over {
-            border-top: 2px solid #ffff00;
+            border-top: 3px solid #ffff00;
             background-color: #2a2a2a;
         }
 
@@ -559,24 +593,35 @@
             border-radius: 6px 6px 0 0;
             margin-bottom: -1px;
         }
-        
+
+        /* UTILITY COMPONENT UNTUK LIST PENGATURAN YANG BISA DI-DRAG */
         .mini-list-box { 
             background: #000; 
             border: 1px dashed #333; 
             padding: 8px; 
             border-radius: 6px; 
-            max-height: 150px; 
-            overflow-y: scroll; 
+            max-height: 180px; 
+            overflow-y: auto; 
             margin-top: 8px; 
         }
         .mini-list-item { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 6px; 
+            padding: 8px; 
             border-bottom: 1px solid #111; 
-            font-size: 11px;
+            font-size: 12px;
             gap: 10px;
+            background-color: #161616;
+            margin-bottom: 4px;
+            border-radius: 4px;
+        }
+        .mini-list-item[draggable="true"] {
+            cursor: grab;
+        }
+        .mini-list-item.drag-over {
+            border-top: 2px solid #ff7b00;
+            background-color: #252525;
         }
         .mini-list-item span {
             white-space: nowrap;
@@ -598,6 +643,12 @@
             font-size: 12px; 
             color: #ff9124; 
         }
+		/* Tembak langsung semua baris data di dalam body tabel geofence */
+        #geofence-table-body td,
+        #geofence-table-body td *,
+        .database-section table tbody tr td {
+            color: #ffffff !important;
+        }
         .divider-line { border: 0; height: 1px; background: #222; margin: 15px 0; }
     </style>
 </head>
@@ -615,7 +666,7 @@
     <div id="modal-rute-prompt" class="rute-modal" onkeydown="handleModalKeyDown(event)">
         <div class="rute-modal-box">
             <button class="modal-close-btn" onclick="tutupModalRute()">X</button>
-            <h3 style="color:#ffff00; font-size: 14px; margin-bottom: 15px; text-align: center; text-transform: uppercase;">Atur Rute Perjalanan</h3>
+            <h3 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; text-transform: uppercase;">Atur Rute Perjalanan</h3>
             
             <div class="form-group">
                 <label>Pilih Titik Asal:</label>
@@ -679,9 +730,9 @@
                     
                     <div class="diag-right-gps">
                         <div class="gps-info-lines">
-                            <div>GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>)</div>
-                            <div>POS: <span id="gps-current-coord" style="color:#aaa;">- , -</span></div>
-                            <div>PROX: <span id="pids-nearest-object" style="color:#ffff00;">Belum Ada Rute</span> (<span id="pids-distance">-</span>)</div>
+                            <div>Status GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>)</div>
+                            <div>Posisi Anda: <span id="gps-current-coord" style="color:#aaa;">- , -</span></div>
+                            <div>Titik Terdekat: (<span id="pids-distance">-</span>)<span id="pids-nearest-object" style="color:#ffff00;">Belum Ada Rute</span></div>
                         </div>
                         
                         <div class="controls-right-group">
@@ -734,11 +785,10 @@
             </div>
 
             <div class="form-group" style="background: #111; padding: 12px; border-radius: 6px; border: 1px solid #222;">
-                <label style="color:#ffff00; font-weight:bold; margin-bottom: 2px; text-transform: uppercase;">AUDIO ANNOUNCER ASSET</label>
+                <label style="color:#ffff00; font-weight:bold; margin-bottom: 2px; text-transform: uppercase;">Pilih Audio Announcer</label>
                 <div class="form-group" style="margin-bottom:0;">
-                    <label>Pilih File Audio Pendukung Halte:</label>
-                    <select id="input-audio-asset-dropdown" class="form-control">
-                        </select>
+                    <label>Pilih File Audio Announcer:</label>
+                    <select id="input-audio-asset-dropdown" class="form-control"></select>
                 </div>
             </div>
 
@@ -751,10 +801,10 @@
                 <h3 style="font-size: 12px; color: #ffff00; text-transform: uppercase; margin: 0;">Daftar Geofence Terdaftar</h3>
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <label style="font-size: 11px; color: #aaa; white-space: nowrap;">Urutan:</label>
-                    <select id="cfg-sort-engine-select" class="form-control" style="width: 140px; padding: 4px 8px; font-size: 11px; height: 26px;" onchange="handleSortMethodChangeTrigger(this.value)">
-                        <option value="manual" selected>Manual (Tarik Mouse)</option>
-                        <option value="az">Abjad A - Z</option>
-                        <option value="za">Abjad Z - A</option>
+                    <select id="cfg-sort-engine-select" class="form-control" style="width: 140px; padding: 4px 8px; font-size: 11px; height: 26px;" onchange="handleSortMethodChangeTrigger('geofence', this.value)">
+                        <option value="manual" selected>Custom</option>
+                        <option value="az">Abjad A-Z</option>
+                        <option value="za">Abjad Z-A</option>
                     </select>
                 </div>
             </div>
@@ -769,18 +819,19 @@
             <hr class="divider-line">
 
             <div class="json-tools-area" style="display:flex; gap: 10px;">
-                <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJsonCombinedAllInOne()">EXPORT JSON</button>
-                <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">IMPORT JSON</button>
+                <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJsonCombinedAllInOne()">Ekspor/Unduh JSON</button>
+                <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">Impor/Unggah JSON</button>
                 <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJsonCombinedAllInOne(event)">
             </div>
         </div>
 
         <div id="tab-config" class="tab-content">
+            
             <div class="config-card">
                 <h3>Identitas Kendaraan & Default Banner</h3>
                 <div class="form-group">
                     <label>Plat Nomor / ID Unit Bus:</label>
-                    <input type="text" id="cfg-plat-no" class="form-control" value="B 1234 TGC" style="text-transform:uppercase;" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-plat-no" class="form-control" value="Nomor Plat" style="text-transform:uppercase;" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
                 <div class="form-group">
                     <label>Preset Teks Default (Jika Input Rute Dikosongkan):</label>
@@ -792,14 +843,37 @@
                 <h3>Batas Alarm Overspeed</h3>
                 <div class="form-group">
                     <label>Batas Kecepatan Maksimal (Km/h):</label>
-                    <input type="number" id="cfg-overspeed-limit" class="form-control" value="50" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="number" id="cfg-overspeed-limit" class="form-control" value="60" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
             <div class="config-card">
-                <h3 style="color: #ff7b00;">PIDS Audio Asset Manager</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:6px;">
+                    <h3 style="margin:0;">Database Manajemen Nama Lokasi Tunggal</h3>
+                    <select id="sort-lokasi-select" class="form-control" style="width:110px; padding:2px; font-size:11px; height:22px;" onchange="handleSortMethodChangeTrigger('lokasi', this.value)">
+                        <option value="manual" selected>Custom</option>
+                        <option value="az">A-Z</option>
+                        <option value="za">Z-A</option>
+                    </select>
+                </div>
+                <div class="single-location-input-group">
+                    <input type="text" id="cfg-add-lokasi-nama" class="form-control" placeholder="Masukkan nama lokasi (Misal: Rumah, Terminal)">
+                    <button class="btn-plus-fixed" onclick="tambahLokasiBuiltIn()">+</button>
+                </div>
+                <div class="mini-list-box" id="cfg-lokasi-list-container"></div>
+            </div>
+
+            <div class="config-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:6px;">
+                    <h3 style="color: #ffff00; margin:0;">PIDS Audio Asset Manager</h3>
+                    <select id="sort-audio-select" class="form-control" style="width:110px; padding:2px; font-size:11px; height:22px;" onchange="handleSortMethodChangeTrigger('audio', this.value)">
+                        <option value="manual" selected>Custom</option>
+                        <option value="az">A-Z</option>
+                        <option value="za">Z-A</option>
+                    </select>
+                </div>
                 <p style="font-size: 11px; color:#aaa; margin-bottom: 8px; line-height: 1.3;">
-                    Ketik path/nama file MP3 lo yang ada di folder GitHub (Contoh: <code style="color:#fff;">audio/senayan.mp3</code>). File ini nanti akan muncul otomatis sebagai pilihan di Tab Database.
+                    Ketik nama/path file MP3 lo (Contoh: <code style="color:#fff;">audio/senayan.mp3</code> atau Base64 data).
                 </p>
                 <div class="single-location-input-group">
                     <input type="text" id="cfg-add-audio-path" class="form-control" placeholder="Contoh: audio/announcer-senayan.mp3">
@@ -808,16 +882,7 @@
                 <div class="mini-list-box" id="cfg-audio-list-container"></div>
             </div>
 
-            <div class="config-card">
-                <h3>Database Manajemen Nama Lokasi Tunggal</h3>
-                <div class="single-location-input-group">
-                    <input type="text" id="cfg-add-lokasi-nama" class="form-control" placeholder="Masukkan nama lokasi (Misal: Rumah, Gereja, Terminal)">
-                    <button class="btn-plus-fixed" onclick="tambahLokasiBuiltIn()">+</button>
-                </div>
-                <div class="mini-list-box" id="cfg-lokasi-list-container"></div>
-            </div>
         </div>
-
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -827,12 +892,16 @@
         const LOGIN_USER = "admin";
         const LOGIN_PASS = "admin123";
 
+        // MASTER STATE (Masing-masing penampung membawa orderIndex internal kustom)
         let dbLokasi = [];
-        let lokasiSingleList = ["Rumah", "Gereja", "Ciledug", "Tendean", "Stasiun", "Terminal"];
-        // FITUR BARU: Array penampung list file audio terdaftar
-        let audioAssetList = ["audio/senayan.mp3", "audio/ciledug.mp3", "audio/tendean.mp3"];
+        let lokasiSingleList = []; 
+        let audioAssetList = [];
         
-        let tipeSortirAktif = "manual"; 
+        // SORT ENGINE STATE
+        let sortModeGeofence = "manual";
+        let sortModeLokasi = "manual";
+        let sortModeAudio = "manual";
+
         let isTrackingActiveUI = false; 
         let ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
         let fallbackTimerId = null;
@@ -840,12 +909,10 @@
         let map = null;
         let markerPeta = null;
         let lingkaranRadiusPeta = null; 
-        
         let livePositionMarker = null;
         let liveAccuracyCircle = null;
 
-        let selectedLat = null;
-        let selectedLng = null;
+        let selectedLat = null; let selectedLng = null;
         let lastPlayedHalteId = null;
         let statusGeofenceSebelumnya = "luar";
         let wakeLock = null;
@@ -856,10 +923,12 @@
         let audioCtx = null;
         let currentAudioObject = null; 
         let overspeedLoopInterval = null; 
-        let lastKnownLat = -6.1754;
-        let lastKnownLng = 106.8272;
+        let lastKnownLat = -6.1754; let lastKnownLng = 106.8272;
         let lastWeatherFetchTime = 0;
-        let dragSrcRowEl = null; 
+        
+        // Drag Elements Registry
+        let dragSrcEl = null;
+        let dragTypeRegistry = "";
 
         window.onload = function() {
             if(sessionStorage.getItem('pids_logged_in') === 'true') {
@@ -869,10 +938,9 @@
             document.getElementById('pids-plat-view').innerText = document.getElementById('cfg-plat-no').value;
 
             inisialisasiPeta();
-            updateTabelHalte();
-            perbaruiDropdownSimulasi();
+            renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("Engine Dashboard Siap.");
+            pushLogKonsol("Engine Dashboard v3.8 Ready.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -894,30 +962,58 @@
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
         };
 
-        function hitungDanSetDurasiMarquee(teks) {
+        function renderSemuaTampilanKomponenUI() {
+            renderTabelGeofenceUI();
+            renderListLokasiBuiltInUI();
+            renderListAudioAssetsUI();
+            renderDropdownAudioDb();
+            perbaruiDropdownSimulasi();
+        }
+
+		function hitungDanSetDurasiMarquee(teks) {
             const root = document.documentElement;
             const targetEl = document.getElementById('pids-display');
             if(!targetEl) return;
-
-            targetEl.innerText = teks;
-            let lebarPikselTeks = targetEl.scrollWidth;
             
+            // Balik ke innerText bawaan
+            targetEl.innerText = teks;
+            
+            let lebarPikselTeks = targetEl.scrollWidth;
             if(lebarPikselTeks < 200) lebarPikselTeks = 400; 
             let durasiDetikKonstan = lebarPikselTeks / 120;
             if(durasiDetikKonstan < 4) durasiDetikKonstan = 4; 
-            
             root.style.setProperty('--marquee-duration', durasiDetikKonstan + 's');
+        }
+
+        function updateTeksMonitorUtamaPIDS(teksBaru) {
+            let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
+            displayNode.style.animation = 'none'; displayNode.offsetHeight; 
+            
+            // Balik ke innerText bawaan
+            displayNode.innerText = teksBaru; 
+            
+            hitungDanSetDurasiMarquee(teksBaru); 
+            displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
+        }
+
+        function updateTeksMonitorUtamaPIDS(teksBaru) {
+            let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
+            displayNode.style.animation = 'none'; displayNode.offsetHeight; 
+            
+            // TRICK FIX SPASI: Mengubah semua spasi biasa menjadi spasi permanen (\u00A0)
+            // Ini memaksa browser merender spasi sebanyak apa pun secara utuh!
+            let teksAmanSpasi = teksBaru.replace(/ /g, '\u00A0');
+            
+            displayNode.textContent = teksAmanSpasi; 
+            hitungDanSetDurasiMarquee(teksAmanSpasi); 
+            
+            displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
         }
 
         function unlockAudioAutoplayContext() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
             } catch(e) {}
         }
 
@@ -927,28 +1023,17 @@
             let accuracy = position.coords.accuracy;
             
             let statusGPSNode = document.getElementById('gps-status');
-            statusGPSNode.innerText = "ON";
-            statusGPSNode.style.color = "#00ff00";
+            statusGPSNode.innerText = "ON"; statusGPSNode.style.color = "#00ff00";
 
             document.getElementById('gps-accuracy').innerText = `${accuracy.toFixed(1)}m`;
             document.getElementById('gps-current-coord').innerText = `${lastKnownLat.toFixed(5)}, ${lastKnownLng.toFixed(5)}`;
             
             if (map) {
-                if (livePositionMarker) {
-                    livePositionMarker.setLatLng([lastKnownLat, lastKnownLng]);
-                } else {
-                    livePositionMarker = L.circleMarker([lastKnownLat, lastKnownLng], {
-                        radius: 8, color: '#ffffff', weight: 2, fillColor: '#0066cc', fillOpacity: 0.9, zIndexOffset: 1000
-                    }).addTo(map);
-                }
+                if (livePositionMarker) livePositionMarker.setLatLng([lastKnownLat, lastKnownLng]);
+                else livePositionMarker = L.circleMarker([lastKnownLat, lastKnownLng], { radius: 8, color: '#ffffff', weight: 2, fillColor: '#0066cc', fillOpacity: 0.9, zIndexOffset: 1000 }).addTo(map);
 
-                if (liveAccuracyCircle) {
-                    liveAccuracyCircle.setLatLng([lastKnownLat, lastKnownLng]).setRadius(accuracy);
-                } else {
-                    liveAccuracyCircle = L.circle([lastKnownLat, lastKnownLng], {
-                        radius: accuracy, color: '#0066cc', weight: 1, fillColor: '#0066cc', fillOpacity: 0.15
-                    }).addTo(map);
-                }
+                if (liveAccuracyCircle) liveAccuracyCircle.setLatLng([lastKnownLat, lastKnownLng]).setRadius(accuracy);
+                else liveAccuracyCircle = L.circle([lastKnownLat, lastKnownLng], { radius: accuracy, color: '#0066cc', weight: 1, fillColor: '#0066cc', fillOpacity: 0.15 }).addTo(map);
             }
 
             let speedMS = position.coords.speed;
@@ -972,37 +1057,24 @@
         async function fetchLiveWeatherDataAPI(lat, lng) {
             try {
                 let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
-                let res = await fetch(url);
-                if (!res.ok) return;
+                let res = await fetch(url); if (!res.ok) return;
                 let data = await res.json();
-                
                 let suhu = Math.round(data.current_weather.temperature);
                 let wCode = data.current_weather.weathercode;
                 let emoji = "☁️";
-
                 if (wCode === 0) emoji = "☀️";
                 else if (wCode >= 1 && wCode <= 3) emoji = "⛅";
-                else if (wCode >= 45 && wCode <= 48) emoji = "🌫️";
                 else if (wCode >= 51 && wCode <= 67) emoji = "🌧️";
-                else if (wCode >= 71 && wCode <= 77) emoji = "❄️";
-                else if (wCode >= 80 && wCode <= 82) emoji = "🌦️";
                 else if (wCode >= 95) emoji = "⛈️";
-
                 document.getElementById('pids-weather').innerText = `${suhu}°C ${emoji}`;
-            } catch (e) {
-                document.getElementById('pids-weather').innerText = `--°C ☁️`;
-            }
+            } catch (e) { document.getElementById('pids-weather').innerText = `--°C ☁️`; }
         }
 
         function updateKompasArahMataAngin(headingDeg, speed) {
             let compassNode = document.getElementById('pids-compass');
-            if (speed <= 3 || headingDeg === null || headingDeg === undefined || isNaN(headingDeg)) {
-                compassNode.innerText = "-";
-                return;
-            }
+            if (speed <= 3 || headingDeg === null || headingDeg === undefined || isNaN(headingDeg)) { compassNode.innerText = "-"; return; }
             const mataAngin = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-            let index = Math.round(headingDeg / 45) % 8;
-            compassNode.innerText = mataAngin[index];
+            let index = Math.round(headingDeg / 45) % 8; compassNode.innerText = mataAngin[index];
         }
 
         function klikTombolPemicuGpsUtama() {
@@ -1010,9 +1082,7 @@
             if (isTrackingActiveUI) {
                 if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; }
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
-                lepasWakeLock();
-                isTrackingActiveUI = false;
-                
+                lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PELACAKAN RUTE";
                 ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
@@ -1021,119 +1091,67 @@
                 document.getElementById('pids-compass').innerText = "-";
                 document.getElementById('pids-distance').innerText = "-";
                 document.getElementById('pids-nearest-object').innerText = "Belum Ada Rute";
-                pushLogKonsol("Pelacakan Rute Dinonaktifkan.");
-            } else {
-                bukaModalPilihRute();
-            }
+                
+                // --- FIX: Kosongkan input text rute manual saat berhenti ---
+                document.getElementById('modal-input-asal-manual').value = "";
+                document.getElementById('modal-input-tujuan-manual').value = "";
+                
+                pushLogKonsol("Pelacakan Rute Dinonaktifkan. Input manual direset.");
+            } else { bukaModalPilihRute(); }
         }
 
         function bukaModalPilihRute() {
             let selectAsal = document.getElementById('modal-select-asal');
             let selectTujuan = document.getElementById('modal-select-tujuan');
             
+            // Render urutan dropdown rute mengikuti sortir aktif Lokasi Tunggal
+            let listProses = dapatkanArrayTerfilterDanTersortir('lokasi', sortModeLokasi);
+            
             let optionsHtml = `<option value="" selected>-- Pilih Lokasi --</option>`;
-            lokasiSingleList.forEach(lokasi => {
-                optionsHtml += `<option value="${lokasi}">${lokasi}</option>`;
-            });
+            listProses.forEach(item => { optionsHtml += `<option value="${item.nama}">${item.nama}</option>`; });
             optionsHtml += `<option value="custom">Ketik Lokasi Baru...</option>`;
             
-            selectAsal.innerHTML = optionsHtml;
-            selectTujuan.innerHTML = optionsHtml;
-
+            selectAsal.innerHTML = optionsHtml; selectTujuan.innerHTML = optionsHtml;
             document.getElementById('modal-input-asal-manual').style.display = 'none';
             document.getElementById('modal-input-tujuan-manual').style.display = 'none';
             document.getElementById('modal-rute-prompt').style.display = 'flex';
-            
             selectAsal.focus();
         }
 
-        function tutupModalRute() {
-            document.getElementById('modal-rute-prompt').style.display = 'none';
-        }
-
-        function handleDropdownAsalManualCheck(val) {
-            let inputAsal = document.getElementById('modal-input-asal-manual');
-            if (val === 'custom') {
-                inputAsal.style.display = 'block';
-                inputAsal.focus();
-            } else {
-                inputAsal.style.display = 'none';
-            }
-        }
-
-        function handleDropdownTujuanManualCheck(val) {
-            let inputTujuan = document.getElementById('modal-input-tujuan-manual');
-            if (val === 'custom') {
-                inputTujuan.style.display = 'block';
-                inputTujuan.focus();
-            } else {
-                inputTujuan.style.display = 'none';
-            }
-        }
-
-        function handleModalKeyDown(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault(); 
-                konfirmasiMulaiTrackingRute();
-            }
-        }
+        function tutupModalRute() { document.getElementById('modal-rute-prompt').style.display = 'none'; }
+        function handleDropdownAsalManualCheck(val) { document.getElementById('modal-input-asal-manual').style.display = (val === 'custom') ? 'block' : 'none'; }
+        function handleDropdownTujuanManualCheck(val) { document.getElementById('modal-input-tujuan-manual').style.display = (val === 'custom') ? 'block' : 'none'; }
+        function handleModalKeyDown(event) { if (event.key === 'Enter') { event.preventDefault(); konfirmasiMulaiTrackingRute(); } }
 
         function konfirmasiMulaiTrackingRute() {
             let selAsal = document.getElementById('modal-select-asal').value;
             let selTujuan = document.getElementById('modal-select-tujuan').value;
-            let asal = ""; let tujuan = "";
-
-            if (selAsal === 'custom') {
-                asal = document.getElementById('modal-input-asal-manual').value.trim();
-            } else { asal = selAsal; }
-
-            if (selTujuan === 'custom') {
-                tujuan = document.getElementById('modal-input-tujuan-manual').value.trim();
-            } else { tujuan = selTujuan; }
-
-            let defText = document.getElementById('cfg-preset-default-text').value.trim() || "PIDS SIMULATOR";
-
-            if (asal !== "" && tujuan === "") { 
-                ruteAktifTeks = asal + "-"; 
-            } 
-            else if (asal !== "" && tujuan !== "") { 
-                ruteAktifTeks = asal + "-" + tujuan; 
-            } 
-            else { 
-                ruteAktifTeks = defText; 
-            }
-
-            document.getElementById('modal-input-asal-manual').value = "";
-            document.getElementById('modal-input-tujuan-manual').value = "";
-
-            document.getElementById('modal-rute-prompt').style.display = 'none';
-            mintaWakeLock();
-            isTrackingActiveUI = true;
             
+            // Menggunakan regex untuk potong spasi ujung luar saja, spasi ganda di dalam TETAP AMAN
+            let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
+            let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
+            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS SIMULATOR";
+
+            if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
+            else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
+            else ruteAktifTeks = defText;
+
+            tutupModalRute(); mintaWakeLock(); isTrackingActiveUI = true;
             document.getElementById('btn-toggle-gps').innerText = "BERHENTI PELACAKAN RUTE";
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
             document.getElementById('pids-nearest-object').innerText = "Mencari Objek...";
-            pushLogKonsol("Mulai rute: " + ruteAktifTeks);
-
             prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, 0);
         }
 
         function updateTeksMonitorUtamaPIDS(teksBaru) {
-            let displayNode = document.getElementById('pids-display');
-            if (!displayNode) return;
-
-            displayNode.style.animation = 'none';
-            displayNode.offsetHeight; 
-            
-            displayNode.innerText = teksBaru;
-            hitungDanSetDurasiMarquee(teksBaru); 
-            
+            let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
+            displayNode.style.animation = 'none'; displayNode.offsetHeight; 
+            displayNode.innerText = teksBaru; hitungDanSetDurasiMarquee(teksBaru); 
             displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
         }
 
         function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
             if (dbLokasi.length === 0) return;
-            
             let hTerdekat = null; let jTerkecil = Infinity;
             dbLokasi.forEach(h => {
                 let j = hitungJarakHaversine(lat, lng, h.lat, h.lng);
@@ -1142,44 +1160,29 @@
 
             if (hTerdekat) {
                 let rGeofence = hTerdekat.radius;
-                let distText = document.getElementById('pids-distance');
-                let targetText = document.getElementById('pids-nearest-object');
-                
-                targetText.innerText = hTerdekat.nama;
+                document.getElementById('pids-nearest-object').innerText = hTerdekat.nama;
 
                 if (jTerkecil <= rGeofence) {
-                    distText.innerText = `In ${Math.round(jTerkecil)}m`;
+                    document.getElementById('pids-distance').innerText = `In ${Math.round(jTerkecil)}m`;
                     if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
-                    
                     let namaTarget = hTerdekat.displayText || hTerdekat.nama;
-                    if (document.getElementById('pids-display').innerText !== namaTarget) {
-                        updateTeksMonitorUtamaPIDS(namaTarget);
-                    }
+                    if (document.getElementById('pids-display').innerText !== namaTarget) updateTeksMonitorUtamaPIDS(namaTarget);
 
                     if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
                         if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id;
-                        pushLogKonsol(`Masuk Geofence: ${hTerdekat.nama}`);
+                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Masuk Geofence: ${hTerdekat.nama}`);
                     }
                     statusGeofenceSebelumnya = "dalam";
                 } else {
-                    distText.innerText = `${Math.round(jTerkecil)}m`;
-                    
+                    document.getElementById('pids-distance').innerText = `${Math.round(jTerkecil)}m`;
                     if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
                         if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id;
-                        pushLogKonsol(`Keluar Geofence: ${hTerdekat.nama}`);
+                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Keluar Geofence: ${hTerdekat.nama}`);
                     }
-
                     if (statusGeofenceSebelumnya === "dalam") {
-                        pushLogKonsol("Keluar radius. Jeda rute aktif.");
                         if (fallbackTimerId) clearTimeout(fallbackTimerId);
-                        fallbackTimerId = setTimeout(() => {
-                            updateTeksMonitorUtamaPIDS(ruteAktifTeks);
-                            pushLogKonsol("Timer Habis. Teks kembali ke rute.");
-                        }, 90000); 
+                        fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000); 
                     }
-
                     if (jTerkecil > (rGeofence + 60) && lastPlayedHalteId === hTerdekat.id) { lastPlayedHalteId = null; }
                     statusGeofenceSebelumnya = "luar";
                 }
@@ -1195,51 +1198,24 @@
                 onAdd: function (map) {
                     let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
                     let button = L.DomUtil.create('a', 'leaflet-control-locate', container);
-                    button.innerHTML = '🎯';
-                    button.title = "Target ke Posisi Saya & Set Koordinat Terpilih";
-                    
+                    button.innerHTML = '🎯'; button.title = "Target ke Posisi Saya";
                     L.DomEvent.on(button, 'click', function (e) {
-                        L.DomEvent.stopPropagation(e);
-                        map.flyTo([lastKnownLat, lastKnownLng], 16);
-                        
-                        if (livePositionMarker) livePositionMarker.setLatLng([lastKnownLat, lastKnownLng]);
-                        else livePositionMarker = L.circleMarker([lastKnownLat, lastKnownLng], { radius: 8, color: '#ffffff', weight: 2, fillColor: '#0066cc', fillOpacity: 0.9 }).addTo(map);
-
-                        selectedLat = lastKnownLat; 
-                        selectedLng = lastKnownLng;
+                        L.DomEvent.stopPropagation(e); map.flyTo([lastKnownLat, lastKnownLng], 16);
+                        selectedLat = lastKnownLat; selectedLng = lastKnownLng;
                         document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-                        
                         if (markerPeta) markerPeta.setLatLng([selectedLat, selectedLng]);
                         else markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
-
                         perbaruiVisualLingkaranRadius();
-                        pushLogKonsol(`Pinpoint GPS di-klik. Koordinat database diset otomatis.`);
                     });
                     return container;
                 }
             });
             map.addControl(new CustomLocateControl());
 
-            L.Control.geocoder({
-                geocoder: L.Control.Geocoder.nominatim(),
-                defaultMarkGeocode: false,
-                placeholder: "Cari nama jalan / wilayah...",
-                collapsed: false
-            }).on('markgeocode', function(e) {
-                let center = e.geocode.center;
-                selectedLat = center.lat; selectedLng = center.lng;
-                document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-                map.fitBounds(e.geocode.bbox);
-                if (markerPeta) markerPeta.setLatLng(center);
-                else markerPeta = L.marker(center).addTo(map);
-                perbaruiVisualLingkaranRadius();
-            }).addTo(map);
-
             map.on('click', function(e) {
                 selectedLat = e.latlng.lat; selectedLng = e.latlng.lng;
                 document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-                if (markerPeta) markerPeta.setLatLng(e.latlng);
-                else markerPeta = L.marker(e.latlng).addTo(map);
+                if (markerPeta) markerPeta.setLatLng(e.latlng); else markerPeta = L.marker(e.latlng).addTo(map);
                 perbaruiVisualLingkaranRadius();
             });
         }
@@ -1247,25 +1223,155 @@
         function perbaruiVisualLingkaranRadius() {
             if (!selectedLat || !selectedLng) return;
             let r = parseInt(document.getElementById('input-radius').value) || 50;
-            if (lingkaranRadiusPeta) {
-                lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]).setRadius(r);
-            } else {
-                lingkaranRadiusPeta = L.circle([selectedLat, selectedLng], {
-                    radius: r, color: '#ffb703', fillColor: '#ffb703', fillOpacity: 0.25, weight: 2
-                }).addTo(map);
-            }
+            if (lingkaranRadiusPeta) lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]).setRadius(r);
+            else lingkaranRadiusPeta = L.circle([selectedLat, selectedLng], { radius: r, color: '#ffb703', fillColor: '#ffb703', fillOpacity: 0.25, weight: 2 }).addTo(map);
         }
 
-        // FITUR BARU: Render Dropdown Audio Terdaftar di Tab Database
-        function renderDropdownAudioDb() {
-            let select = document.getElementById('input-audio-asset-dropdown');
-            if(!select) return;
-            let html = `<option value="none">-- Tanpa Suara / Mute --</option>`;
-            audioAssetList.forEach(file => {
-                html += `<option value="${file}">${file}</option>`;
+        // --- SORT ALGORITHM CORE ENGINE (KOMPARTEMEN INDEPENDEN) ---
+        function dapatkanArrayTerfilterDanTersortir(type, mode) {
+            let targetArr = [];
+            if (type === 'geofence') targetArr = [...dbLokasi];
+            else if (type === 'lokasi') targetArr = [...lokasiSingleList];
+            else if (type === 'audio') targetArr = [...audioAssetList];
+
+            if (mode === 'manual') {
+                targetArr.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+            } else if (mode === 'az') {
+                targetArr.sort((a, b) => a.nama.localeCompare(b.nama, 'id', {sensitivity: 'base'}));
+            } else if (mode === 'za') {
+                targetArr.sort((a, b) => b.nama.localeCompare(a.nama, 'id', {sensitivity: 'base'}));
+            }
+            return targetArr;
+        }
+
+        function handleSortMethodChangeTrigger(type, val) {
+            if (type === 'geofence') { sortModeGeofence = val; renderTabelGeofenceUI(); }
+            else if (type === 'lokasi') { sortModeLokasi = val; renderListLokasiBuiltInUI(); }
+            else if (type === 'audio') { sortModeAudio = val; renderListAudioAssetsUI(); }
+        }
+
+        // --- DRAG N DROP ENGINE UNIVERSAL ---
+        function attachDragAndDropListeners(element, type) {
+            element.addEventListener('dragstart', function(e) {
+                dragSrcEl = this; dragTypeRegistry = type;
+                e.dataTransfer.effectAllowed = 'move';
+                this.style.opacity = '0.4';
             });
+            element.addEventListener('dragover', function(e) {
+                if (e.preventDefault) e.preventDefault();
+                if (dragTypeRegistry === type) this.classList.add('drag-over');
+                return false;
+            });
+            element.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+            element.addEventListener('drop', function(e) {
+                if (e.stopPropagation) e.stopPropagation();
+                this.classList.remove('drag-over');
+                if (dragSrcEl !== this && dragTypeRegistry === type) {
+                    let srcIdx = parseInt(dragSrcEl.getAttribute('data-index'));
+                    let targetIdx = parseInt(this.getAttribute('data-index'));
+                    reorderStateArrayElements(type, srcIdx, targetIdx);
+                }
+                return false;
+            });
+            element.addEventListener('dragend', function() {
+                this.style.opacity = '1.0';
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            });
+        }
+
+        function reorderStateArrayElements(type, fromIdx, toIdx) {
+            let activeList = dapatkanArrayTerfilterDanTersortir(type, 'manual');
+            let movedItem = activeList.splice(fromIdx, 1)[0];
+            activeList.splice(toIdx, 0, movedItem);
+
+            // Tulis ulang orderIndex murni berdasarkan urutan array manual baru
+            activeList.forEach((item, index) => { item.orderIndex = index; });
+
+            // Kembalikan ke master array
+            if (type === 'geofence') { dbLokasi = activeList; localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); renderTabelGeofenceUI(); perbaruiDropdownSimulasi(); }
+            else if (type === 'lokasi') { lokasiSingleList = activeList; localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList)); renderListLokasiBuiltInUI(); }
+            else if (type === 'audio') { audioAssetList = activeList; localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList)); renderListAudioAssetsUI(); renderDropdownAudioDb(); }
+            pushLogKonsol(`Urutan manual ${type} diperbarui.`);
+        }
+
+        // ==================== RENDERING UI MANAGEMENT ====================
+
+        // 1. RENDER TABEL GEOFENCE (TAB DATABASE) - DENGAN HOVER TOOLTIP & ELLIPSIS
+        function renderTabelGeofenceUI() {
+            let tbody = document.getElementById('list-halte-body'); tbody.innerHTML = "";
+            let listProses = dapatkanArrayTerfilterDanTersortir('geofence', sortModeGeofence);
+
+            if (listProses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888; padding:20px;">Database kosong.</td></tr>`; return;
+            }
+            listProses.forEach((item, index) => {
+                let displayAudio = (item.audioData && item.audioData !== "none") ? item.audioData : "-";
+                let tr = document.createElement('tr');
+                
+                if (sortModeGeofence === "manual") {
+                    tr.draggable = true; tr.setAttribute('data-index', index);
+                    attachDragAndDropListeners(tr, 'geofence');
+                }
+                
+                // title="${displayAudio}" dipasang untuk hover tooltip agar text panjang/Base64 tetap bisa dibaca rapi
+                tr.innerHTML = `
+                    <td style="font-weight:bold; color:#ffffff;" title="${item.nama}">${item.nama}</td>
+                    <td title="${item.displayText||item.nama}">${item.displayText||item.nama}</td>
+                    <td>${item.radius}m</td>
+                    <td style="text-transform:uppercase;">${item.triggerType || 'masuk'}</td>
+                    <td title="${displayAudio}">${displayAudio}</td>
+                    <td style="overflow:visible;">
+                        <button class="btn-action btn-action-edit" onclick="masukkanKeModeEdit(${item.id})">Edit</button>
+                        <button class="btn-action btn-action-duplicate" onclick="duplikatLokasi(${item.id})">Duplikat</button>
+                        <button class="btn-action btn-action-delete" onclick="hapusLokasi(${item.id})">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 2. RENDER MANAJEMEN LOKASI TUNGGAL (TAB CONFIG) - PURE NAMA TANPA PREFIX
+        function renderListLokasiBuiltInUI() {
+            let container = document.getElementById('cfg-lokasi-list-container'); container.innerHTML = "";
+            let listProses = dapatkanArrayTerfilterDanTersortir('lokasi', sortModeLokasi);
+
+            listProses.forEach((item, index) => {
+                let div = document.createElement('div'); div.className = "mini-list-item";
+                if (sortModeLokasi === "manual") {
+                    div.draggable = true; div.setAttribute('data-index', index);
+                    attachDragAndDropListeners(div, 'lokasi');
+                }
+                div.innerHTML = `<span>📍 ${item.nama}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusLokasiBuiltIn('${item.id}')">X</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        // 3. RENDER PIDS AUDIO ASSET MANAGER (TAB CONFIG)
+        function renderListAudioAssetsUI() {
+            let container = document.getElementById('cfg-audio-list-container'); container.innerHTML = "";
+            let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
+
+            listProses.forEach((item, index) => {
+                let div = document.createElement('div'); div.className = "mini-list-item";
+                if (sortModeAudio === "manual") {
+                    div.draggable = true; div.setAttribute('data-index', index);
+                    attachDragAndDropListeners(div, 'audio');
+                }
+                div.innerHTML = `<span title="${item.nama}">🎵 ${item.nama}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusAudioAssetLokal('${item.id}')">X</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        // 4. RENDER DROPDOWN AUDIO DI TAB DATABASE
+        function renderDropdownAudioDb() {
+            let select = document.getElementById('input-audio-asset-dropdown'); if(!select) return;
+            let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
+            let html = `<option value="none">-- Tanpa Suara / Mute --</option>`;
+            listProses.forEach(item => { html += `<option value="${item.nama}">${item.nama}</option>`; });
             select.innerHTML = html;
         }
+
+        // ==================== DATABASE OPERATION ====================
 
         function eksekusiSimpan() {
             let nama = document.getElementById('input-nama').value.trim();
@@ -1275,136 +1381,39 @@
             let audioSelection = document.getElementById('input-audio-asset-dropdown').value;
 
             if (displayText === "") displayText = nama;
-            if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi data koordinat & nama!"); return; }
+            if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi koordinat peta & nama objek!"); return; }
 
             if (idTargetEdit === null) {
-                dbLokasi.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: audioSelection });
+                dbLokasi.push({ 
+                    id: Date.now(), nama: nama, displayText: displayText, 
+                    lat: selectedLat, lng: selectedLng, radius: radius, 
+                    triggerType: triggerType, audioData: audioSelection,
+                    orderIndex: dbLokasi.length 
+                });
             } else {
                 let idx = dbLokasi.findIndex(i => i.id === idTargetEdit);
                 if (idx !== -1) {
-                    dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText; dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng; dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
+                    dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText;
+                    dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng;
+                    dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
                     dbLokasi[idx].audioData = audioSelection;
                 }
             }
             
-            if(tipeSortirAktif !== "manual") {
-                eksekusiSortirOtomatisEngine(tipeSortirAktif);
-            } else {
-                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-            }
-
-            resetFormInput(); updateTabelHalte(); perbaruiDropdownSimulasi();
-            alert("Data lokasi disimpan!");
-        }
-
-        function updateTabelHalte() {
-            let tbody = document.getElementById('list-halte-body'); tbody.innerHTML = "";
-            if (dbLokasi.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">Database kosong.</td></tr>`; return;
-            }
-            dbLokasi.forEach((item, index) => {
-                let displayAudio = (item.audioData && item.audioData !== "none") ? item.audioData : "-";
-                let tr = document.createElement('tr');
-                
-                if (tipeSortirAktif === "manual") {
-                    tr.draggable = true;
-                    tr.setAttribute('data-index', index);
-                    tr.addEventListener('dragstart', handleDragStartEngine, false);
-                    tr.addEventListener('dragover', handleDragOverEngine, false);
-                    tr.addEventListener('dragleave', handleDragLeaveEngine, false);
-                    tr.addEventListener('drop', handleDropEngine, false);
-                    tr.addEventListener('dragend', handleDragEndEngine, false);
-                } else {
-                    tr.draggable = false;
-                }
-
-                tr.innerHTML = `
-                    <td style="font-weight:bold; color:#ffff00;">${item.nama}</td>
-                    <td>${item.displayText||item.nama}</td>
-                    <td>${item.radius}m</td>
-                    <td>${item.triggerType}</td>
-                    <td style="font-family:monospace; font-size:11px; color:#aae;" title="${displayAudio}">${displayAudio}</td>
-                    <td>
-                        <button class="btn-action btn-action-edit" onclick="masukkanKeModeEdit(${item.id})">EDIT</button>
-                        <button class="btn-action btn-action-duplicate" onclick="duplikatLokasi(${item.id})">DUPLIKAT</button>
-                        <button class="btn-action btn-action-delete" onclick="hapusLokasi(${item.id})">HAPUS</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function handleDragStartEngine(e) {
-            dragSrcRowEl = this;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', this.innerHTML);
-            this.style.opacity = '0.4';
-        }
-        function handleDragOverEngine(e) {
-            if (e.preventDefault) e.preventDefault();
-            this.classList.add('drag-over');
-            return false;
-        }
-        function handleDragLeaveEngine(e) {
-            this.classList.remove('drag-over');
-        }
-        function handleDropEngine(e) {
-            if (e.stopPropagation) e.stopPropagation();
-            this.classList.remove('drag-over');
-            
-            if (dragSrcRowEl !== this) {
-                let srcIndex = parseInt(dragSrcRowEl.getAttribute('data-index'));
-                let targetIndex = parseInt(this.getAttribute('data-index'));
-                
-                let targetItem = dbLokasi.splice(srcIndex, 1)[0];
-                dbLokasi.splice(targetIndex, 0, targetItem);
-                
-                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-                updateTabelHalte();
-                perbaruiDropdownSimulasi();
-                pushLogKonsol("Urutan geofence manual diperbarui via drag mouse.");
-            }
-            return false;
-        }
-        function handleDragEndEngine(e) {
-            this.style.opacity = '1.0';
-            let rows = document.querySelectorAll('#list-halte-body tr');
-            rows.forEach(row => row.classList.remove('drag-over'));
-        }
-
-        function handleSortMethodChangeTrigger(val) {
-            tipeSortirAktif = val;
-            if (val !== "manual") {
-                eksekusiSortirOtomatisEngine(val);
-            }
-            updateTabelHalte();
-        }
-
-        function eksekusiSortirOtomatisEngine(mode) {
-            if (mode === "az") {
-                dbLokasi.sort((a, b) => a.nama.localeCompare(b.nama, 'id', {sensitivity: 'base'}));
-            } else if (mode === "za") {
-                dbLokasi.sort((a, b) => b.nama.localeCompare(a.nama, 'id', {sensitivity: 'base'}));
-            }
             localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-            perbaruiDropdownSimulasi();
-            pushLogKonsol(`Database diurutkan otomatis: [${mode.toUpperCase()}]`);
+            resetFormInput(); renderSemuaTampilanKomponenUI();
+            alert("Data lokasi geofence berhasil disimpan!");
         }
 
         function duplikatLokasi(id) {
             let target = dbLokasi.find(i => i.id === id); if (!target) return;
-            let klon = {
-                id: Date.now(),
-                nama: target.nama + " - Copy",
-                displayText: target.displayText || target.nama, 
-                lat: target.lat, lng: target.lng, radius: target.radius,
-                triggerType: target.triggerType || "masuk", audioData: target.audioData
-            };
-            dbLokasi.push(klon);
-            if(tipeSortirAktif !== "manual") eksekusiSortirOtomatisEngine(tipeSortirAktif);
-            else localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-            updateTabelHalte(); perbaruiDropdownSimulasi();
-            pushLogKonsol(`Duplikasi berhasil: ${klon.nama}`);
+            dbLokasi.push({
+                id: Date.now(), nama: target.nama + " - Copy", displayText: target.displayText || target.nama, 
+                lat: target.lat, lng: target.lng, radius: target.radius, triggerType: target.triggerType, 
+                audioData: target.audioData, orderIndex: dbLokasi.length
+            });
+            localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+            renderTabelGeofenceUI(); perbaruiDropdownSimulasi();
         }
 
         function masukkanKeModeEdit(id) {
@@ -1415,8 +1424,6 @@
             document.getElementById('input-radius').value = h.radius;
             document.getElementById('range-val-preview').innerText = h.radius + " Meter";
             document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
-            
-            // Set value dropdown sesuai audio data objek
             document.getElementById('input-audio-asset-dropdown').value = h.audioData ? h.audioData : "none";
             
             selectedLat = h.lat; selectedLng = h.lng;
@@ -1424,23 +1431,18 @@
             document.getElementById('edit-target-name').innerText = h.nama;
             document.getElementById('edit-indicator').style.display = 'block';
             
-            let b = document.getElementById('btn-simpan'); 
-            b.innerText = "PERBARUI DATA"; 
-            b.className = "btn btn-database-save";
+            document.getElementById('btn-simpan').innerText = "PERBARUI DATA LOKASI"; 
             document.getElementById('btn-batal-edit').style.display = 'block';
-            
-            map.flyTo([selectedLat, selectedLng], 16);
-            perbaruiVisualLingkaranRadius();
+            map.flyTo([selectedLat, selectedLng], 16); perbaruiVisualLingkaranRadius();
         }
 
         function resetFormInput() {
             idTargetEdit = null; selectedLat = null; selectedLng = null;
             document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; 
             document.getElementById('input-audio-asset-dropdown').value = "none"; document.getElementById('input-koordinat').value = "";
-            document.getElementById('input-radius').value = 50;
-            document.getElementById('range-val-preview').innerText = "50 Meter"; document.getElementById('edit-indicator').style.display = 'none';
-            
-            let b = document.getElementById('btn-simpan'); b.innerText = "SIMPAN DATA LOKASI"; b.className = "btn btn-database-save";
+            document.getElementById('input-radius').value = 50; document.getElementById('range-val-preview').innerText = "50 Meter";
+            document.getElementById('edit-indicator').style.display = 'none';
+            document.getElementById('btn-simpan').innerText = "SIMPAN DATA LOKASI";
             document.getElementById('btn-batal-edit').style.display = 'none';
             if (markerPeta) { map.removeLayer(markerPeta); markerPeta = null; }
             if (lingkaranRadiusPeta) { map.removeLayer(lingkaranRadiusPeta); lingkaranRadiusPeta = null; }
@@ -1448,9 +1450,13 @@
 
         function hapusLokasi(id) {
             if (confirm("Hapus objek geofence ini?")) {
-                dbLokasi = dbLokasi.filter(i => i.id !== id); localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); updateTabelHalte(); perbaruiDropdownSimulasi();
+                dbLokasi = dbLokasi.filter(i => i.id !== id);
+                dbLokasi.forEach((item, index) => { item.orderIndex = index; }); // Peta ulang index
+                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); renderTabelGeofenceUI(); perbaruiDropdownSimulasi();
             }
         }
+
+        // ==================== CONFIG TAB HANDLING ====================
 
         function simpanPengaturanUmumKeStorage() {
             let platValue = document.getElementById('cfg-plat-no').value.trim().toUpperCase();
@@ -1460,71 +1466,55 @@
             localStorage.setItem('pids_os_limit', document.getElementById('cfg-overspeed-limit').value);
         }
 
-        // FITUR BARU: List Render Audio UI di Pengaturan
-        function renderListAudioAssetsUI() {
-            let aContainer = document.getElementById('cfg-audio-list-container'); 
-            if(!aContainer) return;
-            aContainer.innerHTML = "";
-            audioAssetList.forEach((file, idx) => {
-                let div = document.createElement('div'); div.className = "mini-list-item";
-                div.innerHTML = `<span>🎵 ${file}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusAudioAssetLokal(${idx})">X</button>`;
-                aContainer.appendChild(div);
-            });
-        }
-
-        function tambahAudioAssetLokal() {
-            let path = document.getElementById('cfg-add-audio-path').value.trim();
-            if (path === "") { alert("Path file audio tidak boleh kosong!"); return; }
-            if (audioAssetList.includes(path)) { alert("File audio sudah terdaftar!"); return; }
-            audioAssetList.push(path);
-            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
-            document.getElementById('cfg-add-audio-path').value = ""; 
-            renderListAudioAssetsUI();
-            renderDropdownAudioDb(); // sinkronkan dropdown tab database
-        }
-
-        function hapusAudioAssetLokal(idx) {
-            audioAssetList.splice(idx, 1); 
-            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList)); 
-            renderListAudioAssetsUI();
-            renderDropdownAudioDb(); // sinkronkan dropdown tab database
-        }
-
-        function renderListLokasiBuiltInUI() {
-            let rContainer = document.getElementById('cfg-lokasi-list-container'); rContainer.innerHTML = "";
-            lokasiSingleList.forEach((r, idx) => {
-                let div = document.createElement('div'); div.className = "mini-list-item";
-                div.innerHTML = `<span>LOKASI: ${r}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusLokasiBuiltIn(${idx})">X</button>`;
-                rContainer.appendChild(div);
-            });
-        }
-
         function tambahLokasiBuiltIn() {
             let namaLokasi = document.getElementById('cfg-add-lokasi-nama').value.trim();
-            if (namaLokasi === "") { alert("Nama lokasi tidak boleh kosong!"); return; }
-            lokasiSingleList.push(namaLokasi);
+            if (namaLokasi === "") { alert("Nama lokasi kosong!"); return; }
+            lokasiSingleList.push({ id: 'loc_' + Date.now(), nama: namaLokasi, orderIndex: lokasiSingleList.length });
             localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
             document.getElementById('cfg-add-lokasi-nama').value = ""; renderListLokasiBuiltInUI();
         }
 
-        function hapusLokasiBuiltIn(idx) {
-            lokasiSingleList.splice(idx, 1); localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList)); renderListLokasiBuiltInUI();
+        function hapusLokasiBuiltIn(id) {
+            lokasiSingleList = lokasiSingleList.filter(i => i.id !== id);
+            lokasiSingleList.forEach((item, index) => { item.orderIndex = index; });
+            localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList)); renderListLokasiBuiltInUI();
         }
+
+        function tambahAudioAssetLokal() {
+            let path = document.getElementById('cfg-add-audio-path').value.trim();
+            if (path === "") { alert("Path audio kosong!"); return; }
+            if (audioAssetList.some(i => i.nama === path)) { alert("File audio sudah terdaftar!"); return; }
+            audioAssetList.push({ id: 'aud_' + Date.now(), nama: path, orderIndex: audioAssetList.length });
+            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
+            document.getElementById('cfg-add-audio-path').value = ""; 
+            renderListAudioAssetsUI(); renderDropdownAudioDb();
+        }
+
+        function hapusAudioAssetLokal(id) {
+            audioAssetList = audioAssetList.filter(i => i.id !== id);
+            audioAssetList.forEach((item, index) => { item.orderIndex = index; });
+            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList)); 
+            renderListAudioAssetsUI(); renderDropdownAudioDb();
+        }
+
+        // ==================== STORAGE & PORTABILITY DATA PACKAGING ====================
 
         function muatSemuaDataDariStorage() {
             let dm = localStorage.getItem('pids_lokasi_data'); if (dm) { try { dbLokasi = JSON.parse(dm); } catch(e){} }
+            let lStorage = localStorage.getItem('pids_lokasi_singles'); if (lStorage) { try { lokasiSingleList = JSON.parse(lStorage); } catch(e){} }
+            let aStorage = localStorage.getItem('pids_audio_assets_list'); if (aStorage) { try { audioAssetList = JSON.parse(aStorage); } catch(e){} }
+            
+            // Konversi struktur lama v3.6 seandainya ada data legacy string
+            if(lokasiSingleList.length > 0 && typeof lokasiSingleList[0] === 'string') {
+                lokasiSingleList = lokasiSingleList.map((str, idx) => ({ id: 'loc_' + idx + '_' + Date.now(), nama: str, orderIndex: idx }));
+            }
+            if(audioAssetList.length > 0 && typeof audioAssetList[0] === 'string') {
+                audioAssetList = audioAssetList.map((str, idx) => ({ id: 'aud_' + idx + '_' + Date.now(), nama: str, orderIndex: idx }));
+            }
+
             if (localStorage.getItem('pids_plat_nomor')) document.getElementById('cfg-plat-no').value = localStorage.getItem('pids_plat_nomor');
             if (localStorage.getItem('pids_preset_default_text')) document.getElementById('cfg-preset-default-text').value = localStorage.getItem('pids_preset_default_text');
             if (localStorage.getItem('pids_os_limit')) document.getElementById('cfg-overspeed-limit').value = localStorage.getItem('pids_os_limit');
-            
-            let lStorage = localStorage.getItem('pids_lokasi_singles'); if (lStorage) { try { lokasiSingleList = JSON.parse(lStorage); } catch(e){} }
-            
-            // FITUR BARU: Muat list asset audio dari localStorage
-            let aStorage = localStorage.getItem('pids_audio_assets_list'); if (aStorage) { try { audioAssetList = JSON.parse(aStorage); } catch(e){} }
-            
-            renderListAudioAssetsUI();
-            renderDropdownAudioDb();
-            renderListLokasiBuiltInUI();
         }
 
         function exportDataKeJsonCombinedAllInOne() {
@@ -1533,11 +1523,11 @@
                 overspeedLimit: document.getElementById('cfg-overspeed-limit').value,
                 presetDefaultText: document.getElementById('cfg-preset-default-text').value.trim(),
                 lokasiSingles: lokasiSingleList, 
-                audioAssets: audioAssetList, // FITUR BARU: ikut ter-export
+                audioAssets: audioAssetList,
                 geofenceDatabase: dbLokasi
             };
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configPackage, null, 2));
-            let downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "pids_v3.7_backup.json"); downloadAnchor.click();
+            let downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "pids_v3.8_backup.json"); downloadAnchor.click();
         }
 
         function importDataDariJsonCombinedAllInOne(event) {
@@ -1551,23 +1541,22 @@
                         document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                         document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS SIMULATOR";
                         lokasiSingleList = parsedData.lokasiSingles; 
-                        audioAssetList = parsedData.audioAssets || []; // Ambil data audio assets backup
+                        audioAssetList = parsedData.audioAssets || []; 
                         dbLokasi = parsedData.geofenceDatabase;
-                    } else if (Array.isArray(parsedData)) {
-                        dbLokasi = parsedData;
-                    } else { throw new Error("Format salah"); }
+                    } else { throw new Error("Format tidak valid!"); }
 
                     localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
                     localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
                     localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
                     
-                    if(tipeSortirAktif !== "manual") eksekusiSortirOtomatisEngine(tipeSortirAktif);
-                    simpanPengaturanUmumKeStorage(); updateTabelHalte(); perbaruiDropdownSimulasi(); renderListLokasiBuiltInUI(); renderListAudioAssetsUI(); renderDropdownAudioDb();
-                    alert("Restore Database Sukses!");
-                } catch (err) { alert("Gagal Import!"); }
+                    simpanPengaturanUmumKeStorage(); renderSemuaTampilanKomponenUI();
+                    alert("Restore Database Engine Sukses!");
+                } catch (err) { alert("File JSON Rusak atau Format Salah!"); }
             };
             reader.readAsText(file);
         }
+
+        // ==================== SYSTEM PERIPHERAL SIMULATION ====================
 
         function toggleLayarPenuhAPI() {
             let areaMonitor = document.getElementById('pids-monitor-mode');
@@ -1576,9 +1565,7 @@
         }
 
         function monitorFullscreenStateChange() {
-            document.addEventListener('fullscreenchange', () => {
-                document.getElementById('btn-fs-floating').innerText = document.fullscreenElement ? "EXIT" : "⛶";
-            });
+            document.addEventListener('fullscreenchange', () => { document.getElementById('btn-fs-floating').innerText = document.fullscreenElement ? "EXIT" : "⛶"; });
         }
 
         function pushLogKonsol(teks) {
@@ -1613,10 +1600,9 @@
             try { 
                 unlockAudioAutoplayContext(); 
                 if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject.src = ""; currentAudioObject = null; }
-                currentAudioObject = new Audio(); 
-                currentAudioObject.src = audioPathUrl;
-                currentAudioObject.play().then(() => { pushLogKonsol(`Memutar: ${audioPathUrl}`); }).catch(err => { pushLogKonsol("Gagal putar otomatis."); });
-            } catch (e) { pushLogKonsol("Audio error: " + e.message); }
+                currentAudioObject = new Audio(); currentAudioObject.src = audioPathUrl;
+                currentAudioObject.play().then(() => { pushLogKonsol(`Memutar: ${audioPathUrl.substring(0,40)}...`); }).catch(err => { pushLogKonsol("Gagal autoplay."); });
+            } catch (e) { pushLogKonsol("Audio error."); }
         }
 
         function hitungJarakHaversine(lat1, lon1, lat2, lon2) {
@@ -1643,8 +1629,8 @@
 
         function toggleAudioAnnouncerButton() {
             isAudioEnabled = !isAudioEnabled; let btnAudio = document.getElementById('btn-audio-dashboard-switch');
-            if(isAudioEnabled) { btnAudio.innerText = "AUD: ON"; btnAudio.classList.remove('audio-off'); pushLogKonsol("Announcer Aktif."); } 
-            else { btnAudio.innerText = "AUD: OFF"; btnAudio.classList.add('audio-off'); pushLogKonsol("Announcer Dimatikan."); if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject = null; } }
+            if(isAudioEnabled) { btnAudio.innerText = "AUD: ON"; btnAudio.classList.remove('audio-off'); } 
+            else { btnAudio.innerText = "AUD: OFF"; btnAudio.classList.add('audio-off'); if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject = null; } }
         }
 
         async function mintaWakeLock() { if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} } }
@@ -1678,10 +1664,10 @@
                 if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Radius: ${h.nama}`); }
                 if (statusGeofenceSebelumnya === "dalam") {
                     if (fallbackTimerId) clearTimeout(fallbackTimerId);
-                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); pushLogKonsol("[SIMULASI] Kembali ke rute awal."); }, 90000);
+                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 1000);
                 }
                 lastPlayedHalteId = null; statusGeofenceSebelumnya = "luar";
-                pushLogKonsol(`[SIMULASI] Geofence Reset. Halte [${h.nama}] siap dipicu ulang.`);
+                pushLogKonsol(`[SIMULASI] Geofence Reset.`);
             }
         }
     </script>
