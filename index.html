@@ -1259,42 +1259,79 @@
         }
 
         function inisialisasiPeta() {
-            map = L.map('map', { zoomControl: true }).setView([-6.1754, 106.8272], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-            
-            let CustomLocateControl = L.Control.extend({
-                options: { position: 'topleft' },
-                onAdd: function (map) {
-                    let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                    let button = L.DomUtil.create('a', 'leaflet-control-locate', container);
-                    button.innerHTML = '🎯'; button.title = "Target ke Posisi Saya";
-                    L.DomEvent.on(button, 'click', function (e) {
-                        L.DomEvent.stopPropagation(e); map.flyTo([lastKnownLat, lastKnownLng], 16);
-                        selectedLat = lastKnownLat; selectedLng = lastKnownLng;
-                        document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-                        if (markerPeta) markerPeta.setLatLng([selectedLat, selectedLng]);
-                        else markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
-                        perbaruiVisualLingkaranRadius();
-                    });
-                    return container;
-                }
-            });
-            map.addControl(new CustomLocateControl());
-
-            map.on('click', function(e) {
-                selectedLat = e.latlng.lat; selectedLng = e.latlng.lng;
+    map = L.map('map', { zoomControl: true }).setView([-6.1754, 106.8272], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    
+    let CustomLocateControl = L.Control.extend({
+        options: { position: 'topleft' },
+        onAdd: function (map) {
+            let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            let button = L.DomUtil.create('a', 'leaflet-control-locate', container);
+            button.innerHTML = '🎯'; button.title = "Target ke Posisi Saya";
+            L.DomEvent.on(button, 'click', function (e) {
+                L.DomEvent.stopPropagation(e); map.flyTo([lastKnownLat, lastKnownLng], 16);
+                selectedLat = lastKnownLat; selectedLng = lastKnownLng;
                 document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-                if (markerPeta) markerPeta.setLatLng(e.latlng); else markerPeta = L.marker(e.latlng).addTo(map);
+                if (markerPeta) markerPeta.setLatLng([selectedLat, selectedLng]);
+                else markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
                 perbaruiVisualLingkaranRadius();
             });
+            return container;
         }
+    });
+    // FIX: Baris ini sudah dibersihkan dari typo ganda
+    map.addControl(new CustomLocateControl());
 
-        function perbaruiVisualLingkaranRadius() {
-            if (!selectedLat || !selectedLng) return;
-            let r = parseInt(document.getElementById('input-radius').value) || 50;
-            if (lingkaranRadiusPeta) lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]).setRadius(r);
-            else lingkaranRadiusPeta = L.circle([selectedLat, selectedLng], { radius: r, color: '#ffb703', fillColor: '#ffb703', fillOpacity: 0.25, weight: 2 }).addTo(map);
+    map.on('click', function(e) {
+        selectedLat = e.latlng.lat; selectedLng = e.latlng.lng;
+        document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
+        if (markerPeta) markerPeta.setLatLng(e.latlng); else markerPeta = L.marker(e.latlng).addTo(map);
+        perbaruiVisualLingkaranRadius();
+    });
+
+    // Otomatis panggil buat ngeplot semua titik pas start
+    renderSemuaTitikDatabaseKePeta();
+}
+
+function perbaruiVisualLingkaranRadius() {
+    if (!selectedLat || !selectedLng) return;
+    let r = parseInt(document.getElementById('input-radius').value) || 50;
+    if (lingkaranRadiusPeta) lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]).setRadius(r);
+    else lingkaranRadiusPeta = L.circle([selectedLat, selectedLng], { radius: r, color: '#ffb703', fillColor: '#ffb703', fillOpacity: 0.25, weight: 2 }).addTo(map);
+}
+
+// Variabel penampung grup marker database lo
+let grupMarkerDatabase = null;
+
+function renderSemuaTitikDatabaseKePeta() {
+    if (grupMarkerDatabase) {
+        grupMarkerDatabase.clearLayers();
+    } else {
+        grupMarkerDatabase = L.layerGroup().addTo(map);
+    }
+
+    let semuaKoordinat = [];
+
+    if (typeof dbLokasi !== 'undefined' && dbLokasi.length > 0) {
+        dbLokasi.forEach((item, index) => {
+            if (item.lat && item.lng) {
+                let markerHalte = L.marker([item.lat, item.lng])
+                    .bindPopup(`<b>[${index + 1}] ${item.nama}</b><br>Radius: ${item.radius || 50}m`);
+                
+                grupMarkerDatabase.addLayer(markerHalte);
+                semuaKoordinat.push([item.lat, item.lng]);
+            }
+        });
+    }
+
+    if (semuaKoordinat.length > 0) {
+        map.fitBounds(semuaKoordinat, { padding: [40, 40] });
+		if (map.getZoom() > 14) {
+            map.setZoom(14);
         }
+        pushLogKonsol(`[PETA] Sukses plot ${semuaKoordinat.length} titik dari database.`);
+    }
+}
 
         // --- SORT ALGORITHM CORE ENGINE (KOMPARTEMEN INDEPENDEN) ---
         function dapatkanArrayTerfilterDanTersortir(type, mode) {
@@ -1526,24 +1563,37 @@ function editLokasiBuiltIn(id) {
         }
 
         function masukkanKeModeEdit(id) {
-            let h = dbLokasi.find(i => i.id === id); if (!h) return;
-            idTargetEdit = id;
-            document.getElementById('input-nama').value = h.nama;
-            document.getElementById('input-display-text').value = h.displayText || h.nama;
-            document.getElementById('input-radius').value = h.radius;
-            document.getElementById('range-val-preview').innerText = h.radius + " Meter";
-            document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
-            document.getElementById('input-audio-asset-dropdown').value = h.audioData ? h.audioData : "none";
-            
-            selectedLat = h.lat; selectedLng = h.lng;
-            document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-            document.getElementById('edit-target-name').innerText = h.nama;
-            document.getElementById('edit-indicator').style.display = 'block';
-            
-            document.getElementById('btn-simpan').innerText = "PERBARUI DATA LOKASI"; 
-            document.getElementById('btn-batal-edit').style.display = 'block';
-            map.flyTo([selectedLat, selectedLng], 16); perbaruiVisualLingkaranRadius();
+    let h = dbLokasi.find(i => i.id === id); if (!h) return;
+    idTargetEdit = id;
+    document.getElementById('input-nama').value = h.nama;
+    document.getElementById('input-display-text').value = h.displayText || h.nama;
+    document.getElementById('input-radius').value = h.radius;
+    document.getElementById('range-val-preview').innerText = h.radius + " Meter";
+    document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
+    document.getElementById('input-audio-asset-dropdown').value = h.audioData ? h.audioData : "none";
+    
+    selectedLat = h.lat; selectedLng = h.lng;
+    document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
+    document.getElementById('edit-target-name').innerText = h.nama;
+    document.getElementById('edit-indicator').style.display = 'block';
+    
+    document.getElementById('btn-simpan').innerText = "PERBARUI DATA LOKASI"; 
+    document.getElementById('btn-batal-edit').style.display = 'block';
+    
+    // ─── PERBAIKAN BUG MARKER DI SINI ───
+    if (selectedLat && selectedLng) {
+        // Pindahkan posisi marker utama ke lokasi halte yang sedang diedit
+        if (markerPeta) {
+            markerPeta.setLatLng([selectedLat, selectedLng]);
+        } else {
+            // Kalau markernya belum ada di peta, buat baru dan tempel ke map
+            markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
         }
+    }
+    
+    map.flyTo([selectedLat, selectedLng], 16); 
+    perbaruiVisualLingkaranRadius();
+}
 
         function resetFormInput() {
             idTargetEdit = null; selectedLat = null; selectedLng = null;
