@@ -1708,14 +1708,36 @@ downloadAnchor.click();
         // ==================== SYSTEM PERIPHERAL SIMULATION ====================
 
         function toggleLayarPenuhAPI() {
-            let areaMonitor = document.getElementById('pids-monitor-mode');
-            if (!document.fullscreenElement) { if (areaMonitor.requestFullscreen) areaMonitor.requestFullscreen(); } 
-            else { if (document.exitFullscreen) document.exitFullscreen(); }
+    let areaMonitor = document.getElementById('pids-monitor-mode');
+    
+    if (!document.fullscreenElement) { 
+        // 1. MASUK FULLSCREEN
+        if (areaMonitor.requestFullscreen) {
+            areaMonitor.requestFullscreen().then(() => {
+                // 2. PAKSA LANDSCAPE (Hanya berjalan setelah berhasil masuk fullscreen)
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(err => {
+                        console.warn("[PIDS v3.0.8] Orientasi landscape ditolak/tidak didukung di HP ini:", err);
+                    });
+                }
+            }).catch(err => {
+                console.error("[PIDS v3.0.8] Gagal masuk Fullscreen:", err);
+            });
+        } 
+    } else { 
+        // 3. KELUAR FULLSCREEN & LEPASKAN KUNCI ORIENTASI
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
         }
+        if (document.exitFullscreen) document.exitFullscreen(); 
+    }
+}
 
-        function monitorFullscreenStateChange() {
-            document.addEventListener('fullscreenchange', () => { document.getElementById('btn-fs-floating').innerText = document.fullscreenElement ? "EXIT" : "⛶"; });
-        }
+function monitorFullscreenStateChange() {
+    document.addEventListener('fullscreenchange', () => { 
+        document.getElementById('btn-fs-floating').innerText = document.fullscreenElement ? "EXIT" : "⛶"; 
+    });
+}
 
         function pushLogKonsol(teks) {
             let consoleNode = document.getElementById('log-console'); let d = document.createElement('div'); d.className = "diag-log-line";
