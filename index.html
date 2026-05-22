@@ -1348,7 +1348,9 @@
 
         // 3. RENDER PIDS AUDIO ASSET MANAGER (TAB CONFIG)
         function renderListAudioAssetsUI() {
-            let container = document.getElementById('cfg-audio-list-container'); container.innerHTML = "";
+            let container = document.getElementById('cfg-audio-list-container'); 
+            if (!container) return; // Pengaman tambahan
+            container.innerHTML = "";
             let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
 
             listProses.forEach((item, index) => {
@@ -1357,7 +1359,15 @@
                     div.draggable = true; div.setAttribute('data-index', index);
                     attachDragAndDropListeners(div, 'audio');
                 }
-                div.innerHTML = `<span title="${item.nama}">🎵 ${item.nama}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusAudioAssetLokal('${item.id}')">X</button>`;
+                
+                // KODE SUNTIKAN: Ditambahkan tombol Play hijau (▶) sebelum tombol hapus (X)
+                div.innerHTML = `
+                    <span title="${item.nama}">🎵 ${item.nama}</span>
+                    <div style="display: inline-flex; gap: 4px; align-items: center;">
+                        <button class="btn-action" style="padding:2px 6px; background-color: #107c41; color: white; border: none; border-radius: 3px; cursor: pointer;" onclick="tesPutarAudioLokal('${item.nama}')">▶</button>
+                        <button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusAudioAssetLokal('${item.id}')">X</button>
+                    </div>
+                `;
                 container.appendChild(div);
             });
         }
@@ -1668,6 +1678,36 @@
                 }
                 lastPlayedHalteId = null; statusGeofenceSebelumnya = "luar";
                 pushLogKonsol(`[SIMULASI] Geofence Reset.`);
+            }
+        }
+		// Penampung audio biar kalau lo play audio lain, audio sebelumnya langsung mati otomatis
+        let audioTestingSekarang = null;
+
+        function tesPutarAudioLokal(pathAudio) {
+            // 1. Matikan audio yang sedang berjalan (jika ada) biar gak tumpang tindih berisik
+            if (audioTestingSekarang) {
+                audioTestingSekarang.pause();
+                audioTestingSekarang.currentTime = 0;
+            }
+
+            // 2. Bersihkan spasi atau karakter aneh agar dibaca aman oleh browser
+            let pathAman = pathAudio.split('/').map(encodeURIComponent).join('/');
+
+            // 3. Eksekusi pemutaran audio
+            try {
+                audioTestingSekarang = new Audio(pathAman);
+                
+                audioTestingSekarang.play()
+                    .then(() => {
+                        console.log("Berhasil memutar audio tes: " + pathAudio);
+                    })
+                    .catch((error) => {
+                        alert("Gagal memutar suara!\n\nPastikan file '" + pathAudio + "' beneran sudah lo taruh di dalam folder lokal komputer lo.");
+                        console.error(error);
+                    });
+            } catch (e) {
+                alert("Browser di HP/Perangkat ini tidak mendukung pemutaran audio otomatis.");
+                console.error(e);
             }
         }
     </script>
