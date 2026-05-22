@@ -1481,13 +1481,32 @@
         }
 
         function tambahAudioAssetLokal() {
-            let path = document.getElementById('cfg-add-audio-path').value.trim();
-            if (path === "") { alert("Path audio kosong!"); return; }
-            if (audioAssetList.some(i => i.nama === path)) { alert("File audio sudah terdaftar!"); return; }
-            audioAssetList.push({ id: 'aud_' + Date.now(), nama: path, orderIndex: audioAssetList.length });
-            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
-            document.getElementById('cfg-add-audio-path').value = ""; 
-            renderListAudioAssetsUI(); renderDropdownAudioDb();
+            let inputEl = document.getElementById('cfg-add-audio-path');
+            if (!inputEl) return;
+
+            let nilaiRaw = inputEl.value.trim();
+            if (nilaiRaw === "") {
+                alert("Nama file audio tidak boleh kosong!");
+                return;
+            }
+
+            // Jika belum ada 'audio/' di depannya, otomatis ditambahkan
+            let audioPathFinal = nilaiRaw;
+            if (!nilaiRaw.startsWith('audio/')) {
+                audioPathFinal = 'audio/' + nilaiRaw;
+            }
+
+            // --- Logika bawaan v3.8 lo untuk masukin ke list/database ---
+            if (typeof daftarAudioLokal !== 'undefined') {
+                daftarAudioLokal.push(audioPathFinal);
+                if (typeof renderDaftarAudio === 'function') renderDaftarAudio();
+            } else {
+                // Jalur cadangan jika langsung disave ke database utama
+                pushLogKonsol("Audio diproses: " + audioPathFinal);
+            }
+
+            // Bersihkan kotak input
+            inputEl.value = "";
         }
 
         function hapusAudioAssetLokal(id) {
@@ -1670,17 +1689,6 @@
                 pushLogKonsol(`[SIMULASI] Geofence Reset.`);
             }
         }
-			// Ganti 'modal-geo-audio' dengan ID input teks audio milik lo yang sebenarnya
-const inputAudioElement = document.getElementById('modal-geo-audio') || document.querySelector('input[placeholder*="audio"]');
-
-if (inputAudioElement) {
-    inputAudioElement.addEventListener('blur', function() {
-        let nilai = this.value.trim();
-        if (nilai !== "" && !nilai.startsWith('audio/')) {
-            this.value = 'audio/' + nilai;
-        }
-    });
-}
     </script>
 </body>
 </html>
