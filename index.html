@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.3 - Rainer BK</title>
+    <title>PIDS Simulator v3.5 - Rainer BK</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -233,6 +233,7 @@
             background-color: #050505;
             overflow: hidden;
         }
+        
         .diag-left-log {
             width: 35%;
             padding: 6px 8px;
@@ -246,7 +247,8 @@
             text-overflow: ellipsis;
             margin-bottom: 2px;
             font-family: monospace !important;
-            line-height: 1.2;
+            font-size: 9px !important;
+            line-height: 1.1 !important;
         }
         
         .diag-right-gps {
@@ -356,7 +358,7 @@
         #pids-monitor-mode:fullscreen .pids-row-3 { height: 25%; }
         #pids-monitor-mode:fullscreen .marquee-text { font-size: 8.5vw; }
         #pids-monitor-mode:fullscreen .pids-row-4 { height: 15%; font-size: 1.6vw; }
-        #pids-monitor-mode:fullscreen .diag-log-line { margin-bottom: 4px; line-height: 1.3; }
+        #pids-monitor-mode:fullscreen .diag-log-line { margin-bottom: 2px; line-height: 1.1; font-size: max(10px, 1.3vw) !important; }
         #pids-monitor-mode:fullscreen .controls-right-group { width: 25vw; min-width: 25vw; }
         #pids-monitor-mode:fullscreen .vertical-button-stack { width: 14vw; }
         #pids-monitor-mode:fullscreen .btn-dash-sub { font-size: 1.2vw; }
@@ -525,6 +527,31 @@
             color: #ffffff;
         }
         
+        /* --- REVISI 4: STYLE DRAG & DROP MOUSE & SORTING HEADER --- */
+        .halte-table tbody tr {
+            cursor: grab;
+            transition: background-color 0.2s;
+        }
+        .halte-table tbody tr:active {
+            cursor: grabbing;
+            background-color: #444444 !important;
+        }
+        .halte-table tbody tr.drag-over {
+            border-top: 2px solid #ffff00;
+            background-color: #2a2a2a;
+        }
+
+        .sort-control-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #111111;
+            padding: 8px 12px;
+            border: 1px solid #333333;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: -1px;
+        }
+        
         .mini-list-box { 
             background: #000; 
             border: 1px dashed #333; 
@@ -553,7 +580,16 @@
             flex-shrink: 0;
         }
 
-        .edit-mode-indicator { background-color: rgba(16, 124, 65, 0.1); border: 1px solid #107c41; padding: 8px; border-radius: 6px; margin-bottom: 12px; display: none; font-size: 12px; color: #20e070; }
+        .edit-mode-indicator { 
+            background-color: rgba(255, 123, 0, 0.1); 
+            border: 1px solid #ff7b00; 
+            padding: 8px; 
+            border-radius: 6px; 
+            margin-bottom: 12px; 
+            display: none; 
+            font-size: 12px; 
+            color: #ff9124; 
+        }
         .divider-line { border: 0; height: 1px; background: #222; margin: 15px 0; }
     </style>
 </head>
@@ -702,9 +738,20 @@
 
             <hr class="divider-line">
 
-            <h3 style="font-size: 13px; color: #ffff00; margin-bottom: 10px; text-transform: uppercase;">Daftar Geofence Terdaftar</h3>
+            <div class="sort-control-container">
+                <h3 style="font-size: 12px; color: #ffff00; text-transform: uppercase; margin: 0;">Daftar Geofence Terdaftar</h3>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label style="font-size: 11px; color: #aaa; white-space: nowrap;">Urutan:</label>
+                    <select id="cfg-sort-engine-select" class="form-control" style="width: 140px; padding: 4px 8px; font-size: 11px; height: 26px;" onchange="handleSortMethodChangeTrigger(this.value)">
+                        <option value="manual" selected>Manual (Tarik Mouse)</option>
+                        <option value="az">Abjad A - Z</option>
+                        <option value="za">Abjad Z - A</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="table-wrapper">
-                <table class="halte-table">
+                <table class="halte-table" id="table-geofence-sortable">
                     <thead><tr><th>Nama Lokasi</th><th>Teks Layar</th><th>Radius</th><th>Trigger</th><th>Audio</th><th>Aksi</th></tr></thead>
                     <tbody id="list-halte-body"></tbody>
                 </table>
@@ -761,6 +808,7 @@
 
         let dbLokasi = [];
         let lokasiSingleList = ["Rumah", "Gereja", "Ciledug", "Tendean", "Stasiun", "Terminal"];
+        let tipeSortirAktif = "manual"; 
         
         let isTrackingActiveUI = false; 
         let ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
@@ -788,6 +836,7 @@
         let lastKnownLat = -6.1754;
         let lastKnownLng = 106.8272;
         let lastWeatherFetchTime = 0;
+        let dragSrcRowEl = null; 
 
         window.onload = function() {
             if(sessionStorage.getItem('pids_logged_in') === 'true') {
@@ -831,7 +880,7 @@
             
             if(lebarPikselTeks < 200) lebarPikselTeks = 400; 
             let durasiDetikKonstan = lebarPikselTeks / 120;
-            if(durasiDetikKonstan < 4) durasiDetikKonstan = 4; 
+            if(durasiDetikKonstan < 4) durasiDetikConstan = 4; 
             
             root.style.setProperty('--marquee-duration', durasiDetikKonstan + 's');
         }
@@ -883,7 +932,8 @@
             if (speedMS && speedMS > 0) { speedKMH = speedMS * 3.6; }
             
             let waktuSekarang = Date.now();
-            if (waktuSekarang - lastWeatherFetchTime > 300000) { 
+            // REVISI 1 & 2: HIT WEATHER LOKASI LIVE VIA OPEN-METEO API (BEBAS LIMIT)
+            if (waktuSekarang - lastWeatherFetchTime > 180000) { 
                 fetchLiveWeatherDataAPI(lastKnownLat, lastKnownLng);
                 lastWeatherFetchTime = waktuSekarang;
             }
@@ -898,24 +948,26 @@
 
         async function fetchLiveWeatherDataAPI(lat, lng) {
             try {
-                let url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=b52358bc7efec1758f8b80b741da334a`;
+                let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
                 let res = await fetch(url);
                 if (!res.ok) return;
                 let data = await res.json();
                 
-                let suhu = Math.round(data.main.temp);
-                let kondisiId = data.weather[0].id;
+                let suhu = Math.round(data.current_weather.temperature);
+                let wCode = data.current_weather.weathercode;
                 let emoji = "☁️";
 
-                if (kondisiId >= 200 && kondisiId < 300) emoji = "⛈️";      
-                else if (kondisiId >= 300 && kondisiId < 600) emoji = "🌧️"; 
-                else if (kondisiId >= 600 && kondisiId < 700) emoji = "❄️"; 
-                else if (kondisiId === 800) emoji = "☀️";                   
-                else if (kondisiId > 800) emoji = "☁️";                    
+                if (wCode === 0) emoji = "☀️";
+                else if (wCode >= 1 && wCode <= 3) emoji = "⛅";
+                else if (wCode >= 45 && wCode <= 48) emoji = "🌫️";
+                else if (wCode >= 51 && wCode <= 67) emoji = "🌧️";
+                else if (wCode >= 71 && wCode <= 77) emoji = "❄️";
+                else if (wCode >= 80 && wCode <= 82) emoji = "🌦️";
+                else if (wCode >= 95) emoji = "⛈️";
 
                 document.getElementById('pids-weather').innerText = `${suhu}°C ${emoji}`;
             } catch (e) {
-                document.getElementById('pids-weather').innerText = `30°C ☀️`;
+                document.getElementById('pids-weather').innerText = `--°C ☁️`;
             }
         }
 
@@ -969,7 +1021,6 @@
             document.getElementById('modal-input-tujuan-manual').style.display = 'none';
             document.getElementById('modal-rute-prompt').style.display = 'flex';
             
-            // Auto focus ke dropdown pertama biar gampang dikontrol keyboard
             selectAsal.focus();
         }
 
@@ -997,10 +1048,8 @@
             }
         }
 
-        // HANDLER SHORTCUT ENTER PADA MODAL
         function handleModalKeyDown(event) {
             if (event.key === 'Enter') {
-                // Mencegah trigger ganda kalau element button kebetulan lagi di-focus
                 event.preventDefault(); 
                 konfirmasiMulaiTrackingRute();
             }
@@ -1021,7 +1070,6 @@
 
             let defText = document.getElementById('cfg-preset-default-text').value.trim() || "PIDS SIMULATOR";
 
-            // PERBAIKAN FORMAT SESUAI PERMINTAAN USER
             if (asal !== "" && tujuan === "") { 
                 ruteAktifTeks = asal + "-"; 
             } 
@@ -1032,7 +1080,6 @@
                 ruteAktifTeks = defText; 
             }
 
-            // AUTO-CLEAR INPUTAN TEXT BOX CUSTOM BIAR BERSIH DI TRIP BERIKUTNYA
             document.getElementById('modal-input-asal-manual').value = "";
             document.getElementById('modal-input-tujuan-manual').value = "";
 
@@ -1060,6 +1107,8 @@
             
             displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
         }
+
+        function prosesEvaluenceRealtime(lat, lng, currentSpeed) { return prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed); }
 
         function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
             if (dbLokasi.length === 0) return;
@@ -1213,18 +1262,32 @@
         }
 
         function lanjutProsesSimpanDB(nama, displayText, radius, triggerType, audioVal) {
-            if (idTargetEdit === null) {
-                dbLokasi.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: audioVal });
-            } else {
-                let idx = dbLokasi.findIndex(i => i.id === idTargetEdit);
-                if (idx !== -1) {
-                    dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText; dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng; dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
-                    dbLokasi[idx].audioData = audioVal;
+            // REVISI 3: VALIDASI OVERFLOW STORAGE SAAT SIMPAN DATA 100+ LOKASI
+            try {
+                let targetDbKlon = JSON.parse(JSON.stringify(dbLokasi));
+                if (idTargetEdit === null) {
+                    targetDbKlon.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: audioVal });
+                } else {
+                    let idx = targetDbKlon.findIndex(i => i.id === idTargetEdit);
+                    if (idx !== -1) {
+                        targetDbKlon[idx].nama = nama; targetDbKlon[idx].displayText = displayText; targetDbKlon[idx].lat = selectedLat; targetDbKlon[idx].lng = selectedLng; targetDbKlon[idx].radius = radius; targetDbKlon[idx].triggerType = triggerType;
+                        targetDbKlon[idx].audioData = audioVal;
+                    }
                 }
+                
+                localStorage.setItem('pids_lokasi_data', JSON.stringify(targetDbKlon));
+                dbLokasi = targetDbKlon; 
+                
+                if(tipeSortirAktif !== "manual") {
+                    eksekusiSortirOtomatisEngine(tipeSortirAktif);
+                }
+
+                resetFormInput(); updateTabelHalte(); perbaruiDropdownSimulasi();
+                alert("Data berhasil disimpan ke database!");
+            } catch (error) {
+                alert("Gagal menyimpan! Kapasitas Browser localScorage Penuh.\nSaran: Kompres file .mp3 audio pembaca halte lo ke format bit rate lebih rendah biar muat ratusan lokasi.");
+                pushLogKonsol("Database Error: LocalStorage Disk Full.");
             }
-            localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-            resetFormInput(); updateTabelHalte(); perbaruiDropdownSimulasi();
-            alert("Data tersimpan sukses!");
         }
 
         function updateTabelHalte() {
@@ -1232,9 +1295,23 @@
             if (dbLokasi.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">Database kosong.</td></tr>`; return;
             }
-            dbLokasi.forEach(item => {
+            dbLokasi.forEach((item, index) => {
                 let statusAudio = item.audioData ? "AKTIF" : "KOSONG";
                 let tr = document.createElement('tr');
+                
+                // REVISI 4: AKTIFKAN DRAG MOUSE HANYA JIKA MODE SORTIR MANUAL
+                if (tipeSortirAktif === "manual") {
+                    tr.draggable = true;
+                    tr.setAttribute('data-index', index);
+                    tr.addEventListener('dragstart', handleDragStartEngine, false);
+                    tr.addEventListener('dragover', handleDragOverEngine, false);
+                    tr.addEventListener('dragleave', handleDragLeaveEngine, false);
+                    tr.addEventListener('drop', handleDropEngine, false);
+                    tr.addEventListener('dragend', handleDragEndEngine, false);
+                } else {
+                    tr.draggable = false;
+                }
+
                 tr.innerHTML = `
                     <td style="font-weight:bold; color:#ffff00;">${item.nama}</td>
                     <td>${item.displayText||item.nama}</td>
@@ -1251,19 +1328,84 @@
             });
         }
 
+        // REVISI 4: DRAG AND DROP VIA MOUSE ENGINE WITHOUT UP-DOWN BUTTONS
+        function handleDragStartEngine(e) {
+            dragSrcRowEl = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+            this.style.opacity = '0.4';
+        }
+        function handleDragOverEngine(e) {
+            if (e.preventDefault) e.preventDefault();
+            this.classList.add('drag-over');
+            return false;
+        }
+        function handleDragLeaveEngine(e) {
+            this.classList.remove('drag-over');
+        }
+        function handleDropEngine(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            this.classList.remove('drag-over');
+            
+            if (dragSrcRowEl !== this) {
+                let srcIndex = parseInt(dragSrcRowEl.getAttribute('data-index'));
+                let targetIndex = parseInt(this.getAttribute('data-index'));
+                
+                let targetItem = dbLokasi.splice(srcIndex, 1)[0];
+                dbLokasi.splice(targetIndex, 0, targetItem);
+                
+                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+                updateTabelHalte();
+                perbaruiDropdownSimulasi();
+                pushLogKonsol("Urutan geofence manual diperbarui via drag mouse.");
+            }
+            return false;
+        }
+        function handleDragEndEngine(e) {
+            this.style.opacity = '1.0';
+            let rows = document.querySelectorAll('#list-halte-body tr');
+            rows.forEach(row => row.classList.remove('drag-over'));
+        }
+
+        // REVISI 4: HANDLING UTK DROPDOWN SORTIR
+        function handleSortMethodChangeTrigger(val) {
+            tipeSortirAktif = val;
+            if (val !== "manual") {
+                eksekusiSortirOtomatisEngine(val);
+            }
+            updateTabelHalte();
+        }
+
+        function eksekusiSortirOtomatisEngine(mode) {
+            if (mode === "az") {
+                dbLokasi.sort((a, b) => a.nama.localeCompare(b.nama, 'id', {sensitivity: 'base'}));
+            } else if (mode === "za") {
+                dbLokasi.sort((a, b) => b.nama.localeCompare(a.nama, 'id', {sensitivity: 'base'}));
+            }
+            localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+            perbaruiDropdownSimulasi();
+            pushLogKonsol(`Database diurutkan otomatis berdasarkan alfabet: [${mode.toUpperCase()}]`);
+        }
+
         function duplikatLokasi(id) {
             let target = dbLokasi.find(i => i.id === id); if (!target) return;
             let klon = {
                 id: Date.now(),
-                nama: target.nama + " CLONE",
-                displayText: target.displayText ? target.displayText + " CLONE" : "",
+                nama: target.nama + " - Copy",
+                displayText: target.displayText || target.nama, 
                 lat: target.lat, lng: target.lng, radius: target.radius,
                 triggerType: target.triggerType || "masuk", audioData: target.audioData
             };
-            dbLokasi.push(klon);
-            localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-            updateTabelHalte(); perbaruiDropdownSimulasi();
-            pushLogKonsol(`Duplikasi berhasil: ${klon.nama}`);
+            
+            try {
+                dbLokasi.push(klon);
+                if(tipeSortirAktif !== "manual") eksekusiSortirOtomatisEngine(tipeSortirAktif);
+                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+                updateTabelHalte(); perbaruiDropdownSimulasi();
+                pushLogKonsol(`Duplikasi berhasil: ${klon.nama}`);
+            } catch (error) {
+                alert("Gagal menduplikat! Storage penuh.");
+            }
         }
 
         function masukkanKeModeEdit(id) {
@@ -1280,7 +1422,9 @@
             document.getElementById('edit-target-name').innerText = h.nama;
             document.getElementById('edit-indicator').style.display = 'block';
             
-            let b = document.getElementById('btn-simpan'); b.innerText = "PERBARUI DATA"; b.className = "btn btn-update-mode";
+            let b = document.getElementById('btn-simpan'); 
+            b.innerText = "PERBARUI DATA"; 
+            b.className = "btn btn-database-save";
             document.getElementById('btn-batal-edit').style.display = 'block';
             
             map.flyTo([selectedLat, selectedLng], 16);
@@ -1352,7 +1496,7 @@
                 lokasiSingles: lokasiSingleList, geofenceDatabase: dbLokasi
             };
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configPackage, null, 2));
-            let downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "pids_v3.3_backup_full.json"); downloadAnchor.click();
+            let downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "pids_v3.5_backup_full.json"); downloadAnchor.click();
         }
 
         function importDataDariJsonCombinedAllInOne(event) {
@@ -1368,11 +1512,12 @@
                         lokasiSingleList = parsedData.lokasiSingles; dbLokasi = parsedData.geofenceDatabase;
                     } else if (Array.isArray(parsedData)) {
                         dbLokasi = parsedData;
-                        pushLogKonsol("Import File v3.0 Terdeteksi. Hanya database halte yang diperbarui.");
+                        pushLogKonsol("Import File lama terdeteksi.");
                     } else { throw new Error("Format salah"); }
 
                     localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
                     localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
+                    if(tipeSortirAktif !== "manual") eksekusiSortirOtomatisEngine(tipeSortirAktif);
                     simpanPengaturanUmumKeStorage(); updateTabelHalte(); perbaruiDropdownSimulasi(); renderListLokasiBuiltInUI();
                     alert("Restore All Configuration & Database Sukses!");
                 } catch (err) { alert("Gagal Import! Dokumen rusak."); }
