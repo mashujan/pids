@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.5 - Rainer BK</title>
+    <title>PIDS Simulator v3.7 - Audio Asset Manager</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -247,7 +247,7 @@
             text-overflow: ellipsis;
             margin-bottom: 2px;
             font-family: monospace !important;
-            font-size: 9px !important;
+            font-size: 10px !important;
             line-height: 1.1 !important;
         }
         
@@ -523,11 +523,19 @@
             background-color: #222222; 
             color: #ffff00; 
         }
-        .halte-table td {
-            color: #ffffff;
+        .halte-table th, .halte-table td { 
+            padding: 10px; 
+            text-align: left; 
+            border-bottom: 1px solid #222222; 
+        }
+        /* Tambahkan aturan ini untuk membatasi kolom audio */
+        .halte-table td:nth-child(5) {
+            max-width: 180px; /* Batas lebar kolom audio */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
-        /* --- REVISI 4: STYLE DRAG & DROP MOUSE & SORTING HEADER --- */
         .halte-table tbody tr {
             cursor: grab;
             transition: background-color 0.2s;
@@ -726,10 +734,11 @@
             </div>
 
             <div class="form-group" style="background: #111; padding: 12px; border-radius: 6px; border: 1px solid #222;">
-                <label style="color:#ffff00; font-weight:bold; margin-bottom: 6px; text-transform: uppercase;">SETTING AUDIO ANNOUNCER LOKAL</label>
-                <div class="form-group" id="group-upload-lokal-file">
-                    <label>Upload File Suara (.mp3):</label>
-                    <input type="file" id="input-audio-local" class="form-control" accept="audio/mpeg, audio/mp3, .mp3" style="background-color: #1c1c1c !important; color:#fff !important;">
+                <label style="color:#ffff00; font-weight:bold; margin-bottom: 2px; text-transform: uppercase;">AUDIO ANNOUNCER ASSET</label>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Pilih File Audio Pendukung Halte:</label>
+                    <select id="input-audio-asset-dropdown" class="form-control">
+                        </select>
                 </div>
             </div>
 
@@ -752,7 +761,7 @@
 
             <div class="table-wrapper">
                 <table class="halte-table" id="table-geofence-sortable">
-                    <thead><tr><th>Nama Lokasi</th><th>Teks Layar</th><th>Radius</th><th>Trigger</th><th>Audio</th><th>Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Lokasi</th><th>Teks Layar</th><th>Radius</th><th>Trigger</th><th>Audio File</th><th>Aksi</th></tr></thead>
                     <tbody id="list-halte-body"></tbody>
                 </table>
             </div>
@@ -788,6 +797,18 @@
             </div>
 
             <div class="config-card">
+                <h3 style="color: #ff7b00;">PIDS Audio Asset Manager</h3>
+                <p style="font-size: 11px; color:#aaa; margin-bottom: 8px; line-height: 1.3;">
+                    Ketik path/nama file MP3 lo yang ada di folder GitHub (Contoh: <code style="color:#fff;">audio/senayan.mp3</code>). File ini nanti akan muncul otomatis sebagai pilihan di Tab Database.
+                </p>
+                <div class="single-location-input-group">
+                    <input type="text" id="cfg-add-audio-path" class="form-control" placeholder="Contoh: audio/announcer-senayan.mp3">
+                    <button class="btn-plus-fixed" style="background-color: #ff7b00; color:#fff;" onclick="tambahAudioAssetLokal()">+</button>
+                </div>
+                <div class="mini-list-box" id="cfg-audio-list-container"></div>
+            </div>
+
+            <div class="config-card">
                 <h3>Database Manajemen Nama Lokasi Tunggal</h3>
                 <div class="single-location-input-group">
                     <input type="text" id="cfg-add-lokasi-nama" class="form-control" placeholder="Masukkan nama lokasi (Misal: Rumah, Gereja, Terminal)">
@@ -808,8 +829,10 @@
 
         let dbLokasi = [];
         let lokasiSingleList = ["Rumah", "Gereja", "Ciledug", "Tendean", "Stasiun", "Terminal"];
-        let tipeSortirAktif = "manual"; 
+        // FITUR BARU: Array penampung list file audio terdaftar
+        let audioAssetList = ["audio/senayan.mp3", "audio/ciledug.mp3", "audio/tendean.mp3"];
         
+        let tipeSortirAktif = "manual"; 
         let isTrackingActiveUI = false; 
         let ruteAktifTeks = "KLIK TOMBOL MULAI DAN PILIH RUTE PERJALANAN";
         let fallbackTimerId = null;
@@ -854,6 +877,7 @@
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('cfg-add-lokasi-nama').addEventListener('keypress', function(e) { if (e.key === 'Enter') tambahLokasiBuiltIn(); });
+            document.getElementById('cfg-add-audio-path').addEventListener('keypress', function(e) { if (e.key === 'Enter') tambahAudioAssetLokal(); });
 
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(
@@ -880,7 +904,7 @@
             
             if(lebarPikselTeks < 200) lebarPikselTeks = 400; 
             let durasiDetikKonstan = lebarPikselTeks / 120;
-            if(durasiDetikKonstan < 4) durasiDetikConstan = 4; 
+            if(durasiDetikKonstan < 4) durasiDetikKonstan = 4; 
             
             root.style.setProperty('--marquee-duration', durasiDetikKonstan + 's');
         }
@@ -932,7 +956,6 @@
             if (speedMS && speedMS > 0) { speedKMH = speedMS * 3.6; }
             
             let waktuSekarang = Date.now();
-            // REVISI 1 & 2: HIT WEATHER LOKASI LIVE VIA OPEN-METEO API (BEBAS LIMIT)
             if (waktuSekarang - lastWeatherFetchTime > 180000) { 
                 fetchLiveWeatherDataAPI(lastKnownLat, lastKnownLng);
                 lastWeatherFetchTime = waktuSekarang;
@@ -1108,8 +1131,6 @@
             displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
         }
 
-        function prosesEvaluenceRealtime(lat, lng, currentSpeed) { return prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed); }
-
         function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
             if (dbLokasi.length === 0) return;
             
@@ -1136,7 +1157,7 @@
                     }
 
                     if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
-                        if(hTerdekat.audioData) putarAnnouncer(hTerdekat.audioData); 
+                        if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
                         lastPlayedHalteId = hTerdekat.id;
                         pushLogKonsol(`Masuk Geofence: ${hTerdekat.nama}`);
                     }
@@ -1145,7 +1166,7 @@
                     distText.innerText = `${Math.round(jTerkecil)}m`;
                     
                     if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
-                        if(hTerdekat.audioData) putarAnnouncer(hTerdekat.audioData); 
+                        if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
                         lastPlayedHalteId = hTerdekat.id;
                         pushLogKonsol(`Keluar Geofence: ${hTerdekat.nama}`);
                     }
@@ -1192,7 +1213,7 @@
                         else markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
 
                         perbaruiVisualLingkaranRadius();
-                        pushLogKonsol(`Pinpoint GPS di-klik. Koordinat database diset otomatis ke posisi live.`);
+                        pushLogKonsol(`Pinpoint GPS di-klik. Koordinat database diset otomatis.`);
                     });
                     return container;
                 }
@@ -1235,59 +1256,45 @@
             }
         }
 
+        // FITUR BARU: Render Dropdown Audio Terdaftar di Tab Database
+        function renderDropdownAudioDb() {
+            let select = document.getElementById('input-audio-asset-dropdown');
+            if(!select) return;
+            let html = `<option value="none">-- Tanpa Suara / Mute --</option>`;
+            audioAssetList.forEach(file => {
+                html += `<option value="${file}">${file}</option>`;
+            });
+            select.innerHTML = html;
+        }
+
         function eksekusiSimpan() {
             let nama = document.getElementById('input-nama').value.trim();
             let displayText = document.getElementById('input-display-text').value.trim();
             let radius = parseInt(document.getElementById('input-radius').value);
             let triggerType = document.getElementById('input-trigger-type').value;
-            let localAudioFile = document.getElementById('input-audio-local').files[0];
+            let audioSelection = document.getElementById('input-audio-asset-dropdown').value;
 
             if (displayText === "") displayText = nama;
             if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi data koordinat & nama!"); return; }
 
-            if (localAudioFile) {
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    lanjutProsesSimpanDB(nama, displayText, radius, triggerType, e.target.result);
-                };
-                reader.readAsDataURL(localAudioFile);
+            if (idTargetEdit === null) {
+                dbLokasi.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: audioSelection });
             } else {
-                let audioLama = null;
-                if (idTargetEdit !== null) {
-                    let lama = dbLokasi.find(i => i.id === idTargetEdit);
-                    if(lama) audioLama = lama.audioData;
+                let idx = dbLokasi.findIndex(i => i.id === idTargetEdit);
+                if (idx !== -1) {
+                    dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText; dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng; dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
+                    dbLokasi[idx].audioData = audioSelection;
                 }
-                lanjutProsesSimpanDB(nama, displayText, radius, triggerType, audioLama);
             }
-        }
-
-        function lanjutProsesSimpanDB(nama, displayText, radius, triggerType, audioVal) {
-            // REVISI 3: VALIDASI OVERFLOW STORAGE SAAT SIMPAN DATA 100+ LOKASI
-            try {
-                let targetDbKlon = JSON.parse(JSON.stringify(dbLokasi));
-                if (idTargetEdit === null) {
-                    targetDbKlon.push({ id: Date.now(), nama: nama, displayText: displayText, lat: selectedLat, lng: selectedLng, radius: radius, triggerType: triggerType, audioData: audioVal });
-                } else {
-                    let idx = targetDbKlon.findIndex(i => i.id === idTargetEdit);
-                    if (idx !== -1) {
-                        targetDbKlon[idx].nama = nama; targetDbKlon[idx].displayText = displayText; targetDbKlon[idx].lat = selectedLat; targetDbKlon[idx].lng = selectedLng; targetDbKlon[idx].radius = radius; targetDbKlon[idx].triggerType = triggerType;
-                        targetDbKlon[idx].audioData = audioVal;
-                    }
-                }
-                
-                localStorage.setItem('pids_lokasi_data', JSON.stringify(targetDbKlon));
-                dbLokasi = targetDbKlon; 
-                
-                if(tipeSortirAktif !== "manual") {
-                    eksekusiSortirOtomatisEngine(tipeSortirAktif);
-                }
-
-                resetFormInput(); updateTabelHalte(); perbaruiDropdownSimulasi();
-                alert("Data berhasil disimpan ke database!");
-            } catch (error) {
-                alert("Gagal menyimpan! Kapasitas Browser localScorage Penuh.\nSaran: Kompres file .mp3 audio pembaca halte lo ke format bit rate lebih rendah biar muat ratusan lokasi.");
-                pushLogKonsol("Database Error: LocalStorage Disk Full.");
+            
+            if(tipeSortirAktif !== "manual") {
+                eksekusiSortirOtomatisEngine(tipeSortirAktif);
+            } else {
+                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
             }
+
+            resetFormInput(); updateTabelHalte(); perbaruiDropdownSimulasi();
+            alert("Data lokasi disimpan!");
         }
 
         function updateTabelHalte() {
@@ -1296,10 +1303,9 @@
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">Database kosong.</td></tr>`; return;
             }
             dbLokasi.forEach((item, index) => {
-                let statusAudio = item.audioData ? "AKTIF" : "KOSONG";
+                let displayAudio = (item.audioData && item.audioData !== "none") ? item.audioData : "-";
                 let tr = document.createElement('tr');
                 
-                // REVISI 4: AKTIFKAN DRAG MOUSE HANYA JIKA MODE SORTIR MANUAL
                 if (tipeSortirAktif === "manual") {
                     tr.draggable = true;
                     tr.setAttribute('data-index', index);
@@ -1317,7 +1323,7 @@
                     <td>${item.displayText||item.nama}</td>
                     <td>${item.radius}m</td>
                     <td>${item.triggerType}</td>
-                    <td>${statusAudio}</td>
+                    <td style="font-family:monospace; font-size:11px; color:#aae;" title="${displayAudio}">${displayAudio}</td>
                     <td>
                         <button class="btn-action btn-action-edit" onclick="masukkanKeModeEdit(${item.id})">EDIT</button>
                         <button class="btn-action btn-action-duplicate" onclick="duplikatLokasi(${item.id})">DUPLIKAT</button>
@@ -1328,7 +1334,6 @@
             });
         }
 
-        // REVISI 4: DRAG AND DROP VIA MOUSE ENGINE WITHOUT UP-DOWN BUTTONS
         function handleDragStartEngine(e) {
             dragSrcRowEl = this;
             e.dataTransfer.effectAllowed = 'move';
@@ -1367,7 +1372,6 @@
             rows.forEach(row => row.classList.remove('drag-over'));
         }
 
-        // REVISI 4: HANDLING UTK DROPDOWN SORTIR
         function handleSortMethodChangeTrigger(val) {
             tipeSortirAktif = val;
             if (val !== "manual") {
@@ -1384,7 +1388,7 @@
             }
             localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
             perbaruiDropdownSimulasi();
-            pushLogKonsol(`Database diurutkan otomatis berdasarkan alfabet: [${mode.toUpperCase()}]`);
+            pushLogKonsol(`Database diurutkan otomatis: [${mode.toUpperCase()}]`);
         }
 
         function duplikatLokasi(id) {
@@ -1396,16 +1400,11 @@
                 lat: target.lat, lng: target.lng, radius: target.radius,
                 triggerType: target.triggerType || "masuk", audioData: target.audioData
             };
-            
-            try {
-                dbLokasi.push(klon);
-                if(tipeSortirAktif !== "manual") eksekusiSortirOtomatisEngine(tipeSortirAktif);
-                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-                updateTabelHalte(); perbaruiDropdownSimulasi();
-                pushLogKonsol(`Duplikasi berhasil: ${klon.nama}`);
-            } catch (error) {
-                alert("Gagal menduplikat! Storage penuh.");
-            }
+            dbLokasi.push(klon);
+            if(tipeSortirAktif !== "manual") eksekusiSortirOtomatisEngine(tipeSortirAktif);
+            else localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+            updateTabelHalte(); perbaruiDropdownSimulasi();
+            pushLogKonsol(`Duplikasi berhasil: ${klon.nama}`);
         }
 
         function masukkanKeModeEdit(id) {
@@ -1416,6 +1415,9 @@
             document.getElementById('input-radius').value = h.radius;
             document.getElementById('range-val-preview').innerText = h.radius + " Meter";
             document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
+            
+            // Set value dropdown sesuai audio data objek
+            document.getElementById('input-audio-asset-dropdown').value = h.audioData ? h.audioData : "none";
             
             selectedLat = h.lat; selectedLng = h.lng;
             document.getElementById('input-koordinat').value = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
@@ -1434,7 +1436,7 @@
         function resetFormInput() {
             idTargetEdit = null; selectedLat = null; selectedLng = null;
             document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; 
-            document.getElementById('input-audio-local').value = ""; document.getElementById('input-koordinat').value = "";
+            document.getElementById('input-audio-asset-dropdown').value = "none"; document.getElementById('input-koordinat').value = "";
             document.getElementById('input-radius').value = 50;
             document.getElementById('range-val-preview').innerText = "50 Meter"; document.getElementById('edit-indicator').style.display = 'none';
             
@@ -1456,6 +1458,36 @@
             document.getElementById('pids-plat-view').innerText = platValue; 
             localStorage.setItem('pids_preset_default_text', document.getElementById('cfg-preset-default-text').value.trim());
             localStorage.setItem('pids_os_limit', document.getElementById('cfg-overspeed-limit').value);
+        }
+
+        // FITUR BARU: List Render Audio UI di Pengaturan
+        function renderListAudioAssetsUI() {
+            let aContainer = document.getElementById('cfg-audio-list-container'); 
+            if(!aContainer) return;
+            aContainer.innerHTML = "";
+            audioAssetList.forEach((file, idx) => {
+                let div = document.createElement('div'); div.className = "mini-list-item";
+                div.innerHTML = `<span>🎵 ${file}</span><button class="btn-action btn-action-delete" style="padding:2px 6px;" onclick="hapusAudioAssetLokal(${idx})">X</button>`;
+                aContainer.appendChild(div);
+            });
+        }
+
+        function tambahAudioAssetLokal() {
+            let path = document.getElementById('cfg-add-audio-path').value.trim();
+            if (path === "") { alert("Path file audio tidak boleh kosong!"); return; }
+            if (audioAssetList.includes(path)) { alert("File audio sudah terdaftar!"); return; }
+            audioAssetList.push(path);
+            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
+            document.getElementById('cfg-add-audio-path').value = ""; 
+            renderListAudioAssetsUI();
+            renderDropdownAudioDb(); // sinkronkan dropdown tab database
+        }
+
+        function hapusAudioAssetLokal(idx) {
+            audioAssetList.splice(idx, 1); 
+            localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList)); 
+            renderListAudioAssetsUI();
+            renderDropdownAudioDb(); // sinkronkan dropdown tab database
         }
 
         function renderListLokasiBuiltInUI() {
@@ -1484,7 +1516,14 @@
             if (localStorage.getItem('pids_plat_nomor')) document.getElementById('cfg-plat-no').value = localStorage.getItem('pids_plat_nomor');
             if (localStorage.getItem('pids_preset_default_text')) document.getElementById('cfg-preset-default-text').value = localStorage.getItem('pids_preset_default_text');
             if (localStorage.getItem('pids_os_limit')) document.getElementById('cfg-overspeed-limit').value = localStorage.getItem('pids_os_limit');
+            
             let lStorage = localStorage.getItem('pids_lokasi_singles'); if (lStorage) { try { lokasiSingleList = JSON.parse(lStorage); } catch(e){} }
+            
+            // FITUR BARU: Muat list asset audio dari localStorage
+            let aStorage = localStorage.getItem('pids_audio_assets_list'); if (aStorage) { try { audioAssetList = JSON.parse(aStorage); } catch(e){} }
+            
+            renderListAudioAssetsUI();
+            renderDropdownAudioDb();
             renderListLokasiBuiltInUI();
         }
 
@@ -1493,10 +1532,12 @@
                 platNomor: document.getElementById('cfg-plat-no').value.trim().toUpperCase(),
                 overspeedLimit: document.getElementById('cfg-overspeed-limit').value,
                 presetDefaultText: document.getElementById('cfg-preset-default-text').value.trim(),
-                lokasiSingles: lokasiSingleList, geofenceDatabase: dbLokasi
+                lokasiSingles: lokasiSingleList, 
+                audioAssets: audioAssetList, // FITUR BARU: ikut ter-export
+                geofenceDatabase: dbLokasi
             };
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configPackage, null, 2));
-            let downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "pids_v3.5_backup_full.json"); downloadAnchor.click();
+            let downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "pids_v3.7_backup.json"); downloadAnchor.click();
         }
 
         function importDataDariJsonCombinedAllInOne(event) {
@@ -1509,18 +1550,21 @@
                         document.getElementById('cfg-plat-no').value = parsedData.platNomor || "B 1234 TGC";
                         document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                         document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS SIMULATOR";
-                        lokasiSingleList = parsedData.lokasiSingles; dbLokasi = parsedData.geofenceDatabase;
+                        lokasiSingleList = parsedData.lokasiSingles; 
+                        audioAssetList = parsedData.audioAssets || []; // Ambil data audio assets backup
+                        dbLokasi = parsedData.geofenceDatabase;
                     } else if (Array.isArray(parsedData)) {
                         dbLokasi = parsedData;
-                        pushLogKonsol("Import File lama terdeteksi.");
                     } else { throw new Error("Format salah"); }
 
                     localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
                     localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
+                    localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
+                    
                     if(tipeSortirAktif !== "manual") eksekusiSortirOtomatisEngine(tipeSortirAktif);
-                    simpanPengaturanUmumKeStorage(); updateTabelHalte(); perbaruiDropdownSimulasi(); renderListLokasiBuiltInUI();
-                    alert("Restore All Configuration & Database Sukses!");
-                } catch (err) { alert("Gagal Import! Dokumen rusak."); }
+                    simpanPengaturanUmumKeStorage(); updateTabelHalte(); perbaruiDropdownSimulasi(); renderListLokasiBuiltInUI(); renderListAudioAssetsUI(); renderDropdownAudioDb();
+                    alert("Restore Database Sukses!");
+                } catch (err) { alert("Gagal Import!"); }
             };
             reader.readAsText(file);
         }
@@ -1564,14 +1608,15 @@
             } catch(e){}
         }
 
-        function putarAnnouncer(audioDataStr) {
-            if (!isAudioEnabled) { pushLogKonsol("Announcer diblokir (Status Mute)."); return; }
+        function putarAnnouncer(audioPathUrl) {
+            if (!isAudioEnabled) { pushLogKonsol("Announcer Mute."); return; }
             try { 
                 unlockAudioAutoplayContext(); 
                 if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject.src = ""; currentAudioObject = null; }
-                currentAudioObject = new Audio(); currentAudioObject.src = audioDataStr;
-                currentAudioObject.play().then(() => { pushLogKonsol("Announcer diputar."); }).catch(err => { pushLogKonsol("Gagal putar. Butuh interaksi."); });
-            } catch (e) { pushLogKonsol("Audio crash: " + e.message); }
+                currentAudioObject = new Audio(); 
+                currentAudioObject.src = audioPathUrl;
+                currentAudioObject.play().then(() => { pushLogKonsol(`Memutar: ${audioPathUrl}`); }).catch(err => { pushLogKonsol("Gagal putar otomatis."); });
+            } catch (e) { pushLogKonsol("Audio error: " + e.message); }
         }
 
         function hitungJarakHaversine(lat1, lon1, lat2, lon2) {
@@ -1620,7 +1665,7 @@
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 document.getElementById('pids-distance').innerText = `In (Simulated)`; document.getElementById('pids-nearest-object').innerText = h.nama;
                 updateTeksMonitorUtamaPIDS(h.displayText || h.nama);
-                if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) { if(h.audioData) putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Masuk Radius: ${h.nama}`); }
+                if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Masuk Radius: ${h.nama}`); }
                 statusGeofenceSebelumnya = "dalam";
             }
         }
@@ -1630,7 +1675,7 @@
             let h = dbLokasi.find(i => i.id == id);
             if (h) {
                 document.getElementById('pids-distance').innerText = `Far (Simulated)`; document.getElementById('pids-nearest-object').innerText = h.nama;
-                if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData) putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Radius: ${h.nama}`); }
+                if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Radius: ${h.nama}`); }
                 if (statusGeofenceSebelumnya === "dalam") {
                     if (fallbackTimerId) clearTimeout(fallbackTimerId);
                     fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); pushLogKonsol("[SIMULASI] Kembali ke rute awal."); }, 90000);
