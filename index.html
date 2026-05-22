@@ -1315,10 +1315,24 @@ function renderSemuaTitikDatabaseKePeta() {
     if (typeof dbLokasi !== 'undefined' && dbLokasi.length > 0) {
         dbLokasi.forEach((item, index) => {
             if (item.lat && item.lng) {
+                // 1. Gambar penanda pin untuk tiap halte
                 let markerHalte = L.marker([item.lat, item.lng])
                     .bindPopup(`<b>[${index + 1}] ${item.nama}</b><br>Radius: ${item.radius || 50}m`);
                 
                 grupMarkerDatabase.addLayer(markerHalte);
+
+                // 2. TAMBAHAN: Gambar lingkaran radius untuk tiap halte di database
+                let radiusTitik = parseInt(item.radius) || 50; // Ambil radius dari DB, kalau kosong default 50m
+                let lingkaranHalte = L.circle([item.lat, item.lng], {
+                    radius: radiusTitik,
+                    color: '#34a853',       // Warna garis hijau bening biar beda sama penanda edit yang warna kuning
+                    fillColor: '#34a853',   // Warna dalam lingkaran
+                    fillOpacity: 0.15,      // Transparansi biar gak nutupin peta
+                    weight: 1.5             // Ketebalan garis pinggir
+                });
+                
+                grupMarkerDatabase.addLayer(lingkaranHalte);
+                
                 semuaKoordinat.push([item.lat, item.lng]);
             }
         });
@@ -1326,10 +1340,13 @@ function renderSemuaTitikDatabaseKePeta() {
 
     if (semuaKoordinat.length > 0) {
         map.fitBounds(semuaKoordinat, { padding: [40, 40] });
-		if (map.getZoom() > 14) {
+        
+        // Pengaman zoom biar gak terlalu dekat pas awal buka web
+        if (map.getZoom() > 14) {
             map.setZoom(14);
         }
-        pushLogKonsol(`[PETA] Sukses plot ${semuaKoordinat.length} titik dari database.`);
+        
+        pushLogKonsol(`[PETA] Sukses plot ${semuaKoordinat.length} beserta radius titik.`);
     }
 }
 
