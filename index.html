@@ -1342,8 +1342,8 @@ function renderSemuaTitikDatabaseKePeta() {
         map.fitBounds(semuaKoordinat, { padding: [40, 40] });
         
         // Pengaman zoom biar gak terlalu dekat pas awal buka web
-        if (map.getZoom() > 14) {
-            map.setZoom(14);
+        if (map.getZoom() > 11) {
+            map.setZoom(11);
         }
         
         pushLogKonsol(`[PETA] Sukses plot ${semuaKoordinat.length} titik beserta radiusnya.`);
