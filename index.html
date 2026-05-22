@@ -732,7 +732,7 @@
                         <div class="gps-info-lines">
                             <div>Status GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>)</div>
                             <div>Posisi Anda: <span id="gps-current-coord" style="color:#aaa;">- , -</span></div>
-                            <div>Titik Terdekat: (<span id="pids-distance">-</span>)<span id="pids-nearest-object" style="color:#ffff00;">Belum Ada Rute</span></div>
+                            <div>Titik Terdekat: (<span id="pids-distance">-</span>) <span id="pids-nearest-object" style="color:#ffff00;">Belum Ada Rute</span></div>
                         </div>
                         
                         <div class="controls-right-group">
@@ -1670,6 +1670,17 @@
                 pushLogKonsol(`[SIMULASI] Geofence Reset.`);
             }
         }
+			// Ganti 'modal-geo-audio' dengan ID input teks audio milik lo yang sebenarnya
+const inputAudioElement = document.getElementById('modal-geo-audio') || document.querySelector('input[placeholder*="audio"]');
+
+if (inputAudioElement) {
+    inputAudioElement.addEventListener('blur', function() {
+        let nilai = this.value.trim();
+        if (nilai !== "" && !nilai.startsWith('audio/')) {
+            this.value = 'audio/' + nilai;
+        }
+    });
+}
     </script>
 </body>
 </html>
