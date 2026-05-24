@@ -844,9 +844,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Dibunyikan Saat</label>
+            <!--    <label>Dibunyikan Saat</label>
                 <select id="input-trigger-type" class="form-control"><option value="masuk" selected>Masuk Titik</option><option value="keluar">Keluar Titik</option></select>
-            </div>
+            </div> -->
 
             <div class="form-group">
                 <div class="form-group" style="margin-bottom:0;">
@@ -1541,7 +1541,7 @@ function editLokasiBuiltIn(id) {
             let nama = document.getElementById('input-nama').value.trim();
             let displayText = document.getElementById('input-display-text').value.trim();
             let radius = parseInt(document.getElementById('input-radius').value);
-            let triggerType = document.getElementById('input-trigger-type').value;
+            //let triggerType = document.getElementById('input-trigger-type').value;
             let audioSelection = document.getElementById('input-audio-asset-dropdown').value;
 
             if (displayText === "") displayText = nama;
@@ -1587,7 +1587,7 @@ function editLokasiBuiltIn(id) {
     document.getElementById('input-display-text').value = h.displayText || h.nama;
     document.getElementById('input-radius').value = h.radius;
     document.getElementById('range-val-preview').innerText = h.radius + " Meter";
-    document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
+    //document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
     document.getElementById('input-audio-asset-dropdown').value = h.audioData ? h.audioData : "none";
     
     selectedLat = h.lat; selectedLng = h.lng;
@@ -1611,6 +1611,12 @@ function editLokasiBuiltIn(id) {
     
     map.flyTo([selectedLat, selectedLng], 16); 
     perbaruiVisualLingkaranRadius();
+
+    // ─── TAMBAHAN AUTO SCROLL KE ATAS ───
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // Biar layarnya nge-gulung halus kayak animasi
+    });
 }
 
         function resetFormInput() {
