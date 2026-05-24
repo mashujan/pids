@@ -1873,41 +1873,36 @@ let audioContextPids = null;
 let currentAudioObject = null;
 let pancinganDuckingAudio = null;
 
+// Pastikan variabel-variabel global ini terpasang rapi di paling atas script lo
+let currentAudioObject = null;
+let pancinganDuckingAudio = null;
+
 function putarAnnouncer(audioPathUrl) {
     if (!isAudioEnabled) { pushLogKonsol("Announcer Dinonaktifkan."); return; }
     
     try {
-        // 1. Matikan audio lama kalau masih bunyi biar gak tumpang tindih
+        pushLogKonsol(`[AUDIO] Mencoba memutar: ${audioPathUrl.substring(0,30)}...`);
+
+        // 1. Reset audio announcer lama kalau masih bunyi biar gak tumpang tindih
         if (currentAudioObject) {
             currentAudioObject.pause();
         }
+        // Reset juga audio pancingan lama
         if (pancinganDuckingAudio) {
             pancinganDuckingAudio.pause();
         }
 
-        pushLogKonsol(`[AUDIO] Memutar via MediaElement: ${audioPathUrl.substring(0,30)}...`);
-
-        // 2. PEMICU DUCKING SILUMAN (Bikin Spotify Mengecil)
+        // 2. PEMICU DUCKING (Ngecilin Spotify)
+        // Kita setel file audio kosong (silent) durasi panjang pake HTML5 Audio biasa.
+        // Ini trik paling aman buat ngomong ke Android Auto biar Spotify mengecil otomatis.
         pancinganDuckingAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
         pancinganDuckingAudio.loop = true;
         pancinganDuckingAudio.play().catch(e => console.log("Ducking pancingan aman"));
 
-        // 3. MAIN KAN ANNOUNCER UTAMA (Pakai Audio Biasa tapi di-link ke Context agar masuk sound-effect)
+        // 3. MAIN KAN ANNOUNCER UTAMA (Pake objek biasa, NO WEBAUDIO API biar anti-crash/CORS)
         currentAudioObject = new Audio(audioPathUrl);
         
-        // Setup Web Audio API secara pasif tanpa Fetch (Anti-CORS)
-        if (!audioContextPids) {
-            audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioContextPids.state === 'suspended') {
-            audioContextPids.resume();
-        }
-
-        // Alirkan suara HTML5 Audio ke speaker via AudioContext biar Android gak mutus Spotify
-        let source = audioContextPids.createMediaElementSource(currentAudioObject);
-        source.connect(audioContextPids.destination);
-
-        // 4. KETIKA ANNOUNCER SELESAI (Kembalikan Volume Spotify)
+        // Ketika announcer bawaan lo beres bunyi, balikin volume Spotify ke normal
         currentAudioObject.onended = function() {
             pushLogKonsol("[AUDIO] Announcer selesai, volume lagu kembali normal.");
             if (pancinganDuckingAudio) {
@@ -1916,16 +1911,22 @@ function putarAnnouncer(audioPathUrl) {
             }
         };
 
-        // Jalankan audio utama
-        currentAudioObject.play().catch(err => {
-            pushLogKonsol("Gagal memutar audio utama.");
-        });
+        // Eksekusi putar suara utamanya
+        currentAudioObject.play()
+            .then(() => {
+                pushLogKonsol(`[AUDIO] Sukses memutar announcer.`);
+            })
+            .catch(err => {
+                pushLogKonsol(`[AUDIO] Gagal play audio utama: ${err.message}`);
+                // Jika gagal, pastikan pancingan ducking dimatikan biar musik gak nge-kecil terus
+                if (pancinganDuckingAudio) {
+                    pancinganDuckingAudio.pause();
+                    pancinganDuckingAudio = null;
+                }
+            });
 
     } catch (e) {
-        pushLogKonsol("Audio Error, beralih ke normal play.");
-        // Jalur darurat kalau Web Audio API crash
-        currentAudioObject = new Audio(audioPathUrl);
-        currentAudioObject.play().catch(err => console.log(err));
+        pushLogKonsol(`[AUDIO] Fatal Error: ${e.message}`);
     }
 }
 
