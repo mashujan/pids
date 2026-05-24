@@ -1866,14 +1866,34 @@ function monitorFullscreenStateChange() {
         }
 
         function putarAnnouncer(audioPathUrl) {
-            if (!isAudioEnabled) { pushLogKonsol("Announcer Dinonaktifkan."); return; }
-            try { 
-                unlockAudioAutoplayContext(); 
-                if (currentAudioObject) { currentAudioObject.pause(); currentAudioObject.src = ""; currentAudioObject = null; }
-                currentAudioObject = new Audio(); currentAudioObject.src = audioPathUrl;
-                currentAudioObject.play().then(() => { pushLogKonsol(`Memutar: ${audioPathUrl.substring(0,40)}...`); }).catch(err => { pushLogKonsol("Gagal memutar audio."); });
-            } catch (e) { pushLogKonsol("Audio error."); }
+    if (!isAudioEnabled) { pushLogKonsol("Announcer Dinonaktifkan."); return; }
+    try { 
+        unlockAudioAutoplayContext(); 
+        
+        // ─── TRIK AUDIO FOCUS: REUSE OBJEK YANG SAMA ───
+        // Jika objek audio BELUM PERNAH dibuat sepanjang aplikasi jalan, baru kita bikin sekali.
+        if (!currentAudioObject) {
+            currentAudioObject = new Audio();
+        } else {
+            // Kalau sudah ada, cukup stop audio lama tanpa menghancurkan (jangan di-null atau src="")
+            currentAudioObject.pause();
         }
+        
+        // Cukup ganti sumber file audionya saja
+        currentAudioObject.src = audioPathUrl;
+        
+        currentAudioObject.play()
+            .then(() => { 
+                pushLogKonsol(`Memutar: ${audioPathUrl.substring(0,40)}...`); 
+            })
+            .catch(err => { 
+                pushLogKonsol("Gagal memutar audio."); 
+            });
+            
+    } catch (e) { 
+        pushLogKonsol("Audio error."); 
+    }
+}
 
         function hitungJarakHaversine(lat1, lon1, lat2, lon2) {
             const R = 6371000; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
