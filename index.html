@@ -1870,17 +1870,26 @@ function monitorFullscreenStateChange() {
     try { 
         unlockAudioAutoplayContext(); 
         
-        // ─── TRIK AUDIO FOCUS: REUSE OBJEK YANG SAMA ───
-        // Jika objek audio BELUM PERNAH dibuat sepanjang aplikasi jalan, baru kita bikin sekali.
         if (!currentAudioObject) {
             currentAudioObject = new Audio();
         } else {
-            // Kalau sudah ada, cukup stop audio lama tanpa menghancurkan (jangan di-null atau src="")
             currentAudioObject.pause();
         }
         
-        // Cukup ganti sumber file audionya saja
         currentAudioObject.src = audioPathUrl;
+        
+        // ─── TRIK PAMUNGKAS: PAKSA BALIKIN AUDIO FOCUS PAS KELAR ───
+        currentAudioObject.onended = function() {
+            pushLogKonsol("[AUDIO] Announcer selesai, merilis audio focus...");
+            
+            // Trik 1: Bersihkan src setelah jeda tipis biar Android tau audio browser udah beneran mati
+            setTimeout(() => {
+                if (currentAudioObject && currentAudioObject.paused) {
+                    currentAudioObject.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA=="; // Audio pancingan kosong (1 milidetik)
+                    currentAudioObject.load(); 
+                }
+            }, 300);
+        };
         
         currentAudioObject.play()
             .then(() => { 
