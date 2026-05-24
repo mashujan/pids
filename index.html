@@ -879,7 +879,13 @@
                 </table>
             </div>
 
-            
+            <hr class="divider-line">
+
+            <div class="json-tools-area" style="display:flex; gap: 10px;">
+                <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJsonCombinedAllInOne()">Ekspor/Unduh JSON</button>
+                <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">Impor/Unggah JSON</button>
+                <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJsonCombinedAllInOne(event)">
+            </div>
         </div>
 
         <div id="tab-config" class="tab-content">
@@ -938,16 +944,7 @@
                 </div>
                 <div class="mini-list-box" id="cfg-audio-list-container"></div>
             </div>
-	<hr class="divider-line">
-            <div class="json-tools-area" style="display:flex; gap: 10px;">
-                <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJsonCombinedAllInOne()">Ekspor/Unduh JSON</button>
-                <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">Impor/Unggah JSON</button>
-                <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJsonCombinedAllInOne(event)">
-            </div>
-		<div style="margin-top: 10px; display: flex; gap: 8px;">
-    <button onclick="unduhFileLogDariStorage()" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Unduh Log</button>
-    <button onclick="hapusLogStorage()" style="padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Kosongkan Log</button>
-</div>
+
         </div>
     </div>
 
