@@ -1240,14 +1240,14 @@
 
                     if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
                         if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Masuk Titik: ${hTerdekat.nama}`);
+                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Masuk Titik: ${hTerdekat.nama}`);
                     }
                     statusGeofenceSebelumnya = "dalam";
                 } else {
                     document.getElementById('pids-distance').innerText = `${Math.round(jTerkecil)}m`;
                     if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
                         if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`Keluar Titik: ${hTerdekat.nama}`);
+                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Keluar Titik: ${hTerdekat.nama}`);
                     }
                     if (statusGeofenceSebelumnya === "dalam") {
                         if (fallbackTimerId) clearTimeout(fallbackTimerId);
@@ -1347,7 +1347,7 @@ function renderSemuaTitikDatabaseKePeta() {
             map.setZoom(11);
         }
         
-        pushLogKonsol(`[PETA] Sukses plot ${semuaKoordinat.length} titik beserta radiusnya.`);
+        pushLogKonsol(`[P] Sukses plot ${semuaKoordinat.length} titik beserta radiusnya.`);
     }
 }
 
@@ -1415,7 +1415,7 @@ function renderSemuaTitikDatabaseKePeta() {
             if (type === 'geofence') { dbLokasi = activeList; localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); renderTabelGeofenceUI(); perbaruiDropdownSimulasi(); }
             else if (type === 'lokasi') { lokasiSingleList = activeList; localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList)); renderListLokasiBuiltInUI(); }
             else if (type === 'audio') { audioAssetList = activeList; localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList)); renderListAudioAssetsUI(); renderDropdownAudioDb(); }
-            pushLogKonsol(`Rute manual ${type} diperbarui.`);
+            pushLogKonsol(`[T] Rute manual ${type} diperbarui.`);
         }
 
         // ==================== RENDERING UI MANAGEMENT ====================
@@ -1875,7 +1875,7 @@ function monitorFullscreenStateChange() {
 let audioContextPids = null;
 
 function putarAnnouncer(audioPathUrl) {
-    if (!isAudioEnabled) { pushLogKonsol("Announcer Dinonaktifkan."); return; }
+    if (!isAudioEnabled) { pushLogKonsol("[A] Announcer Dinonaktifkan"); return; }
     
     try {
         // Inisialisasi AudioContext jika belum ada
@@ -1888,7 +1888,7 @@ function putarAnnouncer(audioPathUrl) {
             audioContextPids.resume();
         }
 
-        pushLogKonsol(`[WEB AUDIO] Mengunduh & memutar: ${audioPathUrl.substring(0,30)}...`);
+        pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl.substring(0,30)}...`);
 
         // Fetch file audio secara real-time agar masuk ke jalur sound-effect
         fetch(audioPathUrl)
@@ -1904,18 +1904,18 @@ function putarAnnouncer(audioPathUrl) {
                 
                 // Mainkan instan!
                 source.start(0);
-                pushLogKonsol("[WEB AUDIO] Sukses memutar via AudioContext (Jalur Ducking).");
+                pushLogKonsol("[A] Announcer Diputarkan");
             })
             .catch(err => {
-                pushLogKonsol(`[WEB AUDIO] Gagal decode/play: ${err.message}`);
+                pushLogKonsol(`[A] Gagal Memutar: ${err.message}`);
                 
                 // FALLBACK: Jika Web Audio API gagal (misal file cross-origin), balik ke metode biasa
                 let fallbackAudio = new Audio(audioPathUrl);
-                fallbackAudio.play().catch(e => console.log("Fallback pun gagal"));
+                fallbackAudio.play().catch(e => pushLogKonsol("[A] Announcer Gagal Diputar"));
             });
 
     } catch (e) {
-        pushLogKonsol("Web Audio API Error.");
+        pushLogKonsol("[A] Announcer Gagal Diputar (Web API Error)");
     }
 }
 
@@ -1981,7 +1981,7 @@ function putarAnnouncer(audioPathUrl) {
                     fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000);
                 }
                 lastPlayedHalteId = null; statusGeofenceSebelumnya = "luar";
-                pushLogKonsol(`[SIMULASI] Titik Reset.`);
+                pushLogKonsol(`[S] Titik Reset.`);
             }
         }
 		// Penampung audio biar kalau lo play audio lain, audio sebelumnya langsung mati otomatis
@@ -2003,7 +2003,7 @@ function putarAnnouncer(audioPathUrl) {
                 
                 audioTestingSekarang.play()
                     .then(() => {
-                        pushLogKonsol("Berhasil memutar audio tes: " + pathAudio);
+                        pushLogKonsol("[A] Berhasil Memutar Tes Announcer: " + pathAudio);
                     })
                     .catch((error) => {
                         alert("Gagal memutar suara!\n\nPastikan file '" + pathAudio + "' berada di komputer Anda.");
@@ -2065,7 +2065,7 @@ function autoCompleteLokasi() {
                                 } else if (typeof mymap !== 'undefined') {
                                     mymap.flyTo([lat, lon], 16);
                                 } else {
-                                    pushLogKonsol("Peta ditemukan tapi nama variabel tidak cocok.");
+                                    pushLogKonsol("[P] Peta ditemukan tapi nama variabel tidak cocok");
                                 }
                                 
                                 dropdown.innerHTML = "";
