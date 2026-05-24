@@ -879,13 +879,7 @@
                 </table>
             </div>
 
-            <hr class="divider-line">
-
-            <div class="json-tools-area" style="display:flex; gap: 10px;">
-                <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJsonCombinedAllInOne()">Ekspor/Unduh JSON</button>
-                <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">Impor/Unggah JSON</button>
-                <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJsonCombinedAllInOne(event)">
-            </div>
+            
         </div>
 
         <div id="tab-config" class="tab-content">
@@ -944,7 +938,16 @@
                 </div>
                 <div class="mini-list-box" id="cfg-audio-list-container"></div>
             </div>
-
+	<hr class="divider-line">
+            <div class="json-tools-area" style="display:flex; gap: 10px;">
+                <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJsonCombinedAllInOne()">Ekspor/Unduh JSON</button>
+                <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">Impor/Unggah JSON</button>
+                <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJsonCombinedAllInOne(event)">
+            </div>
+		<div style="margin-top: 10px; display: flex; gap: 8px;">
+    <button onclick="unduhFileLogDariStorage()" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Unduh Log</button>
+    <button onclick="hapusLogStorage()" style="padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Kosongkan Log</button>
+</div>
         </div>
     </div>
 
@@ -1844,10 +1847,36 @@ function monitorFullscreenStateChange() {
     });
 }
 
-        function pushLogKonsol(teks) {
-            let consoleNode = document.getElementById('log-console'); let d = document.createElement('div'); d.className = "diag-log-line";
-            d.innerText = `[${new Date().toLocaleTimeString('id-ID')}] ${teks}`; consoleNode.appendChild(d); consoleNode.scrollTop = consoleNode.scrollHeight;
-        }
+        // Fungsi untuk generate file .txt dari localStorage dan mendownloadnya
+function unduhFileLogDariStorage() {
+    let logData = JSON.parse(localStorage.getItem('log_history_pids')) || [];
+    if (logData.length === 0) {
+        alert("Belum ada log perjalanan yang tercatat di storage!");
+        return;
+    }
+    
+    // Gabungkan isi log pake baris baru
+    let isiTeks = logData.join("\n");
+    let blob = new Blob([isiTeks], { type: "text/plain;charset=utf-8" });
+    
+    let linkSiluman = document.createElement("a");
+    let tanggal = new Date().toISOString().slice(0, 10); // Format: YYYY-MM-DD
+    
+    linkSiluman.href = URL.createObjectURL(blob);
+    linkSiluman.download = `log_PIDS_${tanggal}.txt`;
+    
+    document.body.appendChild(linkSiluman);
+    linkSiluman.click();
+    document.body.removeChild(linkSiluman);
+}
+
+// Fungsi buat nge-clear log biar localStorage gak kepenuhan dari hari ke hari
+function hapusLogStorage() {
+    if (confirm("Hapus semua riwayat log perjalanan yang tersimpan?")) {
+        localStorage.removeItem('log_history_pids');
+        alert("Log di storage berhasil dibersihkan!");
+    }
+}
 
         function cekOverspeedStatus(currentSpeed) {
             let limit = parseFloat(document.getElementById('cfg-overspeed-limit').value) || 50.0;
