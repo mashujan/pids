@@ -1868,65 +1868,48 @@ function monitorFullscreenStateChange() {
         // 1. Siapkan Audio Context Global di paling atas kode lo
 let audioContextPids = null;
 
-// Siapkan variabel global di paling atas kode lo
-let audioContextPids = null;
-let currentAudioObject = null;
-let pancinganDuckingAudio = null;
-
-// Pastikan variabel-variabel global ini terpasang rapi di paling atas script lo
-let currentAudioObject = null;
-let pancinganDuckingAudio = null;
-
 function putarAnnouncer(audioPathUrl) {
     if (!isAudioEnabled) { pushLogKonsol("Announcer Dinonaktifkan."); return; }
     
     try {
-        pushLogKonsol(`[AUDIO] Mencoba memutar: ${audioPathUrl.substring(0,30)}...`);
-
-        // 1. Reset audio announcer lama kalau masih bunyi biar gak tumpang tindih
-        if (currentAudioObject) {
-            currentAudioObject.pause();
+        // Inisialisasi AudioContext jika belum ada
+        if (!audioContextPids) {
+            audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
         }
-        // Reset juga audio pancingan lama
-        if (pancinganDuckingAudio) {
-            pancinganDuckingAudio.pause();
-        }
-
-        // 2. PEMICU DUCKING (Ngecilin Spotify)
-        // Kita setel file audio kosong (silent) durasi panjang pake HTML5 Audio biasa.
-        // Ini trik paling aman buat ngomong ke Android Auto biar Spotify mengecil otomatis.
-        pancinganDuckingAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
-        pancinganDuckingAudio.loop = true;
-        pancinganDuckingAudio.play().catch(e => console.log("Ducking pancingan aman"));
-
-        // 3. MAIN KAN ANNOUNCER UTAMA (Pake objek biasa, NO WEBAUDIO API biar anti-crash/CORS)
-        currentAudioObject = new Audio(audioPathUrl);
         
-        // Ketika announcer bawaan lo beres bunyi, balikin volume Spotify ke normal
-        currentAudioObject.onended = function() {
-            pushLogKonsol("[AUDIO] Announcer selesai, volume lagu kembali normal.");
-            if (pancinganDuckingAudio) {
-                pancinganDuckingAudio.pause();
-                pancinganDuckingAudio = null;
-            }
-        };
+        // Pastikan AudioContext dalam keadaan aktif (mencegah auto-block browser)
+        if (audioContextPids.state === 'suspended') {
+            audioContextPids.resume();
+        }
 
-        // Eksekusi putar suara utamanya
-        currentAudioObject.play()
-            .then(() => {
-                pushLogKonsol(`[AUDIO] Sukses memutar announcer.`);
+        pushLogKonsol(`[WEB AUDIO] Mengunduh & memutar: ${audioPathUrl.substring(0,30)}...`);
+
+        // Fetch file audio secara real-time agar masuk ke jalur sound-effect
+        fetch(audioPathUrl)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                // Buat sumber suara baru dari buffer
+                let source = audioContextPids.createBufferSource();
+                source.buffer = audioBuffer;
+                
+                // Hubungkan langsung ke speaker HP
+                source.connect(audioContextPids.destination);
+                
+                // Mainkan instan!
+                source.start(0);
+                pushLogKonsol("[WEB AUDIO] Sukses memutar via AudioContext (Jalur Ducking).");
             })
             .catch(err => {
-                pushLogKonsol(`[AUDIO] Gagal play audio utama: ${err.message}`);
-                // Jika gagal, pastikan pancingan ducking dimatikan biar musik gak nge-kecil terus
-                if (pancinganDuckingAudio) {
-                    pancinganDuckingAudio.pause();
-                    pancinganDuckingAudio = null;
-                }
+                pushLogKonsol(`[WEB AUDIO] Gagal decode/play: ${err.message}`);
+                
+                // FALLBACK: Jika Web Audio API gagal (misal file cross-origin), balik ke metode biasa
+                let fallbackAudio = new Audio(audioPathUrl);
+                fallbackAudio.play().catch(e => console.log("Fallback pun gagal"));
             });
 
     } catch (e) {
-        pushLogKonsol(`[AUDIO] Fatal Error: ${e.message}`);
+        pushLogKonsol("Web Audio API Error.");
     }
 }
 
