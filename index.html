@@ -218,13 +218,37 @@
             overflow: hidden;
             white-space: nowrap;
         }
-        .marquee-text {
+
+.marquee-text {
+    display: inline-block;
+    font-size: 34px;
+    font-weight: bold;
+    color: #ffff00;
+    white-space: nowrap;
+}
+
+.marquee-text.mode-jalan {
+    padding-left: 100%; 
+    animation: marquee-static-engine var(--marquee-duration) linear infinite;
+}
+
+/* 3. Class Khusus Kalau Teksnya Pendek (Biar Diem di Tengah) */
+.marquee-text.mode-statis {
+    padding-left: 0px !important;
+    width: 100%;
+    text-align: center;
+    animation: none !important;
+}
+		
+		.led-text-static {
+            white-space: nowrap;
+            position: relative;
             display: inline-block;
-            font-size: 34px;
-            font-weight: bold;
-            color: #ffff00;
-            padding-left: 100%; 
-            animation: marquee-static-engine var(--marquee-duration) linear infinite;
+            width: 100%;
+            text-align: center; /* Bikin teks otomatis presisi di tengah-tengah LED */
+            animation: none !important; /* Matikan paksa animasi marquee-static-engine */
+            transform: none !important; /* Reset posisi geser */
+            padding-left: 0 !important; /* Hilangkan padding 100% bawaan marquee agar tidak mental ke kanan */
         }
 
         @keyframes marquee-static-engine {
@@ -1055,29 +1079,42 @@
         }
 
         function updateTeksMonitorUtamaPIDS(teksBaru) {
-            let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
-            displayNode.style.animation = 'none'; displayNode.offsetHeight; 
-            
-            // Balik ke innerText bawaan
-            displayNode.innerText = teksBaru; 
-            
-            hitungDanSetDurasiMarquee(teksBaru); 
-            displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
-        }
+    let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
+    let containerNode = document.querySelector('.marquee-container');
+    
+    let teksBersih = teksBaru.trim();
 
-        function updateTeksMonitorUtamaPIDS(teksBaru) {
-            let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
-            displayNode.style.animation = 'none'; displayNode.offsetHeight; 
-            
-            // TRICK FIX SPASI: Mengubah semua spasi biasa menjadi spasi permanen (\u00A0)
-            // Ini memaksa browser merender spasi sebanyak apa pun secara utuh!
-            let teksAmanSpasi = teksBaru.replace(/ /g, '\u00A0');
-            
-            displayNode.textContent = teksAmanSpasi; 
-            hitungDanSetDurasiMarquee(teksAmanSpasi); 
-            
-            displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
+    // ─── JALUR TEKS PENDEK (DIEM MATI DI TENGAH) ───
+    if (teksBersih.length <= 30) {
+        displayNode.textContent = teksBersih; 
+        
+        // Matikan total animasinya di sini
+        displayNode.className = "marquee-text mode-statis";
+        displayNode.style.animation = 'none';
+        displayNode.style.paddingLeft = '0px';
+        
+        // Aktifkan flexbox ngetengahin di kontainer luar
+        if (containerNode) {
+            containerNode.className = "marquee-container parent-statis";
         }
+    } 
+    // ─── JALUR TEKS PANJANG (RUNNING TEXT ASLI LO) ───
+    else {
+        if (containerNode) {
+            containerNode.className = "marquee-container";
+        }
+        
+        // Jalankan TRICK FIX SPASI bawaan lo
+        let teksAmanSpasi = teksBersih.replace(/ /g, '\u00A0');
+        displayNode.textContent = teksAmanSpasi; 
+        displayNode.className = "marquee-text mode-jalan";
+        
+        // Hitung durasi & jalankan animasinya kembali
+        hitungDanSetDurasiMarquee(teksAmanSpasi); 
+        displayNode.style.paddingLeft = '100%';
+        displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
+    }
+}
 
         function unlockAudioAutoplayContext() {
             try {
@@ -1211,13 +1248,6 @@
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
             document.getElementById('pids-nearest-object').innerText = "Mencari Titik...";
             prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, 0);
-        }
-
-        function updateTeksMonitorUtamaPIDS(teksBaru) {
-            let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
-            displayNode.style.animation = 'none'; displayNode.offsetHeight; 
-            displayNode.innerText = teksBaru; hitungDanSetDurasiMarquee(teksBaru); 
-            displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
         }
 
         function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
@@ -1978,7 +2008,7 @@ function putarAnnouncer(audioPathUrl) {
                 if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Titik: ${h.nama}`); }
                 if (statusGeofenceSebelumnya === "dalam") {
                     if (fallbackTimerId) clearTimeout(fallbackTimerId);
-                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000);
+                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 1000);
                 }
                 lastPlayedHalteId = null; statusGeofenceSebelumnya = "luar";
                 pushLogKonsol(`[S] Titik Reset.`);
