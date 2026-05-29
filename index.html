@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.0.10</title>
+    <title>PIDS Simulator v3.1.0</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -768,7 +768,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.0.10</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.1.0</h1>
     </header>
 
     <div class="tab-bar">
@@ -803,7 +803,7 @@
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.0.10 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.1.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -922,7 +922,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.0.10 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.1.0 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -990,7 +990,7 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "Selamat Datang di PIDS v3.0.10 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.1.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1027,7 +1027,7 @@
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.0.10 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.1.0 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1085,7 +1085,7 @@
     let teksBersih = teksBaru.trim();
 
     // ─── JALUR TEKS PENDEK (DIEM MATI DI TENGAH) ───
-    if (teksBersih.length <= 30) {
+    if (teksBersih.length <= 20) {
         displayNode.textContent = teksBersih; 
         
         // Matikan total animasinya di sini
@@ -1191,7 +1191,7 @@
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "Selamat Datang di PIDS v3.0.10 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+                ruteAktifTeks = "Selamat Datang di PIDS v3.1.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1237,7 +1237,7 @@
             // Menggunakan regex untuk potong spasi ujung luar saja, spasi ganda di dalam TETAP AMAN
             let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
             let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.0.10 - Hati-Hati Di Jalan, Utamakan Keselamatan";
+            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.1.0 - Hati-Hati Di Jalan, Utamakan Keselamatan";
 
             if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
             else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -1773,7 +1773,7 @@ let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
 // Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
 let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-let namaFile = `${formatWaktu}_backup-pids-v3.0.10.json`;
+let namaFile = `${formatWaktu}_backup-pids-v3.1.0.json`;
 
 // KODE BAWAAN LO YANG SUDAH MODIFIKASI:
 let downloadAnchor = document.createElement('a'); 
@@ -2008,7 +2008,7 @@ function putarAnnouncer(audioPathUrl) {
                 if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Titik: ${h.nama}`); }
                 if (statusGeofenceSebelumnya === "dalam") {
                     if (fallbackTimerId) clearTimeout(fallbackTimerId);
-                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 1000);
+                    fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 30000);
                 }
                 lastPlayedHalteId = null; statusGeofenceSebelumnya = "luar";
                 pushLogKonsol(`[S] Titik Reset.`);
