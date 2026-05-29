@@ -1995,7 +1995,7 @@ function putarAnnouncer(audioPathUrl) {
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 document.getElementById('pids-distance').innerText = `In (Simulated)`; document.getElementById('pids-nearest-object').innerText = h.nama;
                 updateTeksMonitorUtamaPIDS(h.displayText || h.nama);
-                if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Masuk Titik: ${h.nama}`); }
+                if ((h.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[S] Masuk Titik: ${h.nama}`); }
                 statusGeofenceSebelumnya = "dalam";
             }
         }
@@ -2005,7 +2005,7 @@ function putarAnnouncer(audioPathUrl) {
             let h = dbLokasi.find(i => i.id == id);
             if (h) {
                 document.getElementById('pids-distance').innerText = `Far (Simulated)`; document.getElementById('pids-nearest-object').innerText = h.nama;
-                if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[SIMULASI] Keluar Titik: ${h.nama}`); }
+                if ((h.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== h.id) { if(h.audioData && h.audioData !== "none") putarAnnouncer(h.audioData); lastPlayedHalteId = h.id; pushLogKonsol(`[S] Keluar Titik: ${h.nama}`); }
                 if (statusGeofenceSebelumnya === "dalam") {
                     if (fallbackTimerId) clearTimeout(fallbackTimerId);
                     fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 30000);
