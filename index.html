@@ -1084,34 +1084,41 @@
     
     let teksBersih = teksBaru.trim();
 
-    // ─── JALUR TEKS PENDEK (DIEM MATI DI TENGAH) ───
-    if (teksBersih.length <= 20) {
+    // Reset total animasi dan paksa reflow biar browser gak kaget/ngelag pas ganti rute
+    displayNode.style.animation = 'none'; 
+    displayNode.offsetHeight; 
+
+    // ─── JALUR TEKS PENDEK (DIEM DI TENGAH) ───
+    if (teksBersih.length <= 18) {
         displayNode.textContent = teksBersih; 
         
-        // Matikan total animasinya di sini
+        // Reset padding dan paksa pakai kelas statis semalam
         displayNode.className = "marquee-text mode-statis";
-        displayNode.style.animation = 'none';
         displayNode.style.paddingLeft = '0px';
         
-        // Aktifkan flexbox ngetengahin di kontainer luar
         if (containerNode) {
             containerNode.className = "marquee-container parent-statis";
         }
     } 
-    // ─── JALUR TEKS PANJANG (RUNNING TEXT ASLI LO) ───
+    // ─── JALUR TEKS PANJANG (PURA-PURA BALIK KE KODE ASLI LO YANG SMOOTH) ───
     else {
+        // Balikin kelas container ke setelan pabrik lo semalam
         if (containerNode) {
             containerNode.className = "marquee-container";
         }
         
-        // Jalankan TRICK FIX SPASI bawaan lo
-        let teksAmanSpasi = teksBersih.replace(/ /g, '\u00A0');
-        displayNode.textContent = teksAmanSpasi; 
+        // Kembalikan kelas teks ke mode jalan bawaan CSS asli lo
         displayNode.className = "marquee-text mode-jalan";
         
-        // Hitung durasi & jalankan animasinya kembali
+        // HAPUS PADDING GAIB: Kembalikan kontrol penuh ke file CSS asli lo biar gak mulai dari tengah
+        displayNode.style.paddingLeft = ''; 
+
+        // Jalankan TRICK FIX SPASI bawaan asli lo kemarin
+        let teksAmanSpasi = teksBersih.replace(/ /g, '\u00A0');
+        displayNode.textContent = teksAmanSpasi; 
+        
+        // Hitung durasi & jalankan animasi murni persis gaya lama lo
         hitungDanSetDurasiMarquee(teksAmanSpasi); 
-        displayNode.style.paddingLeft = '100%';
         displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
     }
 }
