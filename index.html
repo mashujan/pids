@@ -1929,18 +1929,31 @@ function putarAnnouncer(audioPathUrl) {
                 let source = audioContextPids.createBufferSource();
                 source.buffer = audioBuffer;
                 
-                // Hubungkan langsung ke speaker HP
-                source.connect(audioContextPids.destination);
+                // ─── AMBIENT BOOSTER ENGINE (GAIN NODE) ───
+                let gainNode = audioContextPids.createGain();
+                
+                // ATUR DI SINI:
+                // 1.0 = Volume Normal (100%)
+                // 2.0 = Keras Dua Kali Lipat (200%)
+                // 2.5 = Rekomendasi gua buat di kabin mobil (250%)
+                // 3.0 = Tiga kali lipat (300% - Hati-hati speaker sember/pecah)
+                gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime);
+                
+                // Sambungkan Jalur: Source -> Pengeras -> Speaker
+                source.connect(gainNode);
+                gainNode.connect(audioContextPids.destination);
                 
                 // Mainkan instan!
                 source.start(0);
-                pushLogKonsol("[A] Announcer Diputarkan");
+                pushLogKonsol("[A] Announcer Diputarkan + Volume Booster 2.5x");
             })
             .catch(err => {
                 pushLogKonsol(`[A] Gagal Memutar: ${err.message}`);
                 
                 // FALLBACK: Jika Web Audio API gagal (misal file cross-origin), balik ke metode biasa
                 let fallbackAudio = new Audio(audioPathUrl);
+                // Kita naikin juga volume fallback-nya ke maksimal (1.0) jikalau mentok
+                fallbackAudio.volume = 1.0; 
                 fallbackAudio.play().catch(e => pushLogKonsol("[A] Announcer Gagal Diputar"));
             });
 
