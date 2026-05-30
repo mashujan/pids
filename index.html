@@ -1269,11 +1269,55 @@
                 let rGeofence = hTerdekat.radius;
                 document.getElementById('pids-nearest-object').innerText = hTerdekat.nama;
 
-                if (jTerkecil <= rGeofence) {
-                    document.getElementById('pids-distance').innerText = `In ${Math.round(jTerkecil)}m`;
-                    if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
-                    let namaTarget = hTerdekat.displayText || hTerdekat.nama;
-                    if (document.getElementById('pids-display').innerText !== namaTarget) updateTeksMonitorUtamaPIDS(namaTarget);
+                function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
+    if (dbLokasi.length === 0) return;
+    let hTerdekat = null; let jTerkecil = Infinity;
+    
+    dbLokasi.forEach(h => {
+        let j = hitungJarakHaversine(lat, lng, h.lat, h.lng);
+        if (j < jTerkecil) { jTerkecil = j; hTerdekat = h; }
+    });
+
+    if (hTerdekat) {
+        let rGeofence = hTerdekat.radius;
+        document.getElementById('pids-nearest-object').innerText = hTerdekat.nama;
+
+        // ─── KONDISI A: POSISI DI DALAM RADIUS GEOFENCE ───
+        if (jTerkecil <= rGeofence) {
+            document.getElementById('pids-distance').innerText = `In ${Math.round(jTerkecil)}m`;
+            if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
+            
+            let namaTarget = hTerdekat.displayText || hTerdekat.nama;
+            
+            // FIX PENYAKIT ANTI-RESET: Terjemahkan kembali spasi gaib (\u00A0) ke spasi normal
+            let teksLayarSekarang = document.getElementById('pids-display').textContent.replace(/\u00A0/g, ' ');
+            
+            if (teksLayarSekarang !== namaTarget) {
+                updateTeksMonitorUtamaPIDS(namaTarget);
+            }
+
+            if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
+                if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
+                lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Masuk Titik: ${hTerdekat.nama}`);
+            }
+            statusGeofenceSebelumnya = "dalam";
+        } 
+        // ─── KONDISI B: POSISI DI LUAR RADIUS GEOFENCE ───
+        else {
+            document.getElementById('pids-distance').innerText = `${Math.round(jTerkecil)}m`;
+            if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
+                if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
+                lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Keluar Titik: ${hTerdekat.nama}`);
+            }
+            if (statusGeofenceSebelumnya === "dalam") {
+                if (fallbackTimerId) clearTimeout(fallbackTimerId);
+                fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000); 
+            }
+            if (jTerkecil > (rGeofence + 60) && lastPlayedHalteId === hTerdekat.id) { lastPlayedHalteId = null; }
+            statusGeofenceSebelumnya = "luar";
+        }
+    }
+}
 
                     if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
                         if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
@@ -1294,7 +1338,7 @@
                     statusGeofenceSebelumnya = "luar";
                 }
             }
-        }
+        
 
         function inisialisasiPeta() {
     map = L.map('map', { zoomControl: true }).setView([-6.1754, 106.8272], 13);
