@@ -1955,6 +1955,12 @@ function monitorFullscreenStateChange() {
         // 1. Siapkan Audio Context Global di paling atas kode lo
 let audioContextPids = null;
 
+// PASTIKAN BARIS INI ADA DI PALING ATAS SCRIPT LO (DI LUAR FUNGSI)
+// Kalau sudah pernah buat variabel ini di atas, baris di bawah ini bisa dihapus/diabaikan.
+if (typeof currentAnnouncerSource === 'undefined') {
+    var currentAnnouncerSource = null; 
+}
+
 function putarAnnouncer(audioPathUrl) {
     if (!isAudioEnabled) { pushLogKonsol("[A] Announcer Dinonaktifkan"); return; }
     
@@ -1976,9 +1982,24 @@ function putarAnnouncer(audioPathUrl) {
             .then(response => response.arrayBuffer())
             .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
             .then(audioBuffer => {
+                
+                // ─── SAKELAR TIMPA AUDIO (ANTI-TUMPANG TINDIDH) ───
+                // Jika masih ada suara halte sebelumnya yang lagi bunyi, langsung potong paksa!
+                if (currentAnnouncerSource) {
+                    try {
+                        currentAnnouncerSource.stop(0);
+                        pushLogKonsol("[A] Audio Sebelumnya Dimatikan karena Menembus Titik Baru");
+                    } catch (e) {
+                        // Diabaikan jika audionya kebetulan emang udah beres duluan
+                    }
+                }
+
                 // Buat sumber suara baru dari buffer
                 let source = audioContextPids.createBufferSource();
                 source.buffer = audioBuffer;
+                
+                // Kunci source ini ke variabel global agar bisa ditimpa titik berikutnya
+                currentAnnouncerSource = source;
                 
                 // ─── AMBIENT BOOSTER ENGINE (GAIN NODE) ───
                 let gainNode = audioContextPids.createGain();
@@ -1997,6 +2018,13 @@ function putarAnnouncer(audioPathUrl) {
                 // Mainkan instan!
                 source.start(0);
                 pushLogKonsol("[A] Announcer Diputarkan + Volume Booster 2.5x");
+                
+                // Bersihkan penampung kalau audio emang selesai normal tanpa dipotong
+                source.onended = function() {
+                    if (currentAnnouncerSource === source) {
+                        currentAnnouncerSource = null;
+                    }
+                };
             })
             .catch(err => {
                 pushLogKonsol(`[A] Gagal Memutar: ${err.message}`);
