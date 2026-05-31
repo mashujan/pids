@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.1.1</title>
+    <title>PIDS Simulator v3.1.2</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -768,7 +768,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.1.1</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.1.2</h1>
     </header>
 
     <div class="tab-bar">
@@ -803,7 +803,7 @@
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.1.1 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.1.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -922,7 +922,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.1.1 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.1.2 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -990,7 +990,7 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "Selamat Datang di PIDS v3.1.1 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.1.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1027,7 +1027,7 @@
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.1.1 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.1.2 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1081,6 +1081,10 @@
         function updateTeksMonitorUtamaPIDS(teksBaru) {
     let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
     let containerNode = document.querySelector('.marquee-container');
+    
+    // ─── SUNTIK BARIS INI (WAJIB) ───
+    // Biar geofence tahu teks apa yang lagi aktif di layar tanpa ketipu spasi gaib
+    displayNode.setAttribute('data-text-mentah', teksBaru);
     
     let teksBersih = teksBaru.trim();
 
@@ -1198,7 +1202,7 @@
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "Selamat Datang di PIDS v3.1.1 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+                ruteAktifTeks = "Selamat Datang di PIDS v3.1.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1244,7 +1248,7 @@
             // Menggunakan regex untuk potong spasi ujung luar saja, spasi ganda di dalam TETAP AMAN
             let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
             let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.1.1 - Hati-Hati Di Jalan, Utamakan Keselamatan";
+            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.1.2 - Hati-Hati Di Jalan, Utamakan Keselamatan";
 
             if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
             else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -1258,87 +1262,83 @@
         }
 
         function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
-            if (dbLokasi.length === 0) return;
-            let hTerdekat = null; let jTerkecil = Infinity;
-            dbLokasi.forEach(h => {
-                let j = hitungJarakHaversine(lat, lng, h.lat, h.lng);
-                if (j < jTerkecil) { jTerkecil = j; hTerdekat = h; }
-            });
-
-            if (hTerdekat) {
-                let rGeofence = hTerdekat.radius;
-                document.getElementById('pids-nearest-object').innerText = hTerdekat.nama;
-
-                function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
     if (dbLokasi.length === 0) return;
-    let hTerdekat = null; let jTerkecil = Infinity;
     
+    let hTerdekat = null; 
+    let jTerkecil = Infinity;
+    
+    // 1. Kunci pencarian titik terdekat dalam database lo
     dbLokasi.forEach(h => {
         let j = hitungJarakHaversine(lat, lng, h.lat, h.lng);
-        if (j < jTerkecil) { jTerkecil = j; hTerdekat = h; }
+        if (j < jTerkecil) {
+            jTerkecil = j; 
+            hTerdekat = h;
+        }
     });
 
+    // 2. Jika titik terdekat ditemukan, eksekusi Fitur Jarak & Nama Objek Terdekat
     if (hTerdekat) {
         let rGeofence = hTerdekat.radius;
+        
+        // FIX POIN 2: Update nama objek terdekat dan jarak aslinya di layar (Bukan cuma "-")
         document.getElementById('pids-nearest-object').innerText = hTerdekat.nama;
 
-        // ─── KONDISI A: POSISI DI DALAM RADIUS GEOFENCE ───
+        // ─── KONDISI A: JIKA BENER-BENER MASUK RADIUS GEOFENCE (Misal <= 200m) ───
         if (jTerkecil <= rGeofence) {
             document.getElementById('pids-distance').innerText = `In ${Math.round(jTerkecil)}m`;
             if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
             
             let namaTarget = hTerdekat.displayText || hTerdekat.nama;
             
-            // FIX PENYAKIT ANTI-RESET: Terjemahkan kembali spasi gaib (\u00A0) ke spasi normal
-            let teksLayarSekarang = document.getElementById('pids-display').textContent.replace(/\u00A0/g, ' ');
-            
-            if (teksLayarSekarang !== namaTarget) {
-                updateTeksMonitorUtamaPIDS(namaTarget);
+            // FIX POIN 1: Cek teks pakai dataset/custom attribute biar gak ketipu spasi gaib \u00A0
+            let displayNode = document.getElementById('pids-display');
+            if (displayNode && displayNode.getAttribute('data-text-mentah') !== namaTarget) {
+                displayNode.setAttribute('data-text-mentah', namaTarget); // Kunci di data attribute
+                updateTeksMonitorUtamaPIDS(namaTarget); // Jalankan ganti teks PIDS
             }
 
+            // FIX POIN 3: Announcer HANYA boleh bunyi kalau bener-bener di DALAM radius!
             if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
-                if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Masuk Titik: ${hTerdekat.nama}`);
+                if (hTerdekat.audioData && hTerdekat.audioData !== "none") {
+                    putarAnnouncer(hTerdekat.audioData); 
+                }
+                lastPlayedHalteId = hTerdekat.id; 
+                pushLogKonsol(`[T] Masuk Titik: ${hTerdekat.nama}`);
             }
             statusGeofenceSebelumnya = "dalam";
         } 
-        // ─── KONDISI B: POSISI DI LUAR RADIUS GEOFENCE ───
+        // ─── KONDISI B: DI LUAR RADIUS (Udah keluar halte / Masih jauh melaju di jalan) ───
         else {
+            // Tampilkan jarak sisa menuju titik terdekat (Misal: 500m)
             document.getElementById('pids-distance').innerText = `${Math.round(jTerkecil)}m`;
+            
+            // Announcer mode KELUAR titik
             if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
-                if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Keluar Titik: ${hTerdekat.nama}`);
+                if (hTerdekat.audioData && hTerdekat.audioData !== "none") {
+                    putarAnnouncer(hTerdekat.audioData); 
+                }
+                lastPlayedHalteId = hTerdekat.id; 
+                pushLogKonsol(`[T] Keluar Titik: ${hTerdekat.nama}`);
             }
+            
+            // Pas baru keluar dari dalam lingkaran, aktifkan timer 90 detik buat balikin ke rute utama
             if (statusGeofenceSebelumnya === "dalam") {
                 if (fallbackTimerId) clearTimeout(fallbackTimerId);
-                fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000); 
+                fallbackTimerId = setTimeout(() => { 
+                    let displayNode = document.getElementById('pids-display');
+                    if (displayNode) displayNode.setAttribute('data-text-mentah', ruteAktifTeks);
+                    updateTeksMonitorUtamaPIDS(ruteAktifTeks); 
+                }, 90000); 
             }
-            if (jTerkecil > (rGeofence + 60) && lastPlayedHalteId === hTerdekat.id) { lastPlayedHalteId = null; }
+            
+            // Reset pengaman audio kalau jarak lo udah menjauh dari geofence (+ 60 meter)
+            if (jTerkecil > (rGeofence + 60) && lastPlayedHalteId === hTerdekat.id) { 
+                lastPlayedHalteId = null; 
+            }
             statusGeofenceSebelumnya = "luar";
         }
     }
 }
-
-                    if ((hTerdekat.triggerType || "masuk") === "masuk" && lastPlayedHalteId !== hTerdekat.id) {
-                        if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Masuk Titik: ${hTerdekat.nama}`);
-                    }
-                    statusGeofenceSebelumnya = "dalam";
-                } else {
-                    document.getElementById('pids-distance').innerText = `${Math.round(jTerkecil)}m`;
-                    if ((hTerdekat.triggerType || "masuk") === "keluar" && statusGeofenceSebelumnya === "dalam" && lastPlayedHalteId !== hTerdekat.id) {
-                        if(hTerdekat.audioData && hTerdekat.audioData !== "none") putarAnnouncer(hTerdekat.audioData); 
-                        lastPlayedHalteId = hTerdekat.id; pushLogKonsol(`[T] Keluar Titik: ${hTerdekat.nama}`);
-                    }
-                    if (statusGeofenceSebelumnya === "dalam") {
-                        if (fallbackTimerId) clearTimeout(fallbackTimerId);
-                        fallbackTimerId = setTimeout(() => { updateTeksMonitorUtamaPIDS(ruteAktifTeks); }, 90000); 
-                    }
-                    if (jTerkecil > (rGeofence + 60) && lastPlayedHalteId === hTerdekat.id) { lastPlayedHalteId = null; }
-                    statusGeofenceSebelumnya = "luar";
-                }
-            }
-        
 
         function inisialisasiPeta() {
     map = L.map('map', { zoomControl: true }).setView([-6.1754, 106.8272], 13);
@@ -1824,7 +1824,7 @@ let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
 // Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
 let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-let namaFile = `${formatWaktu}_backup-pids-v3.1.1.json`;
+let namaFile = `${formatWaktu}_backup-pids-v3.1.2.json`;
 
 // KODE BAWAAN LO YANG SUDAH MODIFIKASI:
 let downloadAnchor = document.createElement('a'); 
