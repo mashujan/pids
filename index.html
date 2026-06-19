@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.1.2</title>
+    <title>PIDS Simulator v3.2.0</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -768,7 +768,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.1.2</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.2.0</h1>
     </header>
 
     <div class="tab-bar">
@@ -803,7 +803,7 @@
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.1.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.2.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -861,10 +861,10 @@
             <div class="form-group"><label>Tampilan Di Layar</label><input type="text" id="input-display-text" class="form-control" placeholder="Masukkan tulisan untuk ditampilkan di layar..."></div>
             
             <div class="form-group">
-                <label>Radius (50m-500m)</label>
+                <label>Radius (0m-1km)</label>
                 <div class="range-container">
-                    <input type="range" id="input-radius" style="flex:1; accent-color:#ffb703;" min="50" max="500" step="10" value="50" oninput="document.getElementById('range-val-preview').innerText = this.value + ' Meter'; perbaruiVisualLingkaranRadius();">
-                    <span id="range-val-preview" style="font-weight:bold; color:#ffff00; min-width:70px; text-align:right;">50 Meter</span>
+                    <input type="range" id="input-radius" style="flex:1; accent-color:#ffb703;" min="0" max="1000" step="5" value="0" oninput="document.getElementById('range-val-preview').innerText = this.value + ' Meter'; perbaruiVisualLingkaranRadius();">
+                    <span id="range-val-preview" style="font-weight:bold; color:#ffff00; min-width:70px; text-align:right;">0 Meter</span>
                 </div>
             </div>
             <div class="form-group">
@@ -879,8 +879,8 @@
                 </div>
             </div>
 
-            <button id="btn-simpan" class="btn btn-database-save" onclick="eksekusiSimpan()">SIMPAN Titik</button>
-            <button id="btn-batal-edit" class="btn btn-danger" style="display: none; padding: 8px; margin-top: -4px;" onclick="resetFormInput()">BATAL EDIT Titik</button>
+            <button id="btn-simpan" class="btn btn-database-save" onclick="eksekusiSimpan()">Simpan Titik</button>
+            <button id="btn-batal-edit" class="btn btn-danger" style="display: none; padding: 8px; margin-top: -4px;" onclick="resetFormInput()">Batal Edit Titik</button>
 
             <hr class="divider-line">
 
@@ -909,7 +909,10 @@
                 <button class="btn btn-sim" style="flex:1;" onclick="exportDataKeJsonCombinedAllInOne()">Ekspor/Unduh JSON</button>
                 <button class="btn btn-sim" style="flex:1;" onclick="document.getElementById('input-import-json').click()">Impor/Unggah JSON</button>
                 <input type="file" id="input-import-json" accept=".json" style="display:none;" onchange="importDataDariJsonCombinedAllInOne(event)">
-            </div>
+			</div>
+			<div>
+				<button class="btn btn-sim" style="flex:1; background-color: #d9534f; color: white;" onclick="buatDatabaseBaruDenganBackup()">Kosongkan Database Saat Ini dan Buat Database Baru</button>
+				</div>
         </div>
 
         <div id="tab-config" class="tab-content">
@@ -922,7 +925,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.1.2 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.2.0 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -990,12 +993,16 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "Selamat Datang di PIDS v3.1.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.2.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
         let markerPeta = null;
         let lingkaranRadiusPeta = null; 
+        
+        // ─── TAMBAHKAN BARIS INI TEPAT DI SINI ───
+        let layerGroupHalte = null; 
+        
         let livePositionMarker = null;
         let liveAccuracyCircle = null;
 
@@ -1027,7 +1034,7 @@
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.1.2 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.2.0 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1202,7 +1209,7 @@
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "Selamat Datang di PIDS v3.1.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+                ruteAktifTeks = "Selamat Datang di PIDS v3.2.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1248,7 +1255,7 @@
             // Menggunakan regex untuk potong spasi ujung luar saja, spasi ganda di dalam TETAP AMAN
             let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
             let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.1.2 - Hati-Hati Di Jalan, Utamakan Keselamatan";
+            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.2.0 - Hati-Hati Di Jalan, Utamakan Keselamatan";
 
             if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
             else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -1344,6 +1351,9 @@
     map = L.map('map', { zoomControl: true }).setView([-6.1754, 106.8272], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     
+    // ─── TAMBAHKAN BARIS INI TEPAT DI SINI ───
+    layerGroupHalte = L.layerGroup().addTo(map);
+    
     let CustomLocateControl = L.Control.extend({
         options: { position: 'topleft' },
         onAdd: function (map) {
@@ -1361,6 +1371,7 @@
             return container;
         }
     });
+
     // FIX: Baris ini sudah dibersihkan dari typo ganda
     map.addControl(new CustomLocateControl());
 
@@ -1375,9 +1386,44 @@
     renderSemuaTitikDatabaseKePeta();
 }
 
+function plotSemuaHalteKePeta() {
+    // Proteksi: Jika peta atau layerGroup belum siap, jangan dieksekusi dulu
+    if (!map || !layerGroupHalte) return;
+
+    try {
+        // 1. Bersihkan semua marker dan lingkaran lama agar tidak menumpuk
+        layerGroupHalte.clearLayers();
+
+        // 2. Loop data dari dbLokasi terbaru
+        dbLokasi.forEach(item => {
+            // Buat marker untuk tiap halte
+            let markerHalte = L.marker([item.lat, item.lng]);
+
+            // Berikan popup info halte
+            markerHalte.bindPopup(`<b>${item.nama}</b><br>Radius: ${item.radius} Meter`);
+
+            // Buat lingkaran geofence transparan untuk tiap halte
+            let lingkaranGeofence = L.circle([item.lat, item.lng], {
+                radius: item.radius,
+                color: '#07c41f', // warna hijau tema lo
+                fillColor: '#07c41f',
+                fillOpacity: 0.1
+            });
+
+            // Masukkan ke dalam grup layer agar otomatis muncul di peta
+            layerGroupHalte.addLayer(markerHalte);
+            layerGroupHalte.addLayer(lingkaranGeofence);
+        });
+        
+        console.log("[P] Peta berhasil diperbarui dengan " + dbLokasi.length + " titik.");
+    } catch (error) {
+        console.error("Gagal memperbarui titik di peta:", error);
+    }
+}
+
 function perbaruiVisualLingkaranRadius() {
     if (!selectedLat || !selectedLng) return;
-    let r = parseInt(document.getElementById('input-radius').value) || 50;
+    let r = parseInt(document.getElementById('input-radius').value) || 0;
     if (lingkaranRadiusPeta) lingkaranRadiusPeta.setLatLng([selectedLat, selectedLng]).setRadius(r);
     else lingkaranRadiusPeta = L.circle([selectedLat, selectedLng], { radius: r, color: '#ffb703', fillColor: '#ffb703', fillOpacity: 0.25, weight: 2 }).addTo(map);
 }
@@ -1611,7 +1657,7 @@ function editLokasiBuiltIn(id) {
         function renderDropdownAudioDb() {
             let select = document.getElementById('input-audio-asset-dropdown'); if(!select) return;
             let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
-            let html = `<option value="none">-- Tanpa Suara --</option>`;
+            let html = `<option value="none">- Tanpa Suara -</option>`;
             listProses.forEach(item => { html += `<option value="${item.nama}">${item.nama}</option>`; });
             select.innerHTML = html;
         }
@@ -1619,36 +1665,47 @@ function editLokasiBuiltIn(id) {
         // ==================== DATABASE OPERATION ====================
 
         function eksekusiSimpan() {
-            let nama = document.getElementById('input-nama').value.trim();
-            let displayText = document.getElementById('input-display-text').value.trim();
-            let radius = parseInt(document.getElementById('input-radius').value);
-            let triggerType = document.getElementById('input-trigger-type').value;
-            let audioSelection = document.getElementById('input-audio-asset-dropdown').value;
+    let nama = document.getElementById('input-nama').value.trim();
+    let displayText = document.getElementById('input-display-text').value.trim();
+    let radius = parseInt(document.getElementById('input-radius').value);
+    let triggerType = document.getElementById('input-trigger-type').value;
+    let audioSelection = document.getElementById('input-audio-asset-dropdown').value;
 
-            if (displayText === "") displayText = nama;
-            if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi koordinat peta & nama titik!"); return; }
+    if (displayText === "") displayText = nama;
+    if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi koordinat peta & nama titik!"); return; }
 
-            if (idTargetEdit === null) {
-                dbLokasi.push({ 
-                    id: Date.now(), nama: nama, displayText: displayText, 
-                    lat: selectedLat, lng: selectedLng, radius: radius, 
-                    triggerType: triggerType, audioData: audioSelection,
-                    orderIndex: dbLokasi.length 
-                });
-            } else {
-                let idx = dbLokasi.findIndex(i => i.id === idTargetEdit);
-                if (idx !== -1) {
-                    dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText;
-                    dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng;
-                    dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
-                    dbLokasi[idx].audioData = audioSelection;
-                }
-            }
-            
-            localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-            resetFormInput(); renderSemuaTampilanKomponenUI();
-            alert("Data lokasi titik berhasil disimpan!");
+    if (idTargetEdit === null) {
+        dbLokasi.push({ 
+            id: Date.now(), nama: nama, displayText: displayText, 
+            lat: selectedLat, lng: selectedLng, radius: radius, 
+            triggerType: triggerType, audioData: audioSelection,
+            orderIndex: dbLokasi.length 
+        });
+    } else {
+        let idx = dbLokasi.findIndex(i => i.id === idTargetEdit);
+        if (idx !== -1) {
+            dbLokasi[idx].nama = nama; dbLokasi[idx].displayText = displayText;
+            dbLokasi[idx].lat = selectedLat; dbLokasi[idx].lng = selectedLng;
+            dbLokasi[idx].radius = radius; dbLokasi[idx].triggerType = triggerType;
+            dbLokasi[idx].audioData = audioSelection;
         }
+    }
+    
+    // 1. Simpan ke LocalStorage
+    localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+    
+    // 2. RENDERING ULANG TABEL UI & DROPDOWN SIMULASI
+    renderSemuaTampilanKomponenUI(); 
+    if (typeof perbaruiDropdownSimulasi === 'function') perbaruiDropdownSimulasi();
+
+    // ─── 3. PAKSA PETA UNTUK GAMBAR ULANG SEKARANG (TARUH DI SINI) ───
+    plotSemuaHalteKePeta(); 
+
+    // 4. Reset input form & hapus marker temporary (garis kuning/pin edit)
+    resetFormInput(); 
+    
+    alert("Data lokasi titik berhasil disimpan!");
+}
 
         function duplikatLokasi(id) {
             let target = dbLokasi.find(i => i.id === id); if (!target) return;
@@ -1681,17 +1738,14 @@ function editLokasiBuiltIn(id) {
     
     // ─── PERBAIKAN BUG MARKER DI SINI ───
     if (selectedLat && selectedLng) {
-        // Pindahkan posisi marker utama ke lokasi halte yang sedang diedit
-        if (markerPeta) {
-            markerPeta.setLatLng([selectedLat, selectedLng]);
-        } else {
-            // Kalau markernya belum ada di peta, buat baru dan tempel ke map
-            markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
-        }
+    if (markerPeta) {
+        markerPeta.setLatLng([selectedLat, selectedLng]);
+    } else {
+        markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
     }
-    
-    map.flyTo([selectedLat, selectedLng], 16); 
-    perbaruiVisualLingkaranRadius();
+}
+map.flyTo([selectedLat, selectedLng], 16); 
+perbaruiVisualLingkaranRadius();
 
     // ─── TAMBAHAN AUTO SCROLL KE ATAS ───
     window.scrollTo({
@@ -1704,7 +1758,7 @@ function editLokasiBuiltIn(id) {
             idTargetEdit = null; selectedLat = null; selectedLng = null;
             document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; 
             document.getElementById('input-audio-asset-dropdown').value = "none"; document.getElementById('input-koordinat').value = "";
-            document.getElementById('input-radius').value = 50; document.getElementById('range-val-preview').innerText = "50 Meter";
+            document.getElementById('input-radius').value = 50; document.getElementById('range-val-preview').innerText = "0 Meter";
             document.getElementById('edit-indicator').style.display = 'none';
             document.getElementById('btn-simpan').innerText = "SIMPAN DATA LOKASI";
             document.getElementById('btn-batal-edit').style.display = 'none';
@@ -1744,9 +1798,7 @@ function editLokasiBuiltIn(id) {
 
     // MASUKKAN KODE AUTO-SCROLL DI SINI (Ditembak tepat setelah UI beres di-render)
     let container = document.getElementById('cfg-lokasi-list-container');
-    if (container) {
-        container.scrollTop = container.scrollHeight;
-    }
+if (container) { container.scrollTop = container.scrollHeight; }
 }
 
         function hapusLokasiBuiltIn(id) {
@@ -1824,7 +1876,7 @@ let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
 // Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
 let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-let namaFile = `${formatWaktu}_backup-pids-v3.1.2.json`;
+let namaFile = `${formatWaktu}_backup-pids-v3.2.0.json`;
 
 // KODE BAWAAN LO YANG SUDAH MODIFIKASI:
 let downloadAnchor = document.createElement('a'); 
@@ -1964,6 +2016,9 @@ if (typeof currentAnnouncerSource === 'undefined') {
 function putarAnnouncer(audioPathUrl) {
     if (!isAudioEnabled) { pushLogKonsol("[A] Announcer Dinonaktifkan"); return; }
     
+	if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
+        audioPathUrl = audio/"00 Notifikasi Pembuka.mp3";
+	}
     try {
         // Inisialisasi AudioContext jika belum ada
         if (!audioContextPids) {
@@ -2225,6 +2280,60 @@ function autoScrollKeBawahPIDS(idContainer) {
     let container = document.getElementById(idContainer);
     if (container) {
         container.scrollTop = container.scrollHeight;
+    }
+}
+
+function buatDatabaseBaruDenganBackup() {
+    // 1. Konfirmasi awal agar aman dari salah pencet
+    let konfirmasi = confirm("PERINGATAN!\n\nDatabase PIDS yang tersimpan saat ini akan diunduh, lalu seluruh database PIDS akan dikosongkan.\n\nApakah Anda ingin melanjutkan?");
+    if (!konfirmasi) return;
+
+    try {
+        pushLogKonsol("[D] Memulai proses pencadangan dan reset database...");
+
+        // 2. TRIGGER DOWNLOAD BACKUP TERLEBIH DAHULU
+        exportDataKeJsonCombinedAllInOne();
+
+        // 3. JEDA 800ms AGAR DOWNLOAD SELESAI & PEMBERSIHAN BERJALAN AMAN
+        setTimeout(() => {
+            // Kosongkan master array
+            dbLokasi = [];
+            lokasiSingleList = [];
+            audioAssetList = [];
+
+            // Hapus dari localStorage web browser
+            localStorage.removeItem('pids_lokasi_data');
+            localStorage.removeItem('pids_lokasi_singles');
+            localStorage.removeItem('pids_audio_assets_list');
+
+            // 4. TRIGER RE-RENDER SEMUA COMPONENT UI BAWAAN LO
+            // Panggil renderSemuaTampilanKomponenUI jika itu fungsi master lo
+            if (typeof renderSemuaTampilanKomponenUI === 'function') {
+                renderSemuaTampilanKomponenUI();
+            } else {
+                // Jika tidak ada fungsi master, panggil pecahan fungsinya satu per satu
+                if (typeof renderTabelGeofenceUI === 'function') renderTabelGeofenceUI();
+                if (typeof renderListLokasiBuiltInUI === 'function') renderListLokasiBuiltInUI();
+                if (typeof renderListAudioAssetsUI === 'function') renderListAudioAssetsUI();
+                if (typeof renderDropdownAudioDb === 'function') renderDropdownAudioDb();
+            }
+            
+            // Perbarui dropdown simulasi perjalanan
+            if (typeof perbaruiDropdownSimulasi === 'function') perbaruiDropdownSimulasi();
+            
+            // 5. RESET FORM INPUT & BERSIHKAN MARKER PIN EDIT DI PETA
+            resetFormInput();
+            
+            // 6. BERSIHKAN SELURUH HALTE YANG ADA DI PETA SECARA REAL-TIME
+            if (typeof plotSemuaHalteKePeta === 'function') plotSemuaHalteKePeta();
+
+            pushLogKonsol("[D] Database dikosongkan. File cadangan telah diunduh.");
+            alert("Reset Database Berhasil!\n\nFile cadangan JSON terbaru Anda telah otomatis diunduh oleh browser.");
+        }, 800);
+
+    } catch (error) {
+        console.error("[D] Gagal melakukan reset database:", error);
+        alert("Terjadi kesalahan sistem saat mengosongkan database.");
     }
 }
     </script>
