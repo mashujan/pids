@@ -2026,7 +2026,7 @@ function putarAnnouncer(audioPathUrl) {
     if (!isAudioEnabled) { pushLogKonsol("[A] Announcer Dinonaktifkan"); return; }
     
 	if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
-        audioPathUrl = audio/"00 Notifikasi Pembuka.mp3";
+        audioPathUrl = "audio/00 Notifikasi Pembuka.mp3";
 	}
     try {
         // Inisialisasi AudioContext jika belum ada
