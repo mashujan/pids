@@ -1795,17 +1795,18 @@ function editLokasiBuiltIn(id) {
     }
 }
 
-        function masukkanKeModeEdit(id) {
+function masukkanKeModeEdit(id) {
     let h = dbLokasi.find(i => i.id === id); if (!h) return;
     idTargetEdit = id;
     document.getElementById('input-nama').value = h.nama;
     document.getElementById('input-display-text').value = h.displayText || h.nama;
     
-    // ─── UPDATE DI SINI: Isi slider dan kotak angka sekaligus ───
+    // ─── PERBAIKAN 1: SET VALUE SLIDER UTAMANYA DULU INDEPENDEN ───
     document.getElementById('input-radius').value = h.radius;
-    document.getElementById('input-radius-number').value = h.radius; // <--- Menambahkan kotak angka custom baru
     
+    // ─── PERBAIKAN 2: SINKRONKAN TEKS ANGKA STATIS BARU LO ───
     document.getElementById('range-val-preview').innerText = h.radius + " Meter";
+    
     document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
     document.getElementById('input-audio-asset-dropdown').value = h.audioData ? h.audioData : "none";
     
@@ -1814,10 +1815,13 @@ function editLokasiBuiltIn(id) {
     document.getElementById('edit-target-name').innerText = h.nama;
     document.getElementById('edit-indicator').style.display = 'block';
     
-    document.getElementById('btn-simpan').innerText = "PERBARUI DATA LOKASI"; 
-    document.getElementById('btn-batal-edit').style.display = 'block';
+    // ─── SINKRONKAN TEKS TOMBOL DENGAN STRUKTUR ASLI HTML LO ───
+    document.getElementById('btn-simpan').innerText = "Perbarui Data Lokasi"; 
     
-    // ─── PERBAIKAN BUG MARKER DI SINI ───
+    // ─── UBAH JADI INLINE-BLOCK AGAR TOMBOL MUNCUL SEJAJAR DI SEBELAHNYA ───
+    document.getElementById('btn-batal-edit').style.display = 'inline-block';
+    
+    // ─── PERBAIKAN 3: SINKRONISASI LAYER PETA LEAFLET ───
     if (selectedLat && selectedLng) {
         if (markerPeta) {
             markerPeta.setLatLng([selectedLat, selectedLng]);
@@ -1826,37 +1830,69 @@ function editLokasiBuiltIn(id) {
         }
     }
     
-    // Zoom ke level 18 atau 19 (sesuai pembahasan zoom tadi jika ingin lebih dekat, atau biarkan 16 bawaan Anda)
-    map.flyTo([selectedLat, selectedLng], 18); 
+    // ─── PERBAIKAN 4: GAMBAR ULANG LINGKARAN RADIUS DULU BARU TERBANGKAN PETA ───
     perbaruiVisualLingkaranRadius();
+    
+    // Menggunakan zoom level 18 agar langsung fokus dekat ke titik halte yang diedit
+    map.flyTo([selectedLat, selectedLng], 18); 
 
-    // ─── TAMBAHAN AUTO SCROLL KE ATAS ───
+    // ─── AUTO SCROLL KE ATAS ───
     window.scrollTo({
         top: 0,
-        behavior: 'smooth' // Biar layarnya nge-gulung halus kayak animasi
+        behavior: 'smooth' 
     });
 }
 
-        function resetFormInput() {
-            idTargetEdit = null; selectedLat = null; selectedLng = null;
-            document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; 
-            document.getElementById('input-audio-asset-dropdown').value = "none"; document.getElementById('input-koordinat').value = "";
-            document.getElementById('input-radius').value = 0; document.getElementById('range-val-preview').innerText = "0 Meter";
-			document.getElementById('input-radius-number').value = 0; // samakan dengan nilai default slider lo
-            document.getElementById('edit-indicator').style.display = 'none';
-            document.getElementById('btn-simpan').innerText = "SIMPAN DATA LOKASI";
-            document.getElementById('btn-batal-edit').style.display = 'none';
-            if (markerPeta) { map.removeLayer(markerPeta); markerPeta = null; }
-            if (lingkaranRadiusPeta) { map.removeLayer(lingkaranRadiusPeta); lingkaranRadiusPeta = null; }
-        }
+function resetFormInput() {
+    // 1. Kosongkan teks di form input
+    document.getElementById('input-nama').value = "";
+    document.getElementById('input-display-text').value = "";
+    if (document.getElementById('input-koordinat')) {
+        document.getElementById('input-koordinat').value = "";
+    }
 
-        function hapusLokasi(id) {
-            if (confirm("Hapus titik ini?")) {
-                dbLokasi = dbLokasi.filter(i => i.id !== id);
-                dbLokasi.forEach((item, index) => { item.orderIndex = index; }); // Peta ulang index
-                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi)); renderTabelGeofenceUI(); perbaruiDropdownSimulasi();
-            }
-        }
+    // 2. Kembalikan radius ke nilai default (0 meter)
+    document.getElementById('input-radius').value = 0;
+    document.getElementById('range-val-preview').innerText = "0 Meter";
+
+    // 3. Kembalikan dropdown ke pilihan default
+    document.getElementById('input-trigger-type').value = "masuk";
+    document.getElementById('input-audio-asset-dropdown').value = "none";
+
+    // 4. Bersihkan koordinat global terpilih
+    selectedLat = null;
+    selectedLng = null;
+
+    // 5. Kembalikan teks tombol simpan ke aslinya (Simpan Titik)
+    let tombolSimpan = document.getElementById('btn-simpan');
+    if (tombolSimpan) {
+        tombolSimpan.innerText = "Simpan Titik";
+    }
+
+    // 6. Sembunyikan kembali tombol batal edit titik
+    let tombolBatal = document.getElementById('btn-batal-edit');
+    if (tombolBatal) {
+        tombolBatal.style.display = 'none';
+    }
+
+    // 7. Sembunyikan spanduk kuning indikator edit jika ada
+    let editIndicator = document.getElementById('edit-indicator');
+    if (editIndicator) {
+        editIndicator.style.display = 'none';
+    }
+
+    // 8. Hapus penanda temporary (marker/lingkaran radius) dari peta biar bersih
+    if (markerPeta && typeof map !== 'undefined') {
+        map.removeLayer(markerPeta);
+        markerPeta = null;
+    }
+    if (typeof perbaruiVisualLingkaranRadius === 'function') {
+        perbaruiVisualLingkaranRadius();
+    }
+
+    // 9. Kembalikan status ID target edit ke null (artinya kembali ke mode tambah data baru)
+    idTargetEdit = null;
+}
 
         // ==================== CONFIG TAB HANDLING ====================
 
