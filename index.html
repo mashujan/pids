@@ -860,13 +860,24 @@
             <div class="form-group"><label>Nama Titik</label><input type="text" id="input-nama" class="form-control" placeholder="Masukkan nama titik untuk internal..."></div>
             <div class="form-group"><label>Tampilan Di Layar</label><input type="text" id="input-display-text" class="form-control" placeholder="Masukkan tulisan untuk ditampilkan di layar..."></div>
             
-            <div class="form-group">
-                <label>Radius (0m-1km)</label>
-                <div class="range-container">
-                    <input type="range" id="input-radius" style="flex:1; accent-color:#ffb703;" min="0" max="1000" step="1" value="0" oninput="document.getElementById('range-val-preview').innerText = this.value + ' Meter'; perbaruiVisualLingkaranRadius();">
-                    <span id="range-val-preview" style="font-weight:bold; color:#ffff00; min-width:70px; text-align:right;">0 Meter</span>
-                </div>
-            </div>
+           <div class="form-group">
+    <label>Radius (0m-1km)</label>
+    <div class="range-container" style="display: flex; align-items: center; gap: 10px;">
+        
+        <input type="range" id="input-radius" style="flex:1; accent-color:#ffb703;" 
+               min="0" max="1000" step="1" value="0" 
+               oninput="sinkronkanRadiusDariSlider(this.value)">
+        
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <input type="number" id="input-radius-number" min="0" max="1000" step="1" value="0" 
+                   style="width: 70px; padding: 4px; border: 1px solid #ffb703; border-radius: 4px; text-align: center; background: #222; color: #ffff00; font-weight: bold;"
+                   oninput="sinkronkanRadiusDariAngka(this.value)">
+            <span style="font-weight:bold; color:#ffff00;">Meter</span>
+        </div>
+
+        <span id="range-val-preview" style="display: none;">0 Meter</span>
+    </div>
+</div>
             <div class="form-group">
                 <label>Dibunyikan Saat</label>
                 <select id="input-trigger-type" class="form-control"><option value="masuk" selected>Masuk Titik</option><option value="keluar">Keluar Titik</option></select>
@@ -1487,6 +1498,45 @@ function renderSemuaTitikDatabaseKePeta() {
     }
 }
 
+// Fungsi ini berjalan saat Slider ditarik/digeser
+// Fungsi ini berjalan saat Slider ditarik/digeser
+function sinkronkanRadiusDariSlider(nilai) {
+    let radiusInput = parseInt(nilai) || 0;
+    
+    // Update angka di dalam kotak input number secara presisi per 1 meter
+    document.getElementById('input-radius-number').value = radiusInput;
+    
+    // Update teks preview tersembunyi
+    let preview = document.getElementById('range-val-preview');
+    if (preview) preview.innerText = radiusInput + " Meter";
+    
+    // Paksa lingkaran hijau di peta Leaflet update ukurannya
+    if (typeof perbaruiVisualLingkaranRadius === 'function') {
+        perbaruiVisualLingkaranRadius();
+    }
+}
+
+// Fungsi ini berjalan saat Kotak Angka diketik manual atau diklik panah naik-turunnya
+function sinkronkanRadiusDariAngka(nilai) {
+    let radiusInput = parseInt(nilai) || 0;
+    
+    // Validasi batasan angka agar tidak minus atau melebihi 1km (1000m)
+    if (radiusInput < 0) radiusInput = 0;
+    if (radiusInput > 1000) radiusInput = 1000;
+    
+    // Sinkronkan posisi titik slider biar ikut bergeser otomatis (slider sekarang bisa berhenti di angka berapa saja)
+    document.getElementById('input-radius').value = radiusInput;
+    
+    // Update teks preview tersembunyi
+    let preview = document.getElementById('range-val-preview');
+    if (preview) preview.innerText = radiusInput + " Meter";
+    
+    // Paksa lingkaran di peta update ukurannya
+    if (typeof perbaruiVisualLingkaranRadius === 'function') {
+        perbaruiVisualLingkaranRadius();
+    }
+}
+
         // --- SORT ALGORITHM CORE ENGINE (KOMPARTEMEN INDEPENDEN) ---
         function dapatkanArrayTerfilterDanTersortir(type, mode) {
             let targetArr = [];
@@ -1749,7 +1799,11 @@ function editLokasiBuiltIn(id) {
     idTargetEdit = id;
     document.getElementById('input-nama').value = h.nama;
     document.getElementById('input-display-text').value = h.displayText || h.nama;
+    
+    // ─── UPDATE DI SINI: Isi slider dan kotak angka sekaligus ───
     document.getElementById('input-radius').value = h.radius;
+    document.getElementById('input-radius-number').value = h.radius; // <--- Menambahkan kotak angka custom baru
+    
     document.getElementById('range-val-preview').innerText = h.radius + " Meter";
     document.getElementById('input-trigger-type').value = h.triggerType || "masuk";
     document.getElementById('input-audio-asset-dropdown').value = h.audioData ? h.audioData : "none";
@@ -1764,14 +1818,16 @@ function editLokasiBuiltIn(id) {
     
     // ─── PERBAIKAN BUG MARKER DI SINI ───
     if (selectedLat && selectedLng) {
-    if (markerPeta) {
-        markerPeta.setLatLng([selectedLat, selectedLng]);
-    } else {
-        markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
+        if (markerPeta) {
+            markerPeta.setLatLng([selectedLat, selectedLng]);
+        } else {
+            markerPeta = L.marker([selectedLat, selectedLng]).addTo(map);
+        }
     }
-}
-map.flyTo([selectedLat, selectedLng], 16); 
-perbaruiVisualLingkaranRadius();
+    
+    // Zoom ke level 18 atau 19 (sesuai pembahasan zoom tadi jika ingin lebih dekat, atau biarkan 16 bawaan Anda)
+    map.flyTo([selectedLat, selectedLng], 18); 
+    perbaruiVisualLingkaranRadius();
 
     // ─── TAMBAHAN AUTO SCROLL KE ATAS ───
     window.scrollTo({
@@ -1785,6 +1841,7 @@ perbaruiVisualLingkaranRadius();
             document.getElementById('input-nama').value = ""; document.getElementById('input-display-text').value = ""; 
             document.getElementById('input-audio-asset-dropdown').value = "none"; document.getElementById('input-koordinat').value = "";
             document.getElementById('input-radius').value = 0; document.getElementById('range-val-preview').innerText = "0 Meter";
+			document.getElementById('input-radius-number').value = 0; // samakan dengan nilai default slider lo
             document.getElementById('edit-indicator').style.display = 'none';
             document.getElementById('btn-simpan').innerText = "SIMPAN DATA LOKASI";
             document.getElementById('btn-batal-edit').style.display = 'none';
