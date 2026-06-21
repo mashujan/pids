@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.2.0</title>
+    <title>PIDS Simulator v3.2.1</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -768,7 +768,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.2.0</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.2.1</h1>
     </header>
 
     <div class="tab-bar">
@@ -803,7 +803,7 @@
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.2.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.2.1 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -896,7 +896,7 @@
                 </div>
             </div>
 
-            <div class="table-wrapper" style="max-height: 350px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px;">
+            <div class="table-wrapper" id="cfg-geofence-list-container" style="max-height: 500px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px;">
     <table class="halte-table" id="table-geofence-sortable">
         <thead>
             <tr>
@@ -934,7 +934,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.2.0 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.2.1 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1002,7 +1002,7 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "Selamat Datang di PIDS v3.2.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.2.1 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1043,7 +1043,7 @@
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.2.0 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.2.1 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1218,7 +1218,7 @@
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "Selamat Datang di PIDS v3.2.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+                ruteAktifTeks = "Selamat Datang di PIDS v3.2.1 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1264,7 +1264,7 @@
             // Menggunakan regex untuk potong spasi ujung luar saja, spasi ganda di dalam TETAP AMAN
             let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
             let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.2.0 - Hati-Hati Di Jalan, Utamakan Keselamatan";
+            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.2.1 - Hati-Hati Di Jalan, Utamakan Keselamatan";
 
             if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
             else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -1673,7 +1673,7 @@ function editLokasiBuiltIn(id) {
 
         // ==================== DATABASE OPERATION ====================
 
-        function eksekusiSimpan() {
+       function eksekusiSimpan() {
     let nama = document.getElementById('input-nama').value.trim();
     let displayText = document.getElementById('input-display-text').value.trim();
     let radius = parseInt(document.getElementById('input-radius').value);
@@ -1683,7 +1683,10 @@ function editLokasiBuiltIn(id) {
     if (displayText === "") displayText = nama;
     if (!selectedLat || !selectedLng || nama === "") { alert("Lengkapi koordinat peta & nama titik!"); return; }
 
-    if (idTargetEdit === null) {
+    // Buat variabel flag untuk mendeteksi apakah ini data baru atau bukan
+    let isDataBaru = (idTargetEdit === null);
+
+    if (isDataBaru) {
         dbLokasi.push({ 
             id: Date.now(), nama: nama, displayText: displayText, 
             lat: selectedLat, lng: selectedLng, radius: radius, 
@@ -1707,8 +1710,14 @@ function editLokasiBuiltIn(id) {
     renderSemuaTampilanKomponenUI(); 
     if (typeof perbaruiDropdownSimulasi === 'function') perbaruiDropdownSimulasi();
 
-    // ─── 3. PAKSA PETA UNTUK GAMBAR ULANG SEKARANG (TARUH DI SINI) ───
-    plotSemuaHalteKePeta(); 
+    // 3. PAKSA PETA UNTUK GAMBAR ULANG SEKARANG
+    if (typeof plotSemuaHalteKePeta === 'function') plotSemuaHalteKePeta(); 
+
+    // ─── OPTIMASI SCROLLBAR CONTAINER TABEL GEOFENCE ───
+    // Jika data baru berhasil ditambahkan, otomatis gulir container tabel ke paling bawah
+    if (isDataBaru && typeof autoScrollKeBawahPIDS === 'function') {
+        autoScrollKeBawahPIDS('cfg-geofence-list-container');
+    }
 
     // 4. Reset input form & hapus marker temporary (garis kuning/pin edit)
     resetFormInput(); 
@@ -1717,15 +1726,23 @@ function editLokasiBuiltIn(id) {
 }
 
         function duplikatLokasi(id) {
-            let target = dbLokasi.find(i => i.id === id); if (!target) return;
-            dbLokasi.push({
-                id: Date.now(), nama: target.nama + " - Copy", displayText: target.displayText || target.nama, 
-                lat: target.lat, lng: target.lng, radius: target.radius, triggerType: target.triggerType, 
-                audioData: target.audioData, orderIndex: dbLokasi.length
-            });
-            localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-            renderTabelGeofenceUI(); perbaruiDropdownSimulasi();
-        }
+    let target = dbLokasi.find(i => i.id === id); if (!target) return;
+    dbLokasi.push({
+        id: Date.now(), nama: target.nama + " - Copy", displayText: target.displayText || target.nama, 
+        lat: target.lat, lng: target.lng, radius: target.radius, triggerType: target.triggerType, 
+        audioData: target.audioData, orderIndex: dbLokasi.length
+    });
+    localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+    renderTabelGeofenceUI(); perbaruiDropdownSimulasi();
+
+    // ─── OPTIMASI 1: GAMBAR ULANG DI PETA INSTAN ───
+    if (typeof plotSemuaHalteKePeta === 'function') plotSemuaHalteKePeta();
+
+    // ─── OPTIMASI 2: AUTO SCROLL TABEL GEOFENCE KE PALING BAWAH ───
+    if (typeof autoScrollKeBawahPIDS === 'function') {
+        autoScrollKeBawahPIDS('cfg-geofence-list-container');
+    }
+}
 
         function masukkanKeModeEdit(id) {
     let h = dbLokasi.find(i => i.id === id); if (!h) return;
@@ -1885,7 +1902,7 @@ let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
 // Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
 let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-let namaFile = `${formatWaktu}_backup-pids-v3.2.0.json`;
+let namaFile = `${formatWaktu}_backup-pids-v3.2.1.json`;
 
 // KODE BAWAAN LO YANG SUDAH MODIFIKASI:
 let downloadAnchor = document.createElement('a'); 
@@ -2286,10 +2303,13 @@ document.addEventListener('click', function(e) {
 
 // Fungsi otomatis scroll ke bawah untuk list lokasi & audio v3.0.8
 function autoScrollKeBawahPIDS(idContainer) {
-    let container = document.getElementById(idContainer);
-    if (container) {
-        container.scrollTop = container.scrollHeight;
-    }
+    // Beri jeda sangat singkat agar browser selesai merender HTML baru
+    setTimeout(() => {
+        let container = document.getElementById(idContainer);
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }, 50); // Jeda 50 milidetik (tidak terasa oleh mata manusia, tapi sangat membantu browser)
 }
 
 function buatDatabaseBaruDenganBackup() {
