@@ -868,13 +868,19 @@
                min="0" max="1000" step="1" value="0" 
                oninput="sinkronkanRadiusDariSlider(this.value)">
         
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <input type="number" id="input-radius-number" min="0" max="1000" step="1" value="0" 
-                   style="width: 70px; padding: 4px; border: 1px solid #ffb703; border-radius: 4px; text-align: center; background: #222; color: #ffff00; font-weight: bold;"
-                   oninput="sinkronkanRadiusDariAngka(this.value)">
-            <span style="font-weight:bold; color:#ffff00;">Meter</span>
+        <div style="display: flex; align-items: center; user-select: none;">
+            <button type="button" onclick="ubahRadiusManualPIDS(-1)" 
+                    style="background: #222; color: #ffb703; border: 1px solid #ffb703; border-radius: 3px; cursor: pointer; padding: 2px 8px; font-weight: bold; font-size: 12px;">◀</button>
+            
+            <span id="range-val-preview" style="font-weight:bold; color:#ffff00; width: 80px; text-align:center; display: inline-block;">0 Meter</span>
+            
+            <button type="button" onclick="ubahRadiusManualPIDS(1)" 
+                    style="background: #222; color: #ffb703; border: 1px solid #ffb703; border-radius: 3px; cursor: pointer; padding: 2px 8px; font-weight: bold; font-size: 12px;">▶</button>
         </div>
 
+    </div>
+
+<div>
         <span id="range-val-preview" style="display: none;">0 Meter</span>
     </div>
 </div>
@@ -1499,42 +1505,37 @@ function renderSemuaTitikDatabaseKePeta() {
 }
 
 // Fungsi ini berjalan saat Slider ditarik/digeser
-// Fungsi ini berjalan saat Slider ditarik/digeser
+// Fungsi 1: Berjalan saat slider digeser biasa
 function sinkronkanRadiusDariSlider(nilai) {
     let radiusInput = parseInt(nilai) || 0;
     
-    // Update angka di dalam kotak input number secara presisi per 1 meter
-    document.getElementById('input-radius-number').value = radiusInput;
+    // Update teks angka kuning di layar
+    document.getElementById('range-val-preview').innerText = radiusInput + " Meter";
     
-    // Update teks preview tersembunyi
-    let preview = document.getElementById('range-val-preview');
-    if (preview) preview.innerText = radiusInput + " Meter";
-    
-    // Paksa lingkaran hijau di peta Leaflet update ukurannya
+    // Perbarui visual lingkaran hijau di peta Leaflet
     if (typeof perbaruiVisualLingkaranRadius === 'function') {
         perbaruiVisualLingkaranRadius();
     }
 }
 
-// Fungsi ini berjalan saat Kotak Angka diketik manual atau diklik panah naik-turunnya
-function sinkronkanRadiusDariAngka(nilai) {
-    let radiusInput = parseInt(nilai) || 0;
-    
-    // Validasi batasan angka agar tidak minus atau melebihi 1km (1000m)
-    if (radiusInput < 0) radiusInput = 0;
-    if (radiusInput > 1000) radiusInput = 1000;
-    
-    // Sinkronkan posisi titik slider biar ikut bergeser otomatis (slider sekarang bisa berhenti di angka berapa saja)
-    document.getElementById('input-radius').value = radiusInput;
-    
-    // Update teks preview tersembunyi
-    let preview = document.getElementById('range-val-preview');
-    if (preview) preview.innerText = radiusInput + " Meter";
-    
-    // Paksa lingkaran di peta update ukurannya
-    if (typeof perbaruiVisualLingkaranRadius === 'function') {
-        perbaruiVisualLingkaranRadius();
-    }
+// Fungsi 2: BARU - Berjalan saat tombol panah kiri (◀) atau kanan (▶) diklik
+function ubahRadiusManualPIDS(arah) {
+    let inputSlider = document.getElementById('input-radius');
+    if (!inputSlider) return;
+
+    // Ambil nilai radius saat ini, lalu tambah atau kurang 1 meter sesuai arah panah
+    let radiusSekarang = parseInt(inputSlider.value) || 0;
+    let radiusBaru = radiusSekarang + arah;
+
+    // Validasi batas minimal 0 dan maksimal 1000 meter
+    if (radiusBaru < 0) radiusBaru = 0;
+    if (radiusBaru > 1000) radiusBaru = 1000;
+
+    // Set nilai baru ke slider
+    inputSlider.value = radiusBaru;
+
+    // Jalankan fungsi sinkronisasi agar teks angka dan lingkaran di peta ikut ter-update
+    sinkronkanRadiusDariSlider(radiusBaru);
 }
 
         // --- SORT ALGORITHM CORE ENGINE (KOMPARTEMEN INDEPENDEN) ---
