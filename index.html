@@ -798,62 +798,77 @@
     }
 }
 
-/* ─── SINKRONISASI TOTAL PAS LAYAR MONITOR FULLSCREEN (MENTOK ATAS BAWAH) ─── */
+/* ─── SINKRONISASI TOTAL PAS LAYAR MONITOR FULLSCREEN (KALIBRASI TOTAL CENTER) ─── */
 
-/* 1. Paksa kontainer paling luar mentok 100% penuh tanpa padding/ruang kosong */
+/* 1. KALIBRASI TURUN: Menarik satu paket kompas & statistik ke bawah agar rata tengah layar */
 #pids-monitor-mode:fullscreen .kompas-wrap {
     display: flex !important;
     flex-direction: row !important;
-    align-items: center !important;      /* Rata tengah secara vertikal */
+    align-items: center !important;      
     justify-content: center !important;
-    height: 100% !important;               /* Mentok atas bawah */
+    height: 100% !important;
     box-sizing: border-box !important;
-    padding: 0 !important;                 /* Bersihkan semua padding biar gak ada gap */
-    margin: 0 !important;
+    position: relative !important;        
+    /* --- DORONG KESELURUHAN KE BAWAH DI SINI --- */
+    padding-top: 4.0vw !important;        /* Menambahkan ruang kosong di atas agar seluruh konten melorot turun ke tengah layar */
 }
 
-/* 2. Paksa Kolom Kiri (Kompas) dan Kolom Kanan (Statistik) mentok penuh 100% */
-#pids-monitor-mode:fullscreen .kompas-wrap > div:first-child {
-    /* Kolom Kiri: Kompas */
+/* ──── TRIK PAMUNGKAS: MEMBUAT GARIS TENGAH MENTOK ATAS BAWAH TANPA PINDAHIN TULISAN ──── */
+#pids-monitor-mode:fullscreen .kompas-wrap::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;                     /* Mentok paling atas layar */
+    bottom: 0 !important;                  /* Mentok paling bawah layar */
+    left: 40% !important;                  /* Posisi horizontal pas di tengah pembatas kolom (sesuai width 40% kiri / 60% kanan) */
+    width: 2px !important;                 /* Ketebalan garis */
+    background-color: rgba(255,255,255,0.15) !important; /* Warna garis asli Abang */
+    z-index: 1 !important;
+}
+
+/* 2. Kolom Kiri & Kanan */
+#pids-monitor-mode:fullscreen .kompas-wrap > div {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;    /* Angka & judul mengambang pas di tengah kotak */
+    justify-content: center !important;  
     align-items: center !important;
-    height: 100% !important;               /* Mentok dari ujung atas ke ujung bawah */
+    height: 100% !important;               
     box-sizing: border-box !important;
 }
 
-#pids-monitor-mode:fullscreen .kompas-wrap > div:last-child {
-    /* Kolom Kanan: Statistik (Ada Garis Tengah) */
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;    /* Tabel statistik & judul pas di tengah kotak */
-    align-items: center !important;
-    height: 100% !important;               /* Mentok dari ujung atas ke ujung bawah */
-    box-sizing: border-box !important;
-    border-left: 2px solid rgba(255,255,255,0.15) !important; /* Garis pembatas otomatis memanjang mentok penuh */
+/* HAPUS BORDER ASLI BAWAAN HTML AGAR TIDAK DOUBLE */
+#pids-monitor-mode:fullscreen .kompas-wrap > div {
+    border-left: none !important;
 }
 
-/* 3. Kembalikan judul ke sistem flexbox normal (dicabut dari absolute agar presisi otomatis mengikuti kotak) */
+/* 3. Menyesuaikan posisi judul yang ikut turun selaras dengan padding kontainer luar */
 #pids-monitor-mode:fullscreen .kompas-label,
 #pids-monitor-mode:fullscreen .stats-label { 
-    position: static !important;           /* Kembalikan ke normal, jangan dipaku kaku lagi */
+    position: absolute !important;        
+    top: 6.0vw !important;                /* Jarak judul dari atas monitor, diselaraskan agar pas di atas angka */
     font-size: 1.8vw !important; 
     color: #888888 !important; 
-    margin-top: 0 !important;
-    margin-bottom: 2.5vw !important;       /* Mengunci jarak gap seragam dari judul ke konten di bawahnya */
-    display: block !important;
+    margin: 0 !important;
     line-height: 1.2 !important;
     text-align: center !important;
-    width: 100% !important;
+}
+
+/* Kunci posisi horizontal masing-masing judul agar pas di tengah kolomnya */
+#pids-monitor-mode:fullscreen .kompas-label {
+    width: 40% !important;                
+    left: 0 !important;
+}
+#pids-monitor-mode:fullscreen .stats-label {
+    width: 60% !important;                
+    right: 0 !important;
 }
 
 /* 4. Konten Angka Kompas */
 #pids-monitor-mode:fullscreen .kompas-value { 
     font-size: 12vw !important; 
-    line-height: 0.9 !important;           /* Sedikit dipadatkan agar pas di tengah */
+    line-height: 1 !important;             
     display: block !important;
-    margin: 0 !important;             
+    margin-top: 0 !important;             
+    margin-bottom: 0 !important;
 }
 
 /* 5. Konten Box Kotak Statistik */
@@ -861,12 +876,12 @@
     font-size: 2.0vw !important;    
     font-weight: normal !important; 
     gap: 0.5vw !important;          
-    padding-left: 0.5vw !important; 
+    padding-left: 1vw !important; 
     width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
-    margin: 0 !important;             
+    margin-top: 0 !important;             
 }
 
 /* 6. Lebar teks judul item statistik kiri */
