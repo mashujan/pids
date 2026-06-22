@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.3.0</title>
+    <title>PIDS Simulator v3.3.2</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -401,8 +401,6 @@
         #pids-monitor-mode:fullscreen .weather-v2 { font-size: 4vw; }
         #pids-monitor-mode:fullscreen .clock-v2 { font-size: 5vw; }
 		#pids-monitor-mode:fullscreen .date-v2 { font-size: 5vw; }
-        #pids-monitor-mode:fullscreen .kompas-label { font-size: 1.8vw; }
-        #pids-monitor-mode:fullscreen .kompas-value { font-size: 12vw; }
         #pids-monitor-mode:fullscreen .speedo-value-v2 { font-size: 14vw; }
         #pids-monitor-mode:fullscreen .speedo-unit-v2 { font-size: 2vw; }
         #pids-monitor-mode:fullscreen .pids-row-3 { height: 25%; }
@@ -750,7 +748,7 @@
     display: none;
 }
 
-/* --- CSS STATISTIK PERJALANAN (SEJAJAR VERTIKAL & RESPONSIF) --- */
+/* --- CSS STATISTIK PERJALANAN (KONDISI NORMAL) --- */
 .stats-label { 
     font-size: 12px; 
     color: #888888;          
@@ -772,12 +770,11 @@
     width: 100%; 
     box-sizing: border-box; 
 }
-/* Mengunci lebar teks kiri agar titik dua (:) sejajar lurus ke bawah di desktop */
 .stats-item-label {
-    width: 135px;            /* Sesuai kode Anda */
+    width: 135px;            
     display: inline-block;
     text-align: left;
-    flex-shrink: 0;          /* Kunci mati agar teks kiri tidak tertekuk/gepeng */
+    flex-shrink: 0;          
 }
 .stats-value {
     color: #ffffff;
@@ -785,42 +782,99 @@
     margin-left: 0;          
 }
 
-/* ─── KONDISI KHUSUS LAYAR HP PORTRAIT (TAMBAHKAN INI BIAR GAK TABRAKAN) ─── */
+/* --- KONDISI KHUSUS LAYAR HP PORTRAIT --- */
 @media (max-width: 575px) {
     .stats-box {
-        font-size: 11px;     /* Perkecil huruf sedikit di HP portrait biar space-nya muat */
+        font-size: 11px;     
         padding-left: 2px;
     }
     .stats-item-label {
-        width: auto;         /* Bebaskan lebar kaku 135px agar tidak memakan space kanan HP */
-        margin-right: 2px;   /* Jarak tipis setelah titik dua */
+        width: auto;         
+        margin-right: 2px;   
     }
-    /* Di HP portrait, paksa angkanya berbaris normal mepet kiri, bukan center gaib */
     .stats-box .stats-value-wrapper {
         justify-content: flex-start !important; 
         padding-left: 4px;
     }
 }
 
-/* ─── SINKRONISASI UKURAN FULLSCREEN VW (SESUAI KODE ANDA) ─── */
-#pids-monitor-mode:fullscreen .stats-label { 
-    font-size: 1.8vw !important; 
-    color: #888888 !important; 
+/* ─── SINKRONISASI TOTAL PAS LAYAR MONITOR FULLSCREEN (MENTOK ATAS BAWAH) ─── */
+
+/* 1. Paksa kontainer paling luar mentok 100% penuh tanpa padding/ruang kosong */
+#pids-monitor-mode:fullscreen .kompas-wrap {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;      /* Rata tengah secara vertikal */
+    justify-content: center !important;
+    height: 100% !important;               /* Mentok atas bawah */
+    box-sizing: border-box !important;
+    padding: 0 !important;                 /* Bersihkan semua padding biar gak ada gap */
+    margin: 0 !important;
 }
 
+/* 2. Paksa Kolom Kiri (Kompas) dan Kolom Kanan (Statistik) mentok penuh 100% */
+#pids-monitor-mode:fullscreen .kompas-wrap > div:first-child {
+    /* Kolom Kiri: Kompas */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;    /* Angka & judul mengambang pas di tengah kotak */
+    align-items: center !important;
+    height: 100% !important;               /* Mentok dari ujung atas ke ujung bawah */
+    box-sizing: border-box !important;
+}
+
+#pids-monitor-mode:fullscreen .kompas-wrap > div:last-child {
+    /* Kolom Kanan: Statistik (Ada Garis Tengah) */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;    /* Tabel statistik & judul pas di tengah kotak */
+    align-items: center !important;
+    height: 100% !important;               /* Mentok dari ujung atas ke ujung bawah */
+    box-sizing: border-box !important;
+    border-left: 2px solid rgba(255,255,255,0.15) !important; /* Garis pembatas otomatis memanjang mentok penuh */
+}
+
+/* 3. Kembalikan judul ke sistem flexbox normal (dicabut dari absolute agar presisi otomatis mengikuti kotak) */
+#pids-monitor-mode:fullscreen .kompas-label,
+#pids-monitor-mode:fullscreen .stats-label { 
+    position: static !important;           /* Kembalikan ke normal, jangan dipaku kaku lagi */
+    font-size: 1.8vw !important; 
+    color: #888888 !important; 
+    margin-top: 0 !important;
+    margin-bottom: 2.5vw !important;       /* Mengunci jarak gap seragam dari judul ke konten di bawahnya */
+    display: block !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+/* 4. Konten Angka Kompas */
+#pids-monitor-mode:fullscreen .kompas-value { 
+    font-size: 12vw !important; 
+    line-height: 0.9 !important;           /* Sedikit dipadatkan agar pas di tengah */
+    display: block !important;
+    margin: 0 !important;             
+}
+
+/* 5. Konten Box Kotak Statistik */
 #pids-monitor-mode:fullscreen .stats-box { 
     font-size: 2.0vw !important;    
     font-weight: normal !important; 
-    gap: 0.3vw !important;          
+    gap: 0.5vw !important;          
     padding-left: 0.5vw !important; 
-    border-left-width: 0.3vw !important; 
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    margin: 0 !important;             
 }
 
-/* Memastikan lebar teks kiri ikut membesar secara proporsional pas fullscreen */
+/* 6. Lebar teks judul item statistik kiri */
 #pids-monitor-mode:fullscreen .stats-item-label {
     width: 19.5vw !important; 
 }
 
+/* 7. Angka nilai statistik tetap tebal */
 #pids-monitor-mode:fullscreen .stats-value {
     font-weight: bold !important;
 }
@@ -861,7 +915,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.3.0</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.3.2</h1>
     </header>
 
     <div class="tab-bar">
@@ -887,14 +941,14 @@
     
     <div class="kompas-wrap" style="display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; padding: 5px 0;">
         
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-        <span class="kompas-label">Arah Mata Angin</span>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; box-sizing: border-box;">
+        <span class="kompas-label" style="margin-bottom: 8px; display: block; width: 100%;">Arah Mata Angin</span>
         <span class="kompas-value" id="pids-compass">-</span>
     </div>
     
-    <div style="flex: 1.55; display: flex; flex-direction: column; justify-content: center; align-items: center; border-left: 2px solid rgba(255,255,255,0.15); height: 80%; box-sizing: border-box;">
+    <div style="flex: 1.55; display: flex; flex-direction: column; justify-content: center; align-items: center; border-left: 2px solid rgba(255,255,255,0.15); height: 90%; box-sizing: border-box;">
         
-        <span class="stats-label">Statistika Perjalanan</span>
+        <span class="stats-label" style="margin-bottom: 8px; display: block; width: 100%;">Statistika Perjalanan</span>
         
         <div class="stats-box" id="pids-trip-stats-box">
             <div style="display: flex; align-items: center; width: 100%;">
@@ -935,7 +989,7 @@
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.3.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.3.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -1101,7 +1155,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.3.0 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.3.2 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1169,7 +1223,7 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "Selamat Datang di PIDS v3.3.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.3.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1203,6 +1257,7 @@
 		// Variabel State Statistik Perjalanan
 let totalTripDistanceKM = 0.0;
 let totalTripDurationSeconds = 0;
+let totalMovingDurationSeconds = 0; // <--- TAMBAHKAN INI (Menggunakan let agar seragam)
 let tripTimerInterval = null;
 
 let lastSavedLatForDistance = null;
@@ -1218,7 +1273,7 @@ let lastSavedLngForDistance = null;
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.3.0 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.3.2 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1420,7 +1475,7 @@ let lastSavedLngForDistance = null;
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "Selamat Datang di PIDS v3.3.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+                ruteAktifTeks = "Selamat Datang di PIDS v3.3.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1465,7 +1520,7 @@ let lastSavedLngForDistance = null;
     
     let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
     let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.3.0 - Hati-Hati Di Jalan, Utamakan Keselamatan";
+    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.3.2 - Hati-Hati Di Jalan, Utamakan Keselamatan";
 
     if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
     else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -2187,7 +2242,7 @@ let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
 // Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
 let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-let namaFile = `${formatWaktu}_backup-pids-v3.3.0.json`;
+let namaFile = `${formatWaktu}_backup-pids-v3.3.2.json`;
 
 // KODE BAWAAN LO YANG SUDAH MODIFIKASI:
 let downloadAnchor = document.createElement('a'); 
@@ -2651,32 +2706,48 @@ function buatDatabaseBaruDenganBackup() {
     }
 }
 
-// Fungsi menyalakan Timer (Panggil fungsi ini saat tombol MULAI/PLAY simulasi Anda ditekan)
 function startTripStatistics() {
     if (tripTimerInterval) clearInterval(tripTimerInterval);
     
     tripTimerInterval = setInterval(() => {
-        if (isTrackingActiveUI) { // Hanya menghitung jika simulasi/tracking aktif
-            totalTripDurationSeconds++;
-            
-            // 1. Format & Update Tampilan Durasi (HH:MM:SS)
-            let hrs = Math.floor(totalTripDurationSeconds / 3600).toString().padStart(2, '0');
-            let mins = Math.floor((totalTripDurationSeconds % 3600) / 60).toString().padStart(2, '0');
-            let secs = (totalTripDurationSeconds % 60).toString().padStart(2, '0');
-            document.getElementById('pids-trip-duration').innerText = `${hrs}.${mins}.${secs}`;
-            
-            // 2. Update Tampilan Rata-rata Kecepatan
-            let avgSpeed = 0.0;
-            if (totalTripDurationSeconds > 0) {
-                let durationHours = totalTripDurationSeconds / 3600;
-                avgSpeed = totalTripDistanceKM / durationHours;
-            }
-            document.getElementById('pids-trip-avg-speed').innerText = avgSpeed.toFixed(1) + " km/j";
+        // 1. Timer utama (Waktu Perjalanan) tetap jalan terus
+        totalTripDurationSeconds++;
+        
+        // Format & Update Tampilan Durasi Utama (HH.MM.SS pakai titik sesuai HTML lo)
+        let hrs = Math.floor(totalTripDurationSeconds / 3600).toString().padStart(2, '0');
+        let mins = Math.floor((totalTripDurationSeconds % 3600) / 60).toString().padStart(2, '0');
+        let secs = (totalTripDurationSeconds % 60).toString().padStart(2, '0');
+        
+        let durationNode = document.getElementById('pids-trip-duration');
+        if (durationNode) durationNode.innerText = `${hrs}.${mins}.${secs}`;
+        
+        // 2. Ambil data kecepatan real-time saat ini dari layar dashboard
+        let speedNode = document.getElementById('pids-speed');
+        let currentSpeed = 0.0;
+        if (speedNode) {
+            currentSpeed = parseFloat(speedNode.innerText) || 0.0;
         }
+        
+        // 3. LOGIKA UTAMA: Hanya hitung waktu bergerak jika kecepatan > 0 km/j
+        if (currentSpeed > 0) {
+            totalMovingDurationSeconds++;
+        }
+        
+        // 4. Hitung Rata-Rata Kecepatan murni dari waktu pas roda berputar/bergerak
+        let avgSpeed = 0.0;
+        if (totalMovingDurationSeconds > 0) {
+            let durationHours = totalMovingDurationSeconds / 3600;
+            avgSpeed = totalTripDistanceKM / durationHours;
+        }
+        
+        let avgSpeedNode = document.getElementById('pids-trip-avg-speed');
+        if (avgSpeedNode) {
+            avgSpeedNode.innerText = avgSpeed.toFixed(1) + " km/j";
+        }
+        
     }, 1000);
 }
 
-// Fungsi untuk Meriset Statistik Perjalanan (Panggil fungsi ini saat RESET perjalanan di tengah jalan)
 function resetTripStatistics() {
     if (tripTimerInterval) {
         clearInterval(tripTimerInterval);
@@ -2684,13 +2755,13 @@ function resetTripStatistics() {
     }
     totalTripDistanceKM = 0.0;
     totalTripDurationSeconds = 0;
+    totalMovingDurationSeconds = 0; // <--- IKUT DI-RESET JADI NOL DI SINI
     lastSavedLatForDistance = null;
     lastSavedLngForDistance = null;
     
-    // Kembalikan semua visual teks ke angka 0
-    document.getElementById('pids-trip-duration').innerText = "00.00.00";
-    document.getElementById('pids-trip-distance').innerText = "0.00 km";
-    document.getElementById('pids-trip-avg-speed').innerText = "0.0 km/j";
+    if(document.getElementById('pids-trip-duration')) document.getElementById('pids-trip-duration').innerText = "00.00.00";
+    if(document.getElementById('pids-trip-distance')) document.getElementById('pids-trip-distance').innerText = "0.00 km";
+    if(document.getElementById('pids-trip-avg-speed')) document.getElementById('pids-trip-avg-speed').innerText = "0.0 km/j";
 }
 
 // Rumus Haversine: Menghitung jarak presisi antar 2 koordinat GPS bumi
