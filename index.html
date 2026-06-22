@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.2.2</title>
+    <title>PIDS Simulator v3.3.0</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -308,6 +308,24 @@
             text-overflow: ellipsis;
             width: 100%;
         }
+		
+		/* --- CSS BARU UNTUK SEJAJAR VERTIKAL (GABUNGAN DENGAN KODE LO) --- */
+.gps-item-label {
+    width: 70px;            /* Diperbesar sedikit jadi 105px agar pas menampung "Titik Terdekat:" */
+    display: inline-block;
+    text-align: left;
+    flex-shrink: 0;          /* Kunci mati agar teks kiri tidak gepeng/menyusut */
+}
+
+/* --- SINKRONISASI UKURAN PAS FULLSCREEN VW --- */
+#pids-monitor-mode:fullscreen .gps-item-label {
+    width: 10.5vw !important; /* Melebar proporsional mengikuti huruf yang membesar di layar lebar */
+}
+
+/* Menjaga gap antar baris info GPS tetap ideal saat fullscreen */
+#pids-monitor-mode:fullscreen .gps-info-lines {
+    gap: 0.3vw !important;
+}
 
         .controls-right-group {
             display: flex;
@@ -731,6 +749,63 @@
 .hidden-dropdown {
     display: none;
 }
+
+/* --- CSS STATISTIK PERJALANAN (SEJAJAR VERTIKAL SEMPURNA) --- */
+.stats-label { 
+    font-size: 12px; 
+    color: #888888;          
+    text-transform: uppercase; 
+    margin-bottom: 8px; 
+    display: block; 
+    text-align: center; 
+    width: 100%;
+}
+.stats-box { 
+    font-size: 14px; 
+    color: #ffffff; 
+    font-weight: normal;     
+    display: flex; 
+    flex-direction: column; 
+    gap: 1px;                
+    padding-left: 6px;       
+    white-space: nowrap; 
+    width: 100%; 
+    box-sizing: border-box; 
+}
+/* Mengunci lebar teks kiri agar titik dua (:) sejajar lurus ke bawah */
+.stats-item-label {
+    width: 135px;            /* Lebar statis yang pas menampung kalimat terpanjang */
+    display: inline-block;
+    text-align: left;
+}
+.stats-value {
+    color: #ffffff;
+    font-weight: bold;       
+    margin-left: 0;          
+}
+
+/* --- SINKRONISASI UKURAN FULLSCREEN VW --- */
+#pids-monitor-mode:fullscreen .stats-label { 
+    font-size: 1.8vw !important; 
+    color: #888888 !important; 
+}
+
+#pids-monitor-mode:fullscreen .stats-box { 
+    font-size: 2.0vw !important;    
+    font-weight: normal !important; 
+    gap: 0.3vw !important;          
+    padding-left: 0.5vw !important; 
+    border-left-width: 0.3vw !important; 
+}
+
+/* Memastikan lebar teks kiri ikut membesar secara proporsional pas fullscreen */
+#pids-monitor-mode:fullscreen .stats-item-label {
+    width: 19.5vw !important; /* Menggunakan VW agar skalanya presisi lurus di layar lebar */
+}
+
+#pids-monitor-mode:fullscreen .stats-value {
+    font-weight: bold !important;
+}
     </style>
 </head>
 <body>
@@ -768,7 +843,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.2.2</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.3.0</h1>
     </header>
 
     <div class="tab-bar">
@@ -791,19 +866,58 @@
                 </div>
 
                 <div class="pids-row-2">
-                    <div class="kompas-wrap">
-                        <span class="kompas-label">Arah Mata Angin</span>
-                        <span class="kompas-value" id="pids-compass">-</span>
-                    </div>
-                    <div class="speedo-wrap-v2">
-                        <span class="speedo-value-v2" id="pids-speed">0.0</span>
-                        <span class="speedo-unit-v2">km/j</span>
-                    </div>
+    
+    <div class="kompas-wrap" style="display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; padding: 5px 0;">
+        
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <span class="kompas-label">Arah Mata Angin</span>
+        <span class="kompas-value" id="pids-compass">-</span>
+    </div>
+    
+    <div style="flex: 1.55; display: flex; flex-direction: column; justify-content: center; align-items: center; border-left: 2px solid rgba(255,255,255,0.15); height: 80%; box-sizing: border-box;">
+        
+        <span class="stats-label">Statistika Perjalanan</span>
+        
+        <div class="stats-box" id="pids-trip-stats-box">
+            <div style="display: flex; align-items: center; width: 100%;">
+                <span class="stats-item-label">Waktu Perjalanan:</span>
+                <span></span>
+                <div style="flex: 1; display: flex; justify-content: center;">
+                    <span id="pids-trip-duration" class="stats-value">00.00.00</span>
                 </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; width: 100%;">
+                <span class="stats-item-label">Jarak Perjalanan:</span>
+                <span></span>
+                <div style="flex: 1; display: flex; justify-content: center;">
+                    <span id="pids-trip-distance" class="stats-value">0.00 km</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; width: 100%;">
+                <span class="stats-item-label">Rata-Rata Kecepatan:</span>
+                <span></span>
+                <div style="flex: 1; display: flex; justify-content: center;">
+                    <span id="pids-trip-avg-speed" class="stats-value">0.0 km/j</span>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
+    <div class="speedo-wrap-v2">
+        <span class="speedo-value-v2" id="pids-speed">0.0</span>
+        <span class="speedo-unit-v2">km/j</span>
+    </div>
+
+</div>
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.2.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.3.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
                     </div>
                 </div>
 
@@ -811,11 +925,29 @@
                     <div class="diag-left-log" id="log-console"></div>
                     
                     <div class="diag-right-gps">
-                        <div class="gps-info-lines">
-                            <div>Status GPS: <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> (<span id="gps-accuracy">-</span>)</div>
-                            <div>Posisi Anda: <span id="gps-current-coord" style="color:#aaa;">Data Tidak Tersedia</span></div>
-                            <div>Titik Terdekat: <span id="pids-distance">-</span> <span id="pids-nearest-object" style="color:#ffff00;">Rute Tidak Tersedia</span></div>
-                        </div>
+    <div class="gps-info-lines">
+        
+        <div style="display: flex; align-items: center;">
+            <span class="gps-item-label">Status GPS:</span>
+            <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> 
+            <span style="margin-left: 4px;">(<span id="gps-accuracy">-</span>)</span>
+        </div>
+        
+        <div style="display: flex; align-items: center;">
+            <span class="gps-item-label">Posisi Anda:</span>
+            <span id="gps-current-coord" style="color:#aaa;">Data Tidak Tersedia</span>
+        </div>
+        
+        <div style="display: flex; align-items: center;">
+            <span class="gps-item-label">Titik Terdekat:</span>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <span id="pids-distance">-</span> 
+                <span id="pids-nearest-object" style="color:#ffff00; margin-left: 4px;">Rute Tidak Tersedia</span>
+            </span>
+        </div>
+
+    </div>
+</div>
                         
                         <div class="controls-right-group">
                             <div class="vertical-button-stack">
@@ -951,7 +1083,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.2.2 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.3.0 - Hati-Hati Di Jalan, Utamakan Keselamatan" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1019,7 +1151,7 @@
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "Selamat Datang di PIDS v3.2.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+        let ruteAktifTeks = "Selamat Datang di PIDS v3.3.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1049,6 +1181,14 @@
         // Drag Elements Registry
         let dragSrcEl = null;
         let dragTypeRegistry = "";
+		
+		// Variabel State Statistik Perjalanan
+let totalTripDistanceKM = 0.0;
+let totalTripDurationSeconds = 0;
+let tripTimerInterval = null;
+
+let lastSavedLatForDistance = null;
+let lastSavedLngForDistance = null;
 
         window.onload = function() {
             if(sessionStorage.getItem('pids_logged_in') === 'true') {
@@ -1060,7 +1200,7 @@
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.2.2 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.3.0 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1168,42 +1308,69 @@
         }
 
         function prosesUpdateKoordinatStreamUtama(position) {
-            lastKnownLat = position.coords.latitude;
-            lastKnownLng = position.coords.longitude;
-			lastKnownAltitude = position.coords.altitude || 0;
-            let accuracy = position.coords.accuracy;
+    lastKnownLat = position.coords.latitude;
+    lastKnownLng = position.coords.longitude;
+    lastKnownAltitude = position.coords.altitude || 0;
+    let accuracy = position.coords.accuracy;
+    
+    let statusGPSNode = document.getElementById('gps-status');
+    if (statusGPSNode) { statusGPSNode.innerText = "ON"; statusGPSNode.style.color = "#00ff00"; }
+
+    if (document.getElementById('gps-accuracy')) document.getElementById('gps-accuracy').innerText = `${accuracy.toFixed(1)}m`;
+    if (document.getElementById('gps-current-coord')) document.getElementById('gps-current-coord').innerText = `Lat: ${lastKnownLat.toFixed(5)}, Lng: ${lastKnownLng.toFixed(5)}, Alt: ${lastKnownAltitude.toFixed(1)} m`;
+    
+    if (map) {
+        if (livePositionMarker) livePositionMarker.setLatLng([lastKnownLat, lastKnownLng]);
+        else livePositionMarker = L.circleMarker([lastKnownLat, lastKnownLng], { radius: 8, color: '#ffffff', weight: 2, fillColor: '#0066cc', fillOpacity: 0.9, zIndexOffset: 1000 }).addTo(map);
+
+        if (liveAccuracyCircle) liveAccuracyCircle.setLatLng([lastKnownLat, lastKnownLng]).setRadius(accuracy);
+        else liveAccuracyCircle = L.circle([lastKnownLat, lastKnownLng], { radius: accuracy, color: '#0066cc', weight: 1, fillColor: '#0066cc', fillOpacity: 0.15 }).addTo(map);
+    }
+
+    let speedMS = position.coords.speed;
+    let speedKMH = 0.0;
+    if (speedMS && speedMS > 0) { speedKMH = speedMS * 3.6; }
+    
+    let waktuSekarang = Date.now();
+    if (waktuSekarang - lastWeatherFetchTime > 180000) { 
+        if (typeof fetchLiveWeatherDataAPI === "function") fetchLiveWeatherDataAPI(lastKnownLat, lastKnownLng);
+        lastWeatherFetchTime = waktuSekarang;
+    }
+
+    // ─── AMAN & KONDISIONAL: HANYA UPDATE JIKA RUTE SUDAH DIKONFIRMASI ───
+    if (isTrackingActiveUI) {
+        // Tampilkan Kecepatan Real-time
+        let speedNode = document.getElementById('pids-speed');
+        if (speedNode) speedNode.innerText = speedKMH.toFixed(1);
+        
+        if (typeof cekOverspeedStatus === "function") cekOverspeedStatus(speedKMH);
+        if (typeof updateKompasArahMataAngin === "function") updateKompasArahMataAngin(position.coords.heading, speedKMH);
+        if (typeof prosesEvaluasiGeofenceRealtime === "function") prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, speedKMH);
+        
+        // Kalkulasi Jarak Perjalanan Real-time dari Gerakan GPS
+        if (lastSavedLatForDistance !== null && lastSavedLngForDistance !== null) {
+            let deltaJarakKM = hitungJarakAntarKoordinatHaversine(
+                lastSavedLatForDistance, lastSavedLngForDistance, 
+                lastKnownLat, lastKnownLng
+            );
             
-            let statusGPSNode = document.getElementById('gps-status');
-            statusGPSNode.innerText = "ON"; statusGPSNode.style.color = "#00ff00";
-
-            document.getElementById('gps-accuracy').innerText = `${accuracy.toFixed(1)}m`;
-            document.getElementById('gps-current-coord').innerText = `Lat: ${lastKnownLat.toFixed(5)}, Lng: ${lastKnownLng.toFixed(5)}, Alt: ${lastKnownAltitude.toFixed(1)} m`;
-            
-            if (map) {
-                if (livePositionMarker) livePositionMarker.setLatLng([lastKnownLat, lastKnownLng]);
-                else livePositionMarker = L.circleMarker([lastKnownLat, lastKnownLng], { radius: 8, color: '#ffffff', weight: 2, fillColor: '#0066cc', fillOpacity: 0.9, zIndexOffset: 1000 }).addTo(map);
-
-                if (liveAccuracyCircle) liveAccuracyCircle.setLatLng([lastKnownLat, lastKnownLng]).setRadius(accuracy);
-                else liveAccuracyCircle = L.circle([lastKnownLat, lastKnownLng], { radius: accuracy, color: '#0066cc', weight: 1, fillColor: '#0066cc', fillOpacity: 0.15 }).addTo(map);
-            }
-
-            let speedMS = position.coords.speed;
-            let speedKMH = 0.0;
-            if (speedMS && speedMS > 0) { speedKMH = speedMS * 3.6; }
-            
-            let waktuSekarang = Date.now();
-            if (waktuSekarang - lastWeatherFetchTime > 180000) { 
-                fetchLiveWeatherDataAPI(lastKnownLat, lastKnownLng);
-                lastWeatherFetchTime = waktuSekarang;
-            }
-
-            if (isTrackingActiveUI) {
-                document.getElementById('pids-speed').innerText = speedKMH.toFixed(1);
-                cekOverspeedStatus(speedKMH);
-                updateKompasArahMataAngin(position.coords.heading, speedKMH);
-                prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, speedKMH);
+            if (deltaJarakKM > 0 && deltaJarakKM < 1.0) {
+                totalTripDistanceKM += deltaJarakKM;
+                let distanceNode = document.getElementById('pids-trip-distance');
+                if (distanceNode) distanceNode.innerText = totalTripDistanceKM.toFixed(2) + " km";
             }
         }
+        
+        lastSavedLatForDistance = lastKnownLat;
+        lastSavedLngForDistance = lastKnownLng;
+    } else {
+        // Jika status tracking mati (misal di-stop), matikan juga interval timernya
+        if (tripTimerInterval !== null) {
+            clearInterval(tripTimerInterval);
+            tripTimerInterval = null;
+        }
+    }
+}
 
         async function fetchLiveWeatherDataAPI(lat, lng) {
             try {
@@ -1235,7 +1402,7 @@
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "Selamat Datang di PIDS v3.2.2 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
+                ruteAktifTeks = "Selamat Datang di PIDS v3.3.0 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1275,24 +1442,30 @@
         function handleModalKeyDown(event) { if (event.key === 'Enter') { event.preventDefault(); konfirmasiMulaiTrackingRute(); } }
 
         function konfirmasiMulaiTrackingRute() {
-            let selAsal = document.getElementById('modal-select-asal').value;
-            let selTujuan = document.getElementById('modal-select-tujuan').value;
-            
-            // Menggunakan regex untuk potong spasi ujung luar saja, spasi ganda di dalam TETAP AMAN
-            let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
-            let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-            let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.2.2 - Hati-Hati Di Jalan, Utamakan Keselamatan";
+    let selAsal = document.getElementById('modal-select-asal').value;
+    let selTujuan = document.getElementById('modal-select-tujuan').value;
+    
+    let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
+    let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
+    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.3.0 - Hati-Hati Di Jalan, Utamakan Keselamatan";
 
-            if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
-            else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
-            else ruteAktifTeks = defText;
+    if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
+    else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
+    else ruteAktifTeks = defText;
 
-            tutupModalRute(); mintaWakeLock(); isTrackingActiveUI = true;
-            document.getElementById('btn-toggle-gps').innerText = "SELESAIKAN PERJALANAN";
-            updateTeksMonitorUtamaPIDS(ruteAktifTeks);
-            document.getElementById('pids-nearest-object').innerText = "Mencari Titik...";
-            prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, 0);
-        }
+    tutupModalRute(); mintaWakeLock(); 
+    
+    // ─── 1. AKTIFKAN TRACKING ───
+    isTrackingActiveUI = true;
+    
+    // ─── 2. NYALAKAN TIMER STATISTIK SEJAK KLIK KONFIRMASI (TAMBAHKAN INI) ───
+    startTripStatistics(); 
+
+    document.getElementById('btn-toggle-gps').innerText = "SELESAIKAN PERJALANAN";
+    updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+    document.getElementById('pids-nearest-object').innerText = "Mencari Titik...";
+    prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, 0);
+}
 
         function prosesEvaluasiGeofenceRealtime(lat, lng, currentSpeed) {
     if (dbLokasi.length === 0) return;
@@ -1996,7 +2169,7 @@ let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
 // Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
 let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-let namaFile = `${formatWaktu}_backup-pids-v3.2.2.json`;
+let namaFile = `${formatWaktu}_backup-pids-v3.3.0.json`;
 
 // KODE BAWAAN LO YANG SUDAH MODIFIKASI:
 let downloadAnchor = document.createElement('a'); 
@@ -2458,6 +2631,59 @@ function buatDatabaseBaruDenganBackup() {
         console.error("[D] Gagal melakukan reset database:", error);
         alert("Terjadi kesalahan sistem saat mengosongkan database.");
     }
+}
+
+// Fungsi menyalakan Timer (Panggil fungsi ini saat tombol MULAI/PLAY simulasi Anda ditekan)
+function startTripStatistics() {
+    if (tripTimerInterval) clearInterval(tripTimerInterval);
+    
+    tripTimerInterval = setInterval(() => {
+        if (isTrackingActiveUI) { // Hanya menghitung jika simulasi/tracking aktif
+            totalTripDurationSeconds++;
+            
+            // 1. Format & Update Tampilan Durasi (HH:MM:SS)
+            let hrs = Math.floor(totalTripDurationSeconds / 3600).toString().padStart(2, '0');
+            let mins = Math.floor((totalTripDurationSeconds % 3600) / 60).toString().padStart(2, '0');
+            let secs = (totalTripDurationSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('pids-trip-duration').innerText = `${hrs}.${mins}.${secs}`;
+            
+            // 2. Update Tampilan Rata-rata Kecepatan
+            let avgSpeed = 0.0;
+            if (totalTripDurationSeconds > 0) {
+                let durationHours = totalTripDurationSeconds / 3600;
+                avgSpeed = totalTripDistanceKM / durationHours;
+            }
+            document.getElementById('pids-trip-avg-speed').innerText = avgSpeed.toFixed(1) + " km/j";
+        }
+    }, 1000);
+}
+
+// Fungsi untuk Meriset Statistik Perjalanan (Panggil fungsi ini saat RESET perjalanan di tengah jalan)
+function resetTripStatistics() {
+    if (tripTimerInterval) {
+        clearInterval(tripTimerInterval);
+        tripTimerInterval = null;
+    }
+    totalTripDistanceKM = 0.0;
+    totalTripDurationSeconds = 0;
+    lastSavedLatForDistance = null;
+    lastSavedLngForDistance = null;
+    
+    // Kembalikan semua visual teks ke angka 0
+    document.getElementById('pids-trip-duration').innerText = "00.00.00";
+    document.getElementById('pids-trip-distance').innerText = "0.00 km";
+    document.getElementById('pids-trip-avg-speed').innerText = "0.0 km/j";
+}
+
+// Rumus Haversine: Menghitung jarak presisi antar 2 koordinat GPS bumi
+function hitungJarakAntarKoordinatHaversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius bumi dalam kilometer
+    let dLat = (lat2 - lat1) * Math.PI / 180;
+    let dLon = (lon2 - lon1) * Math.PI / 180;
+    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Hasil dalam kilometer
 }
     </script>
 </body>
