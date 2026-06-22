@@ -750,7 +750,7 @@
     display: none;
 }
 
-/* --- CSS STATISTIK PERJALANAN (SEJAJAR VERTIKAL SEMPURNA) --- */
+/* --- CSS STATISTIK PERJALANAN (SEJAJAR VERTIKAL & RESPONSIF) --- */
 .stats-label { 
     font-size: 12px; 
     color: #888888;          
@@ -772,11 +772,12 @@
     width: 100%; 
     box-sizing: border-box; 
 }
-/* Mengunci lebar teks kiri agar titik dua (:) sejajar lurus ke bawah */
+/* Mengunci lebar teks kiri agar titik dua (:) sejajar lurus ke bawah di desktop */
 .stats-item-label {
-    width: 135px;            /* Lebar statis yang pas menampung kalimat terpanjang */
+    width: 135px;            /* Sesuai kode Anda */
     display: inline-block;
     text-align: left;
+    flex-shrink: 0;          /* Kunci mati agar teks kiri tidak tertekuk/gepeng */
 }
 .stats-value {
     color: #ffffff;
@@ -784,7 +785,24 @@
     margin-left: 0;          
 }
 
-/* --- SINKRONISASI UKURAN FULLSCREEN VW --- */
+/* ─── KONDISI KHUSUS LAYAR HP PORTRAIT (TAMBAHKAN INI BIAR GAK TABRAKAN) ─── */
+@media (max-width: 575px) {
+    .stats-box {
+        font-size: 11px;     /* Perkecil huruf sedikit di HP portrait biar space-nya muat */
+        padding-left: 2px;
+    }
+    .stats-item-label {
+        width: auto;         /* Bebaskan lebar kaku 135px agar tidak memakan space kanan HP */
+        margin-right: 2px;   /* Jarak tipis setelah titik dua */
+    }
+    /* Di HP portrait, paksa angkanya berbaris normal mepet kiri, bukan center gaib */
+    .stats-box .stats-value-wrapper {
+        justify-content: flex-start !important; 
+        padding-left: 4px;
+    }
+}
+
+/* ─── SINKRONISASI UKURAN FULLSCREEN VW (SESUAI KODE ANDA) ─── */
 #pids-monitor-mode:fullscreen .stats-label { 
     font-size: 1.8vw !important; 
     color: #888888 !important; 
@@ -800,7 +818,7 @@
 
 /* Memastikan lebar teks kiri ikut membesar secara proporsional pas fullscreen */
 #pids-monitor-mode:fullscreen .stats-item-label {
-    width: 19.5vw !important; /* Menggunakan VW agar skalanya presisi lurus di layar lebar */
+    width: 19.5vw !important; 
 }
 
 #pids-monitor-mode:fullscreen .stats-value {
@@ -882,7 +900,7 @@
             <div style="display: flex; align-items: center; width: 100%;">
                 <span class="stats-item-label">Waktu Perjalanan:</span>
                 <span></span>
-                <div style="flex: 1; display: flex; justify-content: center;">
+                <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
                     <span id="pids-trip-duration" class="stats-value">00.00.00</span>
                 </div>
             </div>
@@ -890,7 +908,7 @@
             <div style="display: flex; align-items: center; width: 100%;">
                 <span class="stats-item-label">Jarak Perjalanan:</span>
                 <span></span>
-                <div style="flex: 1; display: flex; justify-content: center;">
+                <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
                     <span id="pids-trip-distance" class="stats-value">0.00 km</span>
                 </div>
             </div>
@@ -898,7 +916,7 @@
             <div style="display: flex; align-items: center; width: 100%;">
                 <span class="stats-item-label">Rata-Rata Kecepatan:</span>
                 <span></span>
-                <div style="flex: 1; display: flex; justify-content: center;">
+                <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
                     <span id="pids-trip-avg-speed" class="stats-value">0.0 km/j</span>
                 </div>
             </div>
