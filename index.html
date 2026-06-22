@@ -1535,7 +1535,7 @@ let lastSavedLngForDistance = null;
     
     let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
     let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.3.2 - Hati-Hati Di Jalan, Utamakan Keselamatan";
+    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.3.2";
 
     if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
     else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
