@@ -893,6 +893,26 @@
 #pids-monitor-mode:fullscreen .stats-value {
     font-weight: bold !important;
 }
+
+/* ─── KALIBRASI KHUSUS TAMPILAN FULLSCREEN DI LAYAR HP / MOBILE ─── */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Jauhin Judul Atas dengan menaikkan jarak top-nya sedikit */
+    #pids-monitor-mode:fullscreen .kompas-label,
+    #pids-monitor-mode:fullscreen .stats-label { 
+        top: 8.5vw !important;                /* Dinaikkan dari 6.0vw ke 8.5vw agar judul bergeser naik menjauhi tulisan di bawahnya */
+    }
+
+    /* 2. Kasih napas jarak (gap) di atas Angka Kompas */
+    #pids-monitor-mode:fullscreen .kompas-value { 
+        margin-top: 4.0vw !important;        /* Memberi dorongan jarak dari atas agar tidak mepet judul */
+    }
+
+    /* 3. Kasih napas jarak (gap) di atas Kotak Statistik */
+    #pids-monitor-mode:fullscreen .stats-box { 
+        margin-top: 4.0vw !important;        /* Memberi dorongan jarak dari atas agar tidak mepet judul */
+    }
+}
     </style>
 </head>
 <body>
