@@ -2155,7 +2155,7 @@ function resetFormInput() {
 
 function hapusLokasi(id) {
     // 1. Beri konfirmasi biar aman gak sengaja klik hapus
-    if (!confirm("Apakah Anda yakin ingin menghapus titik halte ini?")) return;
+    if (!confirm("Hapus titik halte ini?")) return;
 
     // 2. SASARAN AKURAT: Filter dan hapus data langsung dari array dbLokasi
     dbLokasi = dbLokasi.filter(item => item.id !== id);
