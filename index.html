@@ -892,24 +892,27 @@
 /* 7. Angka nilai statistik tetap tebal */
 #pids-monitor-mode:fullscreen .stats-value {
     font-weight: bold !important;
-}
+	}
+	
+/* ─── AMUNISI UNIVERSAL: MEMPAN DI INSPECT CHROME & HP ASLI ─── */
+@media screen and (max-width: 956px) and (orientation: landscape) {
 
-/* ─── AMUNISI KHUSUS LAYAR HP LANDSCAPE (PASTI MEMPAN) ─── */
-@media screen and (max-device-width: 956px) and (orientation: landscape) {
+    /* ─── AMUNISI UNIVERSAL: KALIBRASI HP LANDSCAPE & INSPECT ─── */
+@media screen and (max-width: 956px) and (orientation: landscape) {
 
-    /* 1. Paksa judul naik ke atas mendekati langit-langit layar biar jaraknya jauh dari teks bawah */
+    /* 1. ATUR POSISI JUDUL ATAS (Mata Angin & Statistik) */
     #pids-monitor-mode:fullscreen .kompas-label,
-    #pids-monitor-mode:fullscreen .stats-label { 
-        top: 3vw !important;                /* Di monitor gede 6.0vw, di HP kita paksa naik ke 1.5vw biar ngejauh */
+    #pids-monitor-mode:fullscreen .stats-label,
+    #pids-monitor-mode.fullscreen .kompas-label,
+    #pids-monitor-mode.fullscreen .stats-label { 
+        top: 4.0vw !important;              /* JIKA JUDUL KURANG TURUN, BESARKAN ANGKA INI (misal: 3.0vw) */
+        transform: none !important;         /* Kita matikan transform minusnya biar gak tabrakan */
     }
 
-    /* 2. Kalau judul sudah naik tapi teks bawah dirasa masih kurang turun, kasih margin-top di sini */
-    #pids-monitor-mode:fullscreen .kompas-value { 
-        margin-top: 2.5vw !important;         /* Mendorong angka kompas turun ke bawah menjauhi judul */
-    }
-
-    #pids-monitor-mode:fullscreen .stats-box { 
-        margin-top: 2.5vw !important;         /* Mendorong kotak statistik turun ke bawah menjauhi judul */
+    /* 2. ATUR POSISI ANGKA & KOTAK KONTEN DI BAWAHNYA */
+    #pids-monitor-mode:fullscreen .kompas-wrap,
+    #pids-monitor-mode.fullscreen .kompas-wrap {
+        padding-top: 2vw !important;      /* JIKA KONTEN KURANG NAIK (KEJAUHAN), KECILKAN ANGKA INI (misal: 6.0vw atau 5.0vw) */
     }
 }
     </style>
