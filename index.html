@@ -2555,9 +2555,20 @@ function monitorFullscreenStateChange() {
 }
 
         function pushLogKonsol(teks) {
-            let consoleNode = document.getElementById('log-console'); let d = document.createElement('div'); d.className = "diag-log-line";
-            d.innerText = `[${new Date().toLocaleTimeString('id-ID')}] ${teks}`; consoleNode.appendChild(d); consoleNode.scrollTop = consoleNode.scrollHeight;
-        }
+    let consoleNode = document.getElementById('log-console');
+    
+    // PENGAMAN: Jika elemen 'log-console' tidak ada di HTML, lempar ke F12 browser & batalkan appendChild
+    if (!consoleNode) {
+        console.log(`[${new Date().toLocaleTimeString('id-ID')}] ${teks}`);
+        return;
+    }
+
+    let d = document.createElement('div'); 
+    d.className = "diag-log-line";
+    d.innerText = `[${new Date().toLocaleTimeString('id-ID')}] ${teks}`; 
+    consoleNode.appendChild(d); 
+    consoleNode.scrollTop = consoleNode.scrollHeight;
+}
 
         function cekOverspeedStatus(currentSpeed) {
             let limit = parseFloat(document.getElementById('cfg-overspeed-limit').value) || 50.0;
