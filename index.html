@@ -2113,13 +2113,46 @@ function editLokasiBuiltIn(id) {
         }
 
         // 4. RENDER DROPDOWN AUDIO DI TAB DATABASE
-        function renderDropdownAudioDb() {
-            let select = document.getElementById('input-audio-asset-dropdown'); if(!select) return;
-            let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
-            let html = `<option value="none">- Tanpa Suara -</option>`;
-            listProses.forEach(item => { html += `<option value="${item.nama}">${item.nama}</option>`; });
-            select.innerHTML = html;
+        // 4. RENDER SEMUA DROPDOWN AUDIO (DATABASE GEOFENCE + ANNOUNCEMENT CUSTOM)
+function renderDropdownAudioDb() {
+    let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
+
+    // 1. Buat opsi pilihan untuk Geofence & Announcement Custom
+    let htmlGeofence = `<option value="none">- Tanpa Suara -</option>`;
+    let htmlCustom = `<option value="">-- Tanpa Audio (Hanya Teks) --</option>`;
+
+    listProses.forEach(item => {
+        // Ambil path file audio (atau nama jika path tidak ada)
+        let valAudio = item.path || item.nama;
+        
+        htmlGeofence += `<option value="${item.nama}">${item.nama}</option>`;
+        htmlCustom += `<option value="${valAudio}">${item.nama}</option>`;
+    });
+
+    // 2. Isi ke Dropdown Geofence Database (Bawaan Web Abang)
+    let selectDb = document.getElementById('input-audio-asset-dropdown');
+    if (selectDb) selectDb.innerHTML = htmlGeofence;
+
+    // 3. Isi ke Dropdown Custom Announcement (Selamat Datang)
+    let selectWelcome = document.getElementById('cfg-custom-welcome-audio-select');
+    if (selectWelcome) {
+        selectWelcome.innerHTML = htmlCustom;
+        // Kunci nilai tersimpan biar GAK BALIK KE ATAS
+        if (typeof configAnnouncementCustom !== 'undefined' && configAnnouncementCustom.welcomeAudio) {
+            selectWelcome.value = configAnnouncementCustom.welcomeAudio;
         }
+    }
+
+    // 4. Isi ke Dropdown Custom Announcement (Tiba di Tujuan)
+    let selectArrival = document.getElementById('cfg-custom-arrival-select');
+    if (selectArrival) {
+        selectArrival.innerHTML = htmlCustom;
+        // Kunci nilai tersimpan biar GAK BALIK KE ATAS
+        if (typeof configAnnouncementCustom !== 'undefined' && configAnnouncementCustom.arrivalAudio) {
+            selectArrival.value = configAnnouncementCustom.arrivalAudio;
+        }
+    }
+}
 
         // ==================== DATABASE OPERATION ====================
 
@@ -2376,33 +2409,41 @@ if (container) { container.scrollTop = container.scrollHeight; }
 // ==================== STORAGE & PORTABILITY DATA PACKAGING ====================
 
         function muatSemuaDataDariStorage() {
-            let dm = localStorage.getItem('pids_lokasi_data'); if (dm) { try { dbLokasi = JSON.parse(dm); } catch(e){} }
-            let lStorage = localStorage.getItem('pids_lokasi_singles'); if (lStorage) { try { lokasiSingleList = JSON.parse(lStorage); } catch(e){} }
-            let aStorage = localStorage.getItem('pids_audio_assets_list'); if (aStorage) { try { audioAssetList = JSON.parse(aStorage); } catch(e){} }
-            
-            // 1. Load data announcement custom dari LocalStorage
-            let customAnnStorage = localStorage.getItem('pids_custom_announcement_cfg');
-            if (customAnnStorage) {
-                try {
-                    configAnnouncementCustom = JSON.parse(customAnnStorage);
-                } catch(e){}
-            }
+    let dm = localStorage.getItem('pids_lokasi_data'); if (dm) { try { dbLokasi = JSON.parse(dm); } catch(e){} }
+    let lStorage = localStorage.getItem('pids_lokasi_singles'); if (lStorage) { try { lokasiSingleList = JSON.parse(lStorage); } catch(e){} }
+    let aStorage = localStorage.getItem('pids_audio_assets_list'); if (aStorage) { try { audioAssetList = JSON.parse(aStorage); } catch(e){} }
+    
+    // 1. Load data announcement custom dari LocalStorage
+    let customAnnStorage = localStorage.getItem('pids_custom_announcement_cfg');
+    if (customAnnStorage) {
+        try {
+            configAnnouncementCustom = JSON.parse(customAnnStorage);
+        } catch(e){}
+    }
 
-            // Konversi struktur lama v3.6 seandainya ada data legacy string
-            if(lokasiSingleList.length > 0 && typeof lokasiSingleList[0] === 'string') {
-                lokasiSingleList = lokasiSingleList.map((str, idx) => ({ id: 'loc_' + idx + '_' + Date.now(), nama: str, orderIndex: idx }));
-            }
-            if(audioAssetList.length > 0 && typeof audioAssetList[0] === 'string') {
-                audioAssetList = audioAssetList.map((str, idx) => ({ id: 'aud_' + idx + '_' + Date.now(), nama: str, orderIndex: idx }));
-            }
+    // Konversi struktur lama v3.6 seandainya ada data legacy string
+    if(lokasiSingleList.length > 0 && typeof lokasiSingleList[0] === 'string') {
+        lokasiSingleList = lokasiSingleList.map((str, idx) => ({ id: 'loc_' + idx + '_' + Date.now(), nama: str, orderIndex: idx }));
+    }
+    if(audioAssetList.length > 0 && typeof audioAssetList[0] === 'string') {
+        audioAssetList = audioAssetList.map((str, idx) => ({ id: 'aud_' + idx + '_' + Date.now(), nama: str, orderIndex: idx }));
+    }
 
-            if (localStorage.getItem('pids_plat_nomor')) document.getElementById('cfg-plat-no').value = localStorage.getItem('pids_plat_nomor');
-            if (localStorage.getItem('pids_preset_default_text')) document.getElementById('cfg-preset-default-text').value = localStorage.getItem('pids_preset_default_text');
-            if (localStorage.getItem('pids_os_limit')) document.getElementById('cfg-overspeed-limit').value = localStorage.getItem('pids_os_limit');
-            
-            // 2. Tampilkan data announcement custom yang di-load ke Input & Dropdown UI
-            muatPengaturanAnnouncementFromStorage();
-        }
+    if (localStorage.getItem('pids_plat_nomor')) document.getElementById('cfg-plat-no').value = localStorage.getItem('pids_plat_nomor');
+    if (localStorage.getItem('pids_preset_default_text')) document.getElementById('cfg-preset-default-text').value = localStorage.getItem('pids_preset_default_text');
+    if (localStorage.getItem('pids_os_limit')) document.getElementById('cfg-overspeed-limit').value = localStorage.getItem('pids_os_limit');
+    
+    // 2. Tampilkan data announcement custom yang di-load ke elemen Input Teks UI
+    const inputWelcomeText = document.getElementById('cfg-custom-welcome-text');
+    const inputArrivalText = document.getElementById('cfg-custom-arrival-text');
+    if (inputWelcomeText) inputWelcomeText.value = configAnnouncementCustom.welcomeText || "";
+    if (inputArrivalText) inputArrivalText.value = configAnnouncementCustom.arrivalText || "";
+
+    // 3. Render semua dropdown audio (Geofence + Announcement Custom)
+    if (typeof renderDropdownAudioDb === 'function') {
+        renderDropdownAudioDb();
+    }
+}
 
         function exportDataKeJsonCombinedAllInOne() {
             let configPackage = {
@@ -2998,110 +3039,32 @@ function hitungJarakAntarKoordinatHaversine(lat1, lon1, lat2, lon2) {
 }
 
 // =========================================================================
-// SCRIPT LENGKAP PENGELOLAAN & PEMICU ANNOUNCEMENT CUSTOM (SELAMAT DATANG & TIBA)
+// FUNGSI PEMICU ANNOUNCEMENT CUSTOM (AWAL PERJALANAN & TIBA DI TUJUAN)
 // =========================================================================
 
-// 1. Variable simpanan data default
-let configAnnouncementCustom = {
-    welcomeText: "SELAMAT DATANG DI ARMADA KAMI. SELAMAT MENIKMATI PERJALANAN ANDA.",
-    welcomeAudio: "",
-    arrivalText: "KITA TELAH TIBA DI LOKASI TUJUAN AKHIR. TERIMA KASIH TELAH BEPERGIAN BERSAMA KAMI.",
-    arrivalAudio: ""
-};
-
-let instanceAudioAnnouncement = null;
-
-// 2. Fungsi untuk mengisi dropdown audio dari database audio yang terdaftar
-function renderDropdownAudioAnnouncement() {
-    const selectWelcome = document.getElementById('cfg-custom-welcome-audio-select');
-    const selectArrival = document.getElementById('cfg-custom-arrival-select');
-
-    if (!selectWelcome || !selectArrival) return;
-
-    // Mengambil daftar audio tersortir dari fungsi/variable bawaan Abang
-    let listAudio = [];
-    if (typeof dapatkanArrayTerfilterDanTersortir === 'function') {
-        listAudio = dapatkanArrayTerfilterDanTersortir('audio', typeof sortModeAudio !== 'undefined' ? sortModeAudio : 'manual');
-    } else if (window.daftarAudioBuiltIn) {
-        listAudio = window.daftarAudioBuiltIn;
-    }
-
-    let optionsHtml = `<option value="">-- Tanpa Audio (Hanya Teks) --</option>`;
-    
-    listAudio.forEach(item => {
-        const path = typeof item === 'object' ? item.path : item;
-        const namaDisplay = typeof item === 'object' ? (item.nama || item.path) : item;
-        optionsHtml += `<option value="${path}">${namaDisplay}</option>`;
-    });
-
-    selectWelcome.innerHTML = optionsHtml;
-    selectArrival.innerHTML = optionsHtml;
-
-    // Set nilai yang tersimpan sebelumnya ke dropdown
-    selectWelcome.value = configAnnouncementCustom.welcomeAudio || "";
-    selectArrival.value = configAnnouncementCustom.arrivalAudio || "";
-}
-
-// 3. Fungsi simpan otomatis ke LocalStorage saat user mengetik/memilih dropdown
-function simpanPengaturanAnnouncementKeStorage() {
-    const elWelcomeText = document.getElementById('cfg-custom-welcome-text');
-    const elWelcomeAudio = document.getElementById('cfg-custom-welcome-audio-select');
-    const elArrivalText = document.getElementById('cfg-custom-arrival-text');
-    const elArrivalAudio = document.getElementById('cfg-custom-arrival-select');
-
-    if (elWelcomeText) configAnnouncementCustom.welcomeText = elWelcomeText.value;
-    if (elWelcomeAudio) configAnnouncementCustom.welcomeAudio = elWelcomeAudio.value;
-    if (elArrivalText) configAnnouncementCustom.arrivalText = elArrivalText.value;
-    if (elArrivalAudio) configAnnouncementCustom.arrivalAudio = elArrivalAudio.value;
-
-    localStorage.setItem('pids_custom_announcement_cfg', JSON.stringify(configAnnouncementCustom));
-}
-
-// 4. Fungsi memuat pengaturan tersimpan saat web pertama kali di-load
-function muatPengaturanAnnouncementFromStorage() {
-    const dataTersimpan = localStorage.getItem('pids_custom_announcement_cfg');
-    if (dataTersimpan) {
-        try {
-            configAnnouncementCustom = JSON.parse(dataTersimpan);
-        } catch (e) {
-            console.error("Gagal membaca config announcement dari localStorage", e);
-        }
-    }
-
-    const inputWelcomeText = document.getElementById('cfg-custom-welcome-text');
-    const inputArrivalText = document.getElementById('cfg-custom-arrival-text');
-
-    if (inputWelcomeText) inputWelcomeText.value = configAnnouncementCustom.welcomeText || "";
-    if (inputArrivalText) inputArrivalText.value = configAnnouncementCustom.arrivalText || "";
-
-    // Render pilihan audio di dropdown
-    renderDropdownAudioAnnouncement();
-}
-
-// 5. FUNGSI PEMICU UTAMA (Dipanggil saat tombol Selamat Datang / Tiba di Tujuan diklik)
 function picuAudioCustom(jenis) {
     // 1. Cek Saklar Audio Utama Web Abang (isAudioEnabled)
     if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) {
         if (typeof pushLogKonsol === 'function') {
-            pushLogKonsol("[Custom] Tombol ditekan tapi Announcer sedang OFF (isAudioEnabled = false).");
+            pushLogKonsol("[A] Tombol diklik tapi Announcer OFF (isAudioEnabled = false)");
         }
         alert("Audio Announcer sedang NONAKTIF! Silakan aktifkan saklar Announcer terlebih dahulu.");
         return;
     }
 
     let teksTampil = "";
-    let pathAudio = "";
+    let namaAtauPathAudio = "";
 
-    // 2. Ambil data teks & audio custom dari konfigurasi
+    // 2. Ambil data teks & audio dari objek config
     if (jenis === 'welcome') {
         teksTampil = configAnnouncementCustom.welcomeText;
-        pathAudio = configAnnouncementCustom.welcomeAudio;
+        namaAtauPathAudio = configAnnouncementCustom.welcomeAudio;
     } else if (jenis === 'arrival') {
         teksTampil = configAnnouncementCustom.arrivalText;
-        pathAudio = configAnnouncementCustom.arrivalAudio;
+        namaAtauPathAudio = configAnnouncementCustom.arrivalAudio;
     }
 
-    // 3. Update Teks di Monitor PIDS
+    // 3. Update Teks di Monitor PIDS & data-text-mentah
     const displayNode = document.getElementById('pids-display');
     if (displayNode && teksTampil) {
         displayNode.setAttribute('data-text-mentah', teksTampil);
@@ -3113,55 +3076,48 @@ function picuAudioCustom(jenis) {
         }
     }
 
-    // 4. Putar Audio lewat Engine Web Audio API Abang (putarAnnouncer)
-    if (typeof putarAnnouncer === 'function') {
-        // Jika pathAudio kosong, panggil dengan string kosong agar putarAnnouncer 
-        // menjalankan fallback default ("audio/00 Notifikasi Pembuka.mp3")
-        putarAnnouncer(pathAudio || "");
+    // 4. Putar Audio via Web Audio API (putarAnnouncer)
+    if (namaAtauPathAudio) {
+        let audioUrl = namaAtauPathAudio;
+        if (!audioUrl.startsWith('audio/') && !audioUrl.startsWith('blob:') && !audioUrl.startsWith('http')) {
+            audioUrl = 'audio/' + audioUrl;
+        }
+
+        if (typeof putarAnnouncer === 'function') {
+            putarAnnouncer(audioUrl);
+        } else {
+            let fallbackAudio = new Audio(audioUrl);
+            fallbackAudio.play().catch(e => console.error("Gagal memutar audio:", e));
+        }
     } else {
-        // Backup darurat jika fungsi putarAnnouncer tidak terdeteksi
-        if (pathAudio) {
-            let fallbackAudio = new Audio(pathAudio);
-            fallbackAudio.play().catch(e => console.error("Gagal memutar audio fallback:", e));
+        if (typeof pushLogKonsol === 'function') {
+            pushLogKonsol("[A] Audio tidak diputar karena pilihan audio di Setting masih kosong.");
         }
     }
 
-    // 5. Timer 30 Detik (Kembalikan Teks Monitor ke Rute Utama)
+    // 5. Reset & Panggil Fallback Timer 30 Detik (SAMA PERSIS DENGAN KODE BAWAAN ABANG)
     if (typeof fallbackTimerId !== 'undefined' && fallbackTimerId) {
         clearTimeout(fallbackTimerId);
     }
 
-    fallbackTimerId = setTimeout(() => {
+    fallbackTimerId = setTimeout(() => { 
+        let displayNode = document.getElementById('pids-display');
         if (displayNode && typeof ruteAktifTeks !== 'undefined') {
             displayNode.setAttribute('data-text-mentah', ruteAktifTeks);
-            if (typeof updateTeksMonitorUtamaPIDS === 'function') {
-                updateTeksMonitorUtamaPIDS(ruteAktifTeks);
-            } else {
-                displayNode.innerText = ruteAktifTeks;
-            }
-            if (typeof pushLogKonsol === 'function') {
-                pushLogKonsol("[System] Teks monitor kembali ke Rute Utama.");
-            }
         }
-    }, 30000);
+        if (typeof updateTeksMonitorUtamaPIDS === 'function' && typeof ruteAktifTeks !== 'undefined') {
+            updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+        }
+        if (typeof pushLogKonsol === 'function') {
+            pushLogKonsol("[System] Teks monitor kembali ke Rute Utama setelah 30 detik.");
+        }
+    }, 30000); 
 
+    // 6. Cetak Log Konsol
     if (typeof pushLogKonsol === 'function') {
         pushLogKonsol(`[Custom] Pemicu Manual: ${jenis === 'welcome' ? 'Awal Perjalanan' : 'Tiba di Tujuan'}`);
     }
 }
-
-// 6. Integrasikan dengan penambahan file audio baru
-// (Membantu memperbarui isi dropdown secara otomatis jika Abang menambah file audio baru di Settings)
-const _tambahAudioLokalAsli = window.tambahAudioAssetLokal;
-if (typeof _tambahAudioLokalAsli === 'function') {
-    window.tambahAudioAssetLokal = function() {
-        _tambahAudioLokalAsli();
-        renderDropdownAudioAnnouncement();
-    };
-}
-
-// Inisialisasi awal saat halaman selesai dimuat
-document.addEventListener('DOMContentLoaded', muatPengaturanAnnouncementFromStorage);
 
     </script>
 </body>
