@@ -2656,86 +2656,84 @@ if (typeof currentAnnouncerSource === 'undefined') {
     var currentAnnouncerSource = null; 
 }
 
+// Variabel Global
+let pidsAudioElement = null;
+let pidsAudioSourceNode = null;
+
 function putarAnnouncer(audioPathUrl) {
     if (!isAudioEnabled) { pushLogKonsol("[A] Announcer Dinonaktifkan"); return; }
     
-	if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
+    if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
         audioPathUrl = "audio/00 Notifikasi Pembuka.mp3";
-	}
+    }
+
     try {
-        // Inisialisasi AudioContext jika belum ada
+        // 1. Inisialisasi AudioContext jika belum ada
         if (!audioContextPids) {
             audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
         }
         
-        // Pastikan AudioContext dalam keadaan aktif (mencegah auto-block browser)
         if (audioContextPids.state === 'suspended') {
             audioContextPids.resume();
         }
 
         pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl.substring(0,30)}...`);
 
-        // Fetch file audio secara real-time agar masuk ke jalur sound-effect
-        fetch(audioPathUrl)
-            .then(response => response.arrayBuffer())
-            .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
-            .then(audioBuffer => {
-                
-                // ─── SAKELAR TIMPA AUDIO (ANTI-TUMPANG TINDIDH) ───
-                // Jika masih ada suara halte sebelumnya yang lagi bunyi, langsung potong paksa!
-                if (currentAnnouncerSource) {
-                    try {
-                        currentAnnouncerSource.stop(0);
-                        pushLogKonsol("[A] Audio Sebelumnya Dimatikan karena Menembus Titik Baru");
-                    } catch (e) {
-                        // Diabaikan jika audionya kebetulan emang udah beres duluan
-                    }
-                }
+        // 2. Buat HTMLAudioElement
+        if (!pidsAudioElement) {
+            pidsAudioElement = new Audio();
+            pidsAudioElement.crossOrigin = "anonymous";
+            
+            // Trik Kunci untuk Headunit / Android Auto:
+            // Beri tahu browser bahwa ini adalah audio tipe 'speech' / notifikasi agar Android melakukan DUCKING (mengecilkan lagu), bukan mem-pause total.
+            if ('audioSession' in navigator) {
+                navigator.audioSession.type = 'speech'; 
+            }
 
-                // Buat sumber suara baru dari buffer
-                let source = audioContextPids.createBufferSource();
-                source.buffer = audioBuffer;
-                
-                // Kunci source ini ke variabel global agar bisa ditimpa titik berikutnya
-                currentAnnouncerSource = source;
-                
-                // ─── AMBIENT BOOSTER ENGINE (GAIN NODE) ───
-                let gainNode = audioContextPids.createGain();
-                
-                // ATUR DI SINI:
-                // 1.0 = Volume Normal (100%)
-                // 2.0 = Keras Dua Kali Lipat (200%)
-                // 2.5 = Rekomendasi gua buat di kabin mobil (250%)
-                // 3.0 = Tiga kali lipat (300% - Hati-hati speaker sember/pecah)
-                gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime);
-                
-                // Sambungkan Jalur: Source -> Pengeras -> Speaker
-                source.connect(gainNode);
-                gainNode.connect(audioContextPids.destination);
-                
-                // Mainkan instan!
-                source.start(0);
-                pushLogKonsol("[A] Announcer Diputarkan + Volume Booster 2.5x");
-                
-                // Bersihkan penampung kalau audio emang selesai normal tanpa dipotong
-                source.onended = function() {
-                    if (currentAnnouncerSource === source) {
-                        currentAnnouncerSource = null;
-                    }
-                };
-            })
-            .catch(err => {
-                pushLogKonsol(`[A] Gagal Memutar: ${err.message}`);
-                
-                // FALLBACK: Jika Web Audio API gagal (misal file cross-origin), balik ke metode biasa
-                let fallbackAudio = new Audio(audioPathUrl);
-                // Kita naikin juga volume fallback-nya ke maksimal (1.0) jikalau mentok
-                fallbackAudio.volume = 1.0; 
-                fallbackAudio.play().catch(e => pushLogKonsol("[A] Announcer Gagal Diputar"));
+            pidsAudioSourceNode = audioContextPids.createMediaElementSource(pidsAudioElement);
+            
+            let gainNode = audioContextPids.createGain();
+            gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime); // Ambient Booster 2.5x
+            
+            pidsAudioSourceNode.connect(gainNode);
+            gainNode.connect(audioContextPids.destination);
+        }
+
+        // 3. Reset jika sedang ada audio berjalan
+        if (!pidsAudioElement.paused) {
+            pidsAudioElement.pause();
+            pidsAudioElement.currentTime = 0;
+        }
+
+        pidsAudioElement.src = audioPathUrl;
+
+        // 4. Konfigurasi MediaSession Mode Ducking
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: 'Pengumuman PIDS',
+                artist: 'Navigasi / Informasi Armada',
             });
+            // Menyebutkan status playing agar OS sadar ada pengumuman masuk
+            navigator.mediaSession.playbackState = "playing";
+        }
+
+        // 5. Putar Audio
+        pidsAudioElement.play().then(() => {
+            pushLogKonsol("[A] Announcer Diputarkan (Mode Ducking Active)");
+        }).catch(err => {
+            pushLogKonsol(`[A] Gagal Memutar: ${err.message}`);
+        });
+
+        // 6. Saat Selesai -> Langsung 'none' kan MediaSession agar volume Spotify balik kencang
+        pidsAudioElement.onended = function() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "none";
+            }
+            pushLogKonsol("[A] Announcer Selesai. Volume musik normal kembali.");
+        };
 
     } catch (e) {
-        pushLogKonsol("[A] Announcer Gagal Diputar (Web API Error)");
+        pushLogKonsol(`[A] Announcer Error: ${e.message}`);
     }
 }
 
