@@ -2457,92 +2457,133 @@ if (container) { container.scrollTop = container.scrollHeight; }
     }
 }
 
-        function exportDataKeJsonCombinedAllInOne() {
-            let configPackage = {
-                platNomor: document.getElementById('cfg-plat-no').value.trim().toUpperCase(),
-                overspeedLimit: document.getElementById('cfg-overspeed-limit').value,
-                presetDefaultText: document.getElementById('cfg-preset-default-text').value.trim(),
-                
-                // Tambahkan data announcement custom ke dalam paket JSON
-                announcementCustom: {
-                    welcomeText: configAnnouncementCustom.welcomeText || "",
-                    welcomeAudio: configAnnouncementCustom.welcomeAudio || "",
-                    arrivalText: configAnnouncementCustom.arrivalText || "",
-                    arrivalAudio: configAnnouncementCustom.arrivalAudio || ""
-                },
+        // ==================== STORAGE & PORTABILITY DATA PACKAGING ====================
 
-                lokasiSingles: lokasiSingleList, 
-                audioAssets: audioAssetList,
-                geofenceDatabase: dbLokasi
-            };
+function exportDataKeJsonCombinedAllInOne() {
+    // Pastikan variabel configAnnouncementCustom terbaru diambil dari UI jika tersedia
+    simpanPengaturanAnnouncementKeStorage();
 
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configPackage, null, 2));
-            
-            // Ambil tanggal dan jam saat ini
-            let sekarang = new Date();
-            let tahun = sekarang.getFullYear();
-            let bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
-            let tanggal = String(sekarang.getDate()).padStart(2, '0');
-            let jam = String(sekarang.getHours()).padStart(2, '0');
-            let menit = String(sekarang.getMinutes()).padStart(2, '0');
-            let detik = String(sekarang.getSeconds()).padStart(2, '0');
+    let configPackage = {
+        platNomor: document.getElementById('cfg-plat-no')?.value.trim().toUpperCase() || "",
+        overspeedLimit: document.getElementById('cfg-overspeed-limit')?.value || "50",
+        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v3.4.0",
+        
+        // Paket Data Custom Announcement
+        announcementCustom: {
+            welcomeText: configAnnouncementCustom.welcomeText || "",
+            welcomeAudio: configAnnouncementCustom.welcomeAudio || "",
+            arrivalText: configAnnouncementCustom.arrivalText || "",
+            arrivalAudio: configAnnouncementCustom.arrivalAudio || ""
+        },
 
-            // Susun nama file dinamis
-            let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-            let namaFile = `${formatWaktu}_backup-pids-v3.4.0.json`;
+        // Paket List State Utama
+        lokasiSingles: lokasiSingleList, 
+        audioAssets: audioAssetList,
+        geofenceDatabase: dbLokasi
+    };
 
-            let downloadAnchor = document.createElement('a'); 
-            downloadAnchor.setAttribute("href", dataStr); 
-            downloadAnchor.setAttribute("download", namaFile);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configPackage, null, 2));
+    
+    // Ambil format waktu lokal untuk nama file
+    let sekarang = new Date();
+    let tahun = sekarang.getFullYear();
+    let bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
+    let tanggal = String(sekarang.getDate()).padStart(2, '0');
+    let jam = String(sekarang.getHours()).padStart(2, '0');
+    let menit = String(sekarang.getMinutes()).padStart(2, '0');
+    let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
-        function importDataDariJsonCombinedAllInOne(event) {
-            let file = event.target.files[0]; if (!file) return;
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    let parsedData = JSON.parse(e.target.result);
-                    if (parsedData.geofenceDatabase && parsedData.lokasiSingles) {
-                        document.getElementById('cfg-plat-no').value = parsedData.platNomor || "B 1234 TGC";
-                        document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
-                        document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS SIMULATOR";
-                        
-                        // 1. Restorasi data announcement custom jika tersedia di file JSON
-                        if (parsedData.announcementCustom) {
-                            configAnnouncementCustom = {
-                                welcomeText: parsedData.announcementCustom.welcomeText || "",
-                                welcomeAudio: parsedData.announcementCustom.welcomeAudio || "",
-                                arrivalText: parsedData.announcementCustom.arrivalText || "",
-                                arrivalAudio: parsedData.announcementCustom.arrivalAudio || ""
-                            };
-                        }
+    let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
+    let namaFile = `${formatWaktu}_backup-pids-v3.4.0.json`;
 
-                        lokasiSingleList = parsedData.lokasiSingles; 
-                        audioAssetList = parsedData.audioAssets || []; 
-                        dbLokasi = parsedData.geofenceDatabase;
-                    } else { throw new Error("Format tidak valid!"); }
+    let downloadAnchor = document.createElement('a'); 
+    downloadAnchor.setAttribute("href", dataStr); 
+    downloadAnchor.setAttribute("download", namaFile);
+    downloadAnchor.click();
+    downloadAnchor.remove();
 
-                    // 2. Simpan semua data yang baru di-restore ke LocalStorage
-                    localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
-                    localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
-                    localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
-                    localStorage.setItem('pids_custom_announcement_cfg', JSON.stringify(configAnnouncementCustom));
-                    
-                    simpanPengaturanUmumKeStorage(); 
-                    
-                    // 3. Render ulang UI komponen termasuk dropdown audio announcement
-                    renderSemuaTampilanKomponenUI();
-                    if (typeof renderDropdownAudioDb === 'function') {
-    renderDropdownAudioDb();
+    if (typeof pushLogKonsol === 'function') {
+        pushLogKonsol("[D] Backup database JSON berhasil diunduh: " + namaFile);
+    }
 }
-                    
-                    alert("Restore Database & Announcement Sukses!");
-                } catch (err) { alert("File JSON Rusak atau Format Salah!"); }
-            };
-            reader.readAsText(file);
+
+function importDataDariJsonCombinedAllInOne(event) {
+    let file = event.target.files[0]; 
+    if (!file) return;
+    
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let parsedData = JSON.parse(e.target.result);
+
+            // Validasi struktur utama file JSON
+            if (parsedData.geofenceDatabase && parsedData.lokasiSingles) {
+                
+                // 1. Restore Pengaturan Umum ke Input UI
+                if (document.getElementById('cfg-plat-no')) {
+                    document.getElementById('cfg-plat-no').value = parsedData.platNomor || "B 1234 TGC";
+                    document.getElementById('pids-plat-view').innerText = parsedData.platNomor || "B 1234 TGC";
+                }
+                if (document.getElementById('cfg-overspeed-limit')) {
+                    document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
+                }
+                if (document.getElementById('cfg-preset-default-text')) {
+                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v3.4.0";
+                }
+
+                // 2. Restore Custom Announcement (Teks & Audio)
+                if (parsedData.announcementCustom) {
+                    configAnnouncementCustom = {
+                        welcomeText: parsedData.announcementCustom.welcomeText || "",
+                        welcomeAudio: parsedData.announcementCustom.welcomeAudio || "",
+                        arrivalText: parsedData.announcementCustom.arrivalText || "",
+                        arrivalAudio: parsedData.announcementCustom.arrivalAudio || ""
+                    };
+
+                    if (document.getElementById('cfg-custom-welcome-text')) {
+                        document.getElementById('cfg-custom-welcome-text').value = configAnnouncementCustom.welcomeText;
+                    }
+                    if (document.getElementById('cfg-custom-arrival-text')) {
+                        document.getElementById('cfg-custom-arrival-text').value = configAnnouncementCustom.arrivalText;
+                    }
+                }
+
+                // 3. Restore State Array Utama
+                lokasiSingleList = parsedData.lokasiSingles || []; 
+                audioAssetList = parsedData.audioAssets || []; 
+                dbLokasi = parsedData.geofenceDatabase || [];
+
+                // 4. Sinkronkan dan Simpan Permanen ke LocalStorage
+                localStorage.setItem('pids_plat_nomor', parsedData.platNomor || "");
+                localStorage.setItem('pids_os_limit', parsedData.overspeedLimit || "50");
+                localStorage.setItem('pids_preset_default_text', parsedData.presetDefaultText || "");
+                localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
+                localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
+                localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
+                localStorage.setItem('pids_custom_announcement_cfg', JSON.stringify(configAnnouncementCustom));
+
+                // 5. Re-render Seluruh Komponen UI & Peta
+                renderSemuaTampilanKomponenUI();
+                if (typeof plotSemuaHalteKePeta === 'function') plotSemuaHalteKePeta();
+                if (typeof renderSemuaTitikDatabaseKePeta === 'function') renderSemuaTitikDatabaseKePeta();
+
+                if (typeof pushLogKonsol === 'function') {
+                    pushLogKonsol("[D] Import JSON Sukses. Seluruh database & konfigurasi berhasil dipulihkan.");
+                }
+                alert("Restore Database & Announcement Sukses!");
+            } else { 
+                throw new Error("Struktur data JSON tidak cocok!"); 
+            }
+        } catch (err) { 
+            alert("Gagal Import: File JSON rusak atau format tidak sesuai!"); 
+            console.error("Import Error:", err);
         }
+
+        // Reset nilai input file agar file yang sama bisa di-import ulang jika dibutuhkan
+        event.target.value = "";
+    };
+    reader.readAsText(file);
+}
 
         // ==================== SYSTEM PERIPHERAL SIMULATION ====================
 
