@@ -263,28 +263,13 @@
             color: #aaaaaa;
             background-color: #050505;
             overflow: hidden;
+            border-top: 1px solid #333333;
         }
         
-        .diag-left-log {
-            width: 35%;
-            padding: 6px 8px;
-            overflow-y: auto;
-            display: block;
-            border-right: 1px dashed #333333;
-        }
-        .diag-log-line { 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            margin-bottom: 2px;
-            font-family: monospace !important;
-            font-size: 9px !important;
-            line-height: 1.1 !important;
-        }
-        
+        /* --- GPS SEKARANG DI KIRI FULL (LOG DIHAPUS) --- */
         .diag-right-gps {
-            width: 65%;
-            padding: 2px 0 2px 8px;
+            flex: 1; /* Mengisi seluruh sisa ruang di kiri secara otomatis */
+            padding: 2px 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -308,25 +293,80 @@
             text-overflow: ellipsis;
             width: 100%;
         }
-		
-		/* --- CSS BARU UNTUK SEJAJAR VERTIKAL (GABUNGAN DENGAN KODE LO) --- */
-.gps-item-label {
-    width: 70px;            /* Diperbesar sedikit jadi 105px agar pas menampung "Titik Terdekat:" */
-    display: inline-block;
-    text-align: left;
-    flex-shrink: 0;          /* Kunci mati agar teks kiri tidak gepeng/menyusut */
-}
+        
+        /* --- LABEL SEJAJAR VERTIKAL --- */
+        .gps-item-label {
+            width: 105px; /* Sesuaikan lebar label agar "Titik Terdekat:" tidak terpotong */
+            display: inline-block;
+            text-align: left;
+            flex-shrink: 0;
+        }
 
-/* --- SINKRONISASI UKURAN PAS FULLSCREEN VW --- */
-#pids-monitor-mode:fullscreen .gps-item-label {
-    width: 10.5vw !important; /* Melebar proporsional mengikuti huruf yang membesar di layar lebar */
-}
+        /* --- KELOMPOK TOMBOL CUSTOM BARU (MERGE & STACK) --- */
+        .custom-buttons-group {
+            display: flex;
+            height: 100%;
+            width: 220px; /* Lebar total kelompok tombol custom baru */
+            flex-shrink: 0;
+            border-left: 1px solid #ffffff;
+        }
 
-/* Menjaga gap antar baris info GPS tetap ideal saat fullscreen */
-#pids-monitor-mode:fullscreen .gps-info-lines {
-    gap: 0.3vw !important;
-}
+        /* Tombol Edit Rute (Baris 1 & 2 Merge) */
+        .btn-custom-main {
+            width: 50%;
+            height: 100%;
+            background-color: #0066cc;
+            color: #ffffff;
+            border: none;
+            border-right: 1px solid #ffffff;
+            font-weight: bold;
+            font-size: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2px;
+        }
+        .btn-custom-main:active { background-color: #004488; }
 
+        /* Sub-Stack Kanan (Selamat Datang & Tiba di Tujuan) */
+        .custom-sub-stack {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+            height: 100%;
+        }
+
+        .btn-custom-sub {
+            flex: 1;
+            border: none;
+            font-weight: bold;
+            font-size: 8.5px;
+            cursor: pointer;
+            text-align: center;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+        }
+
+        .btn-welcome {
+            background-color: #107c41; /* Hijau */
+            color: #ffffff;
+            border-bottom: 1px solid #ffffff;
+        }
+        .btn-welcome:active { background-color: #0b592e; }
+
+        .btn-arrival {
+            background-color: #ff7b00; /* Oranye/Merah */
+            color: #ffffff;
+        }
+        .btn-arrival:active { background-color: #cc6200; }
+
+        /* --- KELOMPOK TOMBOL KANAN UTAMA --- */
         .controls-right-group {
             display: flex;
             height: 100%;
@@ -388,7 +428,7 @@
             text-align: center;
         }
 
-        /* --- MODE FULLSCREEN RESPONSIVE --- */
+        /* --- MODE FULLSCREEN RESPONSIVE (DENGAN KALIBRASI VW) --- */
         #pids-monitor-mode:fullscreen {
             width: 100vw !important;
             height: 100vh !important;
@@ -400,17 +440,26 @@
         #pids-monitor-mode:fullscreen .right-header-group { width: 70%; }
         #pids-monitor-mode:fullscreen .weather-v2 { font-size: 4vw; }
         #pids-monitor-mode:fullscreen .clock-v2 { font-size: 5vw; }
-		#pids-monitor-mode:fullscreen .date-v2 { font-size: 5vw; }
+        #pids-monitor-mode:fullscreen .date-v2 { font-size: 5vw; }
         #pids-monitor-mode:fullscreen .speedo-value-v2 { font-size: 14vw; }
         #pids-monitor-mode:fullscreen .speedo-unit-v2 { font-size: 2vw; }
         #pids-monitor-mode:fullscreen .pids-row-3 { height: 25%; }
         #pids-monitor-mode:fullscreen .marquee-text { font-size: 8.5vw; }
         #pids-monitor-mode:fullscreen .pids-row-4 { height: 15%; font-size: 1.6vw; }
-        #pids-monitor-mode:fullscreen .diag-log-line { margin-bottom: 2px; line-height: 1.1; font-size: max(9px, 1vw) !important; }
-        #pids-monitor-mode:fullscreen .controls-right-group { width: 25vw; min-width: 25vw; }
-        #pids-monitor-mode:fullscreen .vertical-button-stack { width: 14vw; }
-        #pids-monitor-mode:fullscreen .btn-dash-sub { font-size: 1.2vw; }
-        #pids-monitor-mode:fullscreen .fs-toggle-btn { font-size: 2.5vw; width: 11vw; }
+        
+        /* Proporsi Responsif Tombol & GPS Baru saat Fullscreen */
+        #pids-monitor-mode:fullscreen .gps-item-label { width: 10.5vw !important; }
+        #pids-monitor-mode:fullscreen .gps-info-lines { gap: 0.3vw !important; }
+        
+        #pids-monitor-mode:fullscreen .custom-buttons-group { width: 26vw !important; }
+        #pids-monitor-mode:fullscreen .btn-custom-main { font-size: 1.2vw !important; }
+        #pids-monitor-mode:fullscreen .btn-custom-sub { font-size: 1.0vw !important; }
+
+        #pids-monitor-mode:fullscreen .controls-right-group { width: 22vw; min-width: 22vw; }
+        #pids-monitor-mode:fullscreen .vertical-button-stack { width: 13vw; }
+        #pids-monitor-mode:fullscreen .btn-dash-sub { font-size: 1.1vw; }
+        #pids-monitor-mode:fullscreen .fs-toggle-btn { font-size: 2.5vw; width: 9vw; }
+        #pids-monitor-mode:fullscreen .fs-toggle-btn { font-size: 2.5vw; width: 9vw; }
 
         /* --- CONFIG SETTING CARD --- */
         .config-card {
@@ -431,15 +480,17 @@
 
         /* --- MODAL INPUT RUTE --- */
         .rute-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 10000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+    display: none; /* Default tersembunyi */
+    position: absolute; /* atau fixed */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Latar belakang agak gelap/transparan */
+    z-index: 99999 !important; /* Dipaksa tampil paling atas */
+    justify-content: center;
+    align-items: center;
+}
         /* Ubah warna border box modal rute */
         .rute-modal-box {
             background-color: #111111;
@@ -929,27 +980,25 @@
     </div>
 
     <div id="modal-rute-prompt" class="rute-modal" onkeydown="handleModalKeyDown(event)">
-        <div class="rute-modal-box">
-            <button class="modal-close-btn" onclick="tutupModalRute()">X</button>
-            <h3 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; text-transform: uppercase;">Pilih Rute Perjalanan</h3>
-            
-            <div class="form-group">
-                <label>Titik Asal:</label>
-                <select id="modal-select-asal" class="form-control" onchange="handleDropdownAsalManualCheck(this.value)">
-                </select>
-                <input type="text" id="modal-input-asal-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik lokasi asal baru (wajib diisi)">
-            </div>
+            <div class="rute-modal-box">
+                <button class="modal-close-btn" onclick="tutupModalRute()">X</button>
+                <h3 style="color:#ffffff; font-size: 14px; margin-bottom: 15px; text-align: center; text-transform: uppercase;">Pilih Rute Perjalanan</h3>
+                
+                <div class="form-group">
+                    <label>Titik Asal:</label>
+                    <select id="modal-select-asal" class="form-control" onchange="handleDropdownAsalManualCheck(this.value)"></select>
+                    <input type="text" id="modal-input-asal-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik lokasi asal baru (wajib diisi)">
+                </div>
 
-            <div class="form-group">
-                <label>Titik Tujuan:</label>
-                <select id="modal-select-tujuan" class="form-control" onchange="handleDropdownTujuanManualCheck(this.value)">
-                </select>
-                <input type="text" id="modal-input-tujuan-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik lokasi tujuan baru">
-            </div>
+                <div class="form-group">
+                    <label>Titik Tujuan:</label>
+                    <select id="modal-select-tujuan" class="form-control" onchange="handleDropdownTujuanManualCheck(this.value)"></select>
+                    <input type="text" id="modal-input-tujuan-manual" class="form-control" style="display:none; margin-top:5px;" placeholder="Ketik lokasi tujuan baru">
+                </div>
 
-            <button class="btn btn-tracker-start" style="margin-bottom: 0; margin-top: 15px;" onclick="konfirmasiMulaiTrackingRute()">Konfirmasi dan Mulai Perjalanan</button>
+                <button class="btn btn-tracker-start" style="margin-bottom: 0; margin-top: 15px;" onclick="konfirmasiMulaiTrackingRute()">Konfirmasi dan Mulai Perjalanan</button>
+            </div>
         </div>
-    </div>
 
     <header>
         <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.3.4</h1>
@@ -965,109 +1014,114 @@
         
         <div id="tab-tracker" class="tab-content active">
             <div id="pids-monitor-mode">
+                
                 <div class="pids-row-1">
                     <div class="plat-box" id="pids-plat-view">Nomor Plat</div>
                     <div class="right-header-group">
                         <div class="weather-v2" id="pids-weather">--°C ☁️</div>
-						<div class="date-v2" id="pids-date">00/00/0000</div>
+                        <div class="date-v2" id="pids-date">00/00/0000</div>
                         <div class="clock-v2" id="pids-clock">00:00:00</div>
                     </div>
                 </div>
 
                 <div class="pids-row-2">
-    
-    <div class="kompas-wrap" style="display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; padding: 5px 0;">
-        
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; box-sizing: border-box;">
-        <span class="kompas-label" style="margin-bottom: 8px; display: block; width: 100%;">Arah Mata Angin</span>
-        <span class="kompas-value" id="pids-compass">-</span>
-    </div>
-    
-    <div style="flex: 1.55; display: flex; flex-direction: column; justify-content: center; align-items: center; border-left: 2px solid rgba(255,255,255,0.15); height: 90%; box-sizing: border-box;">
-        
-        <span class="stats-label" style="margin-bottom: 8px; display: block; width: 100%;">Statistika Perjalanan</span>
-        
-        <div class="stats-box" id="pids-trip-stats-box">
-            <div style="display: flex; align-items: center; width: 100%;">
-                <span class="stats-item-label">Waktu Perjalanan:</span>
-                <span></span>
-                <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
-                    <span id="pids-trip-duration" class="stats-value">00.00.00</span>
-                </div>
-            </div>
-            
-            <div style="display: flex; align-items: center; width: 100%;">
-                <span class="stats-item-label">Jarak Perjalanan:</span>
-                <span></span>
-                <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
-                    <span id="pids-trip-distance" class="stats-value">0.00 km</span>
-                </div>
-            </div>
-            
-            <div style="display: flex; align-items: center; width: 100%;">
-                <span class="stats-item-label">Rata-Rata Kecepatan:</span>
-                <span></span>
-                <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
-                    <span id="pids-trip-avg-speed" class="stats-value">0.0 km/j</span>
-                </div>
-            </div>
-        </div>
-        
-    </div>
-    
-</div>
+                    <div class="kompas-wrap" style="display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; padding: 5px 0;">
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; box-sizing: border-box;">
+                            <span class="kompas-label" style="margin-bottom: 8px; display: block; width: 100%;">Arah Mata Angin</span>
+                            <span class="kompas-value" id="pids-compass">-</span>
+                        </div>
+                        
+                        <div style="flex: 1.55; display: flex; flex-direction: column; justify-content: center; align-items: center; border-left: 2px solid rgba(255,255,255,0.15); height: 90%; box-sizing: border-box;">
+                            <span class="stats-label" style="margin-bottom: 8px; display: block; width: 100%;">Statistika Perjalanan</span>
+                            <div class="stats-box" id="pids-trip-stats-box">
+                                <div style="display: flex; align-items: center; width: 100%;">
+                                    <span class="stats-item-label">Waktu Perjalanan:</span>
+                                    <span></span>
+                                    <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
+                                        <span id="pids-trip-duration" class="stats-value">00.00.00</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; width: 100%;">
+                                    <span class="stats-item-label">Jarak Perjalanan:</span>
+                                    <span></span>
+                                    <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
+                                        <span id="pids-trip-distance" class="stats-value">0.00 km</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; width: 100%;">
+                                    <span class="stats-item-label">Rata-Rata Kecepatan:</span>
+                                    <span></span>
+                                    <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
+                                        <span id="pids-trip-avg-speed" class="stats-value">0.0 km/j</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-    <div class="speedo-wrap-v2">
-        <span class="speedo-value-v2" id="pids-speed">0.0</span>
-        <span class="speedo-unit-v2">km/j</span>
-    </div>
-
-</div>
+                    <div class="speedo-wrap-v2">
+                        <span class="speedo-value-v2" id="pids-speed">0.0</span>
+                        <span class="speedo-unit-v2">km/j</span>
+                    </div>
+                </div>
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">Selamat Datang di PIDS v3.3.4 - Dibuat oleh Gemini dengan ide oleh Rainer BK - Tekan MULAI PERJALANAN untuk mengaktifkan PIDS</div>
+                        <div class="marquee-text" id="pids-display"></div>
                     </div>
                 </div>
 
                 <div class="pids-row-4">
-                    <div class="diag-left-log" id="log-console"></div>
-                    
+                    <!-- ELEMEN 1: GPS DETAIL -->
                     <div class="diag-right-gps">
-    <div class="gps-info-lines">
-        
-        <div style="display: flex; align-items: center;">
-            <span class="gps-item-label">Status GPS:</span>
-            <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> 
-            <span style="margin-left: 4px;">(<span id="gps-accuracy">-</span>)</span>
-        </div>
-        
-        <div style="display: flex; align-items: center;">
-            <span class="gps-item-label">Posisi Anda:</span>
-            <span id="gps-current-coord" style="color:#aaa;">Data Tidak Tersedia</span>
-        </div>
-        
-        <div style="display: flex; align-items: center;">
-            <span class="gps-item-label">Titik Terdekat:</span>
-            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                <span id="pids-distance">-</span> 
-                <span id="pids-nearest-object" style="color:#ffff00; margin-left: 4px;">Rute Tidak Tersedia</span>
-            </span>
-        </div>
-    </div>
-                        
-                        <div class="controls-right-group">
-                            <div class="vertical-button-stack">
-                                <button id="btn-overspeed-dashboard-switch" class="btn-dash-sub" onclick="toggleOverspeedAlarmButton()">ALARM: ON</button>
-                                <button id="btn-audio-dashboard-switch" class="btn-dash-sub audio-off" onclick="toggleAudioAnnouncerButton()">ANNOUNCER: OFF</button>
+                        <div class="gps-info-lines">
+                            <div style="display: flex; align-items: center;">
+                                <span class="gps-item-label">Status GPS:</span>
+                                <span id="gps-status" style="color:#cc0000; font-weight:bold;">OFF</span> 
+                                <span style="margin-left: 4px;">(<span id="gps-accuracy">-</span>)</span>
                             </div>
-                            <button class="fs-toggle-btn" id="btn-fs-floating" onclick="toggleLayarPenuhAPI()">⛶</button>
+                            <div style="display: flex; align-items: center;">
+                                <span class="gps-item-label">Posisi Anda:</span>
+                                <span id="gps-current-coord" style="color:#aaa;">Data Tidak Tersedia</span>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <span class="gps-item-label">Titik Terdekat:</span>
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <span id="pids-distance">-</span> 
+                                    <span id="pids-nearest-object" style="color:#ffff00; margin-left: 4px;">Rute Tidak Tersedia</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <button id="btn-toggle-gps" class="btn btn-tracker-start" onclick="klikTombolPemicuGpsUtama()">Mulai Perjalanan</button>
+                    <!-- ELEMEN 2: KELOMPOK TOMBOL CUSTOM -->
+                    <div class="custom-buttons-group">
+                        <button type="button" class="btn-custom-main btn-edit-rute" onclick="bukaModalPilihRute()">
+                            EDIT RUTE
+                        </button>
+                        <div class="custom-sub-stack">
+                            <button type="button" class="btn-custom-sub btn-welcome" onclick="picuAudioCustom('welcome')">Awal Perjalanan</button>
+                            <button type="button" class="btn-custom-sub btn-arrival" onclick="picuAudioCustom('arrival')">TIBA DI TUJUAN
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ELEMEN 3: KELOMPOK TOMBOL KANAN -->
+                    <div class="controls-right-group">
+                        <div class="vertical-button-stack">
+                            <button id="btn-overspeed-dashboard-switch" class="btn-dash-sub" onclick="toggleOverspeedAlarmButton()">ALARM: ON</button>
+                            <button id="btn-audio-dashboard-switch" class="btn-dash-sub audio-off" onclick="toggleAudioAnnouncerButton()">ANNOUNCER: OFF</button>
+                        </div>
+                        <button class="fs-toggle-btn" id="btn-fs-floating" onclick="toggleLayarPenuhAPI()">⛶</button>
+                    </div>
+                </div>
+
+            </div> 
+            <!-- ─── AKHIR WRAPPER MONITOR PIDS (#pids-monitor-mode TERTUTUP DI SINI!) ─── -->
+
+
+            <!-- ─── KONTROL LUAR (TIDAK AKAN IKUT FULLSCREEN) ─── -->
+            <button id="btn-toggle-gps" class="btn btn-tracker-start" style="margin-top: 15px;" onclick="klikTombolPemicuGpsUtama()">Mulai Perjalanan</button>
 
             <div class="manual-test-container">
                 <div class="collapse-trigger-btn" onclick="togglePanelSimulasiField()">Uji Coba Titik</div>
@@ -1080,6 +1134,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
         <div id="tab-admin" class="tab-content">
@@ -1199,6 +1254,35 @@
                 <div class="form-group">
                     <label>Batas Kecepatan Maksimal (km/j):</label>
                     <input type="number" id="cfg-overspeed-limit" class="form-control" value="60" oninput="simpanPengaturanUmumKeStorage()">
+                </div>
+            </div>
+			
+			<!-- KARTU PENGATURAN CUSTOM ANNOUNCEMENT (DROPDOWN AUDIO) -->
+            <div class="config-card">
+                <h3>Pengaturan Announcement Tombol Cepat</h3>
+                
+                <!-- BAGIAN 1: SELAMAT DATANG -->
+                <div style="margin-bottom: 12px; border-bottom: 1px dashed #333; padding-bottom: 10px;">
+                    <label style="font-weight: bold; color: #107c41; margin-bottom: 4px; display: block;">1. Pesan Selamat Datang</label>
+                    <div class="form-group" style="margin-bottom: 6px;">
+                        <input type="text" id="cfg-custom-welcome-text" class="form-control" placeholder="Teks Running Text Selamat Datang" oninput="simpanPengaturanAnnouncementKeStorage()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 11px; color: #aaa;">Pilih Audio Selamat Datang:</label>
+                        <select id="cfg-custom-welcome-audio-select" class="form-control" onchange="simpanPengaturanAnnouncementKeStorage()"></select>
+                    </div>
+                </div>
+
+                <!-- BAGIAN 2: TIBA DI TUJUAN -->
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: bold; color: #ff7b00; margin-bottom: 4px; display: block;">2. Pesan Tiba di Tujuan</label>
+                    <div class="form-group" style="margin-bottom: 6px;">
+                        <input type="text" id="cfg-custom-arrival-text" class="form-control" placeholder="Teks Running Text Tiba di Tujuan" oninput="simpanPengaturanAnnouncementKeStorage()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 11px; color: #aaa;">Pilih Audio Tiba di Tujuan:</label>
+                        <select id="cfg-custom-arrival-select" class="form-control" onchange="simpanPengaturanAnnouncementKeStorage()"></select>
+                    </div>
                 </div>
             </div>
 
@@ -1527,27 +1611,61 @@ let lastSavedLngForDistance = null;
         }
 
         function bukaModalPilihRute() {
-            let selectAsal = document.getElementById('modal-select-asal');
-            let selectTujuan = document.getElementById('modal-select-tujuan');
-            
-            // Render urutan dropdown rute mengikuti sortir aktif Lokasi Tunggal
-            let listProses = dapatkanArrayTerfilterDanTersortir('lokasi', sortModeLokasi);
-            
-            let optionsHtml = `<option value="" selected>-- Pilih Lokasi --</option>`;
-            listProses.forEach(item => { optionsHtml += `<option value="${item.nama}">${item.nama}</option>`; });
-            optionsHtml += `<option value="custom">Ketik Lokasi Baru...</option>`;
-            
-            selectAsal.innerHTML = optionsHtml; selectTujuan.innerHTML = optionsHtml;
-            document.getElementById('modal-input-asal-manual').style.display = 'none';
-            document.getElementById('modal-input-tujuan-manual').style.display = 'none';
-            document.getElementById('modal-rute-prompt').style.display = 'flex';
-            selectAsal.focus();
-        }
+    let modal = document.getElementById('modal-rute-prompt');
+    let monitorMode = document.getElementById('pids-monitor-mode');
+    
+    // TRIK PINTAR POSISI MODAL:
+    if (document.fullscreenElement) {
+        // Jika Fullscreen: Pindahkan modal ke dalam area PIDS biar keliatan
+        if (modal && monitorMode) monitorMode.appendChild(modal);
+    } else {
+        // Jika Mode Biasa: Pindahkan modal ke <body> paling luar biar overlay-nya nutupin 1 layar penuh
+        if (modal) document.body.appendChild(modal);
+    }
 
-        function tutupModalRute() { document.getElementById('modal-rute-prompt').style.display = 'none'; }
+    let selectAsal = document.getElementById('modal-select-asal');
+    let selectTujuan = document.getElementById('modal-select-tujuan');
+    
+    // Render urutan dropdown rute
+    let listProses = dapatkanArrayTerfilterDanTersortir('lokasi', sortModeLokasi);
+    
+    let optionsHtml = `<option value="" selected>-- Pilih Lokasi --</option>`;
+    listProses.forEach(item => { optionsHtml += `<option value="${item.nama}">${item.nama}</option>`; });
+    optionsHtml += `<option value="custom">Ketik Lokasi Baru...</option>`;
+    
+    selectAsal.innerHTML = optionsHtml; 
+    selectTujuan.innerHTML = optionsHtml;
+    document.getElementById('modal-input-asal-manual').style.display = 'none';
+    document.getElementById('modal-input-tujuan-manual').style.display = 'none';
+    
+    // Tampilkan modal
+    modal.style.display = 'flex';
+    selectAsal.focus();
+}
+
+        function tutupModalRute() {
+    const modal = document.getElementById('modal-rute-prompt');
+    if (modal) {
+        modal.style.display = 'none';
+        
+        // Sembunyikan input manual jika sebelumnya sempat terbuka
+        const inputAsalManual = document.getElementById('modal-input-asal-manual');
+        const inputTujuanManual = document.getElementById('modal-input-tujuan-manual');
+        if (inputAsalManual) inputAsalManual.style.display = 'none';
+        if (inputTujuanManual) inputTujuanManual.style.display = 'none';
+    }
+}
         function handleDropdownAsalManualCheck(val) { document.getElementById('modal-input-asal-manual').style.display = (val === 'custom') ? 'block' : 'none'; }
         function handleDropdownTujuanManualCheck(val) { document.getElementById('modal-input-tujuan-manual').style.display = (val === 'custom') ? 'block' : 'none'; }
-        function handleModalKeyDown(event) { if (event.key === 'Enter') { event.preventDefault(); konfirmasiMulaiTrackingRute(); } }
+        function handleModalKeyDown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        konfirmasiMulaiTrackingRute();
+    } else if (event.key === 'Escape' || event.key === 'Esc') {
+        event.preventDefault();
+        tutupModalRute();
+    }
+}
 
         function konfirmasiMulaiTrackingRute() {
     let selAsal = document.getElementById('modal-select-asal').value;
@@ -2255,13 +2373,21 @@ if (container) { container.scrollTop = container.scrollHeight; }
             renderListAudioAssetsUI(); renderDropdownAudioDb();
         }
 
-        // ==================== STORAGE & PORTABILITY DATA PACKAGING ====================
+// ==================== STORAGE & PORTABILITY DATA PACKAGING ====================
 
         function muatSemuaDataDariStorage() {
             let dm = localStorage.getItem('pids_lokasi_data'); if (dm) { try { dbLokasi = JSON.parse(dm); } catch(e){} }
             let lStorage = localStorage.getItem('pids_lokasi_singles'); if (lStorage) { try { lokasiSingleList = JSON.parse(lStorage); } catch(e){} }
             let aStorage = localStorage.getItem('pids_audio_assets_list'); if (aStorage) { try { audioAssetList = JSON.parse(aStorage); } catch(e){} }
             
+            // 1. Load data announcement custom dari LocalStorage
+            let customAnnStorage = localStorage.getItem('pids_custom_announcement_cfg');
+            if (customAnnStorage) {
+                try {
+                    configAnnouncementCustom = JSON.parse(customAnnStorage);
+                } catch(e){}
+            }
+
             // Konversi struktur lama v3.6 seandainya ada data legacy string
             if(lokasiSingleList.length > 0 && typeof lokasiSingleList[0] === 'string') {
                 lokasiSingleList = lokasiSingleList.map((str, idx) => ({ id: 'loc_' + idx + '_' + Date.now(), nama: str, orderIndex: idx }));
@@ -2273,6 +2399,9 @@ if (container) { container.scrollTop = container.scrollHeight; }
             if (localStorage.getItem('pids_plat_nomor')) document.getElementById('cfg-plat-no').value = localStorage.getItem('pids_plat_nomor');
             if (localStorage.getItem('pids_preset_default_text')) document.getElementById('cfg-preset-default-text').value = localStorage.getItem('pids_preset_default_text');
             if (localStorage.getItem('pids_os_limit')) document.getElementById('cfg-overspeed-limit').value = localStorage.getItem('pids_os_limit');
+            
+            // 2. Tampilkan data announcement custom yang di-load ke Input & Dropdown UI
+            muatPengaturanAnnouncementFromStorage();
         }
 
         function exportDataKeJsonCombinedAllInOne() {
@@ -2280,30 +2409,40 @@ if (container) { container.scrollTop = container.scrollHeight; }
                 platNomor: document.getElementById('cfg-plat-no').value.trim().toUpperCase(),
                 overspeedLimit: document.getElementById('cfg-overspeed-limit').value,
                 presetDefaultText: document.getElementById('cfg-preset-default-text').value.trim(),
+                
+                // Tambahkan data announcement custom ke dalam paket JSON
+                announcementCustom: {
+                    welcomeText: configAnnouncementCustom.welcomeText || "",
+                    welcomeAudio: configAnnouncementCustom.welcomeAudio || "",
+                    arrivalText: configAnnouncementCustom.arrivalText || "",
+                    arrivalAudio: configAnnouncementCustom.arrivalAudio || ""
+                },
+
                 lokasiSingles: lokasiSingleList, 
                 audioAssets: audioAssetList,
                 geofenceDatabase: dbLokasi
             };
+
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configPackage, null, 2));
-			// Ambil tanggal dan jam saat ini
-let sekarang = new Date();
-let tahun = sekarang.getFullYear();
-let bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
-let tanggal = String(sekarang.getDate()).padStart(2, '0');
-let jam = String(sekarang.getHours()).padStart(2, '0');
-let menit = String(sekarang.getMinutes()).padStart(2, '0');
-let detik = String(sekarang.getSeconds()).padStart(2, '0');
+            
+            // Ambil tanggal dan jam saat ini
+            let sekarang = new Date();
+            let tahun = sekarang.getFullYear();
+            let bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
+            let tanggal = String(sekarang.getDate()).padStart(2, '0');
+            let jam = String(sekarang.getHours()).padStart(2, '0');
+            let menit = String(sekarang.getMinutes()).padStart(2, '0');
+            let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
-// Susun nama file dinamis (Hasilnya: backup_pids_v3.0.8_20260522_213530.json)
-let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-let namaFile = `${formatWaktu}_backup-pids-v3.3.4.json`;
+            // Susun nama file dinamis
+            let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
+            let namaFile = `${formatWaktu}_backup-pids-v3.3.4.json`;
 
-// KODE BAWAAN LO YANG SUDAH MODIFIKASI:
-let downloadAnchor = document.createElement('a'); 
-downloadAnchor.setAttribute("href", dataStr); 
-downloadAnchor.setAttribute("download", namaFile); // <-- Di sini diganti pake variabel namaFile
-downloadAnchor.click();
-        
+            let downloadAnchor = document.createElement('a'); 
+            downloadAnchor.setAttribute("href", dataStr); 
+            downloadAnchor.setAttribute("download", namaFile);
+            downloadAnchor.click();
+            downloadAnchor.remove();
         }
 
         function importDataDariJsonCombinedAllInOne(event) {
@@ -2316,17 +2455,35 @@ downloadAnchor.click();
                         document.getElementById('cfg-plat-no').value = parsedData.platNomor || "B 1234 TGC";
                         document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                         document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS SIMULATOR";
+                        
+                        // 1. Restorasi data announcement custom jika tersedia di file JSON
+                        if (parsedData.announcementCustom) {
+                            configAnnouncementCustom = {
+                                welcomeText: parsedData.announcementCustom.welcomeText || "",
+                                welcomeAudio: parsedData.announcementCustom.welcomeAudio || "",
+                                arrivalText: parsedData.announcementCustom.arrivalText || "",
+                                arrivalAudio: parsedData.announcementCustom.arrivalAudio || ""
+                            };
+                        }
+
                         lokasiSingleList = parsedData.lokasiSingles; 
                         audioAssetList = parsedData.audioAssets || []; 
                         dbLokasi = parsedData.geofenceDatabase;
                     } else { throw new Error("Format tidak valid!"); }
 
+                    // 2. Simpan semua data yang baru di-restore ke LocalStorage
                     localStorage.setItem('pids_lokasi_data', JSON.stringify(dbLokasi));
                     localStorage.setItem('pids_lokasi_singles', JSON.stringify(lokasiSingleList));
                     localStorage.setItem('pids_audio_assets_list', JSON.stringify(audioAssetList));
+                    localStorage.setItem('pids_custom_announcement_cfg', JSON.stringify(configAnnouncementCustom));
                     
-                    simpanPengaturanUmumKeStorage(); renderSemuaTampilanKomponenUI();
-                    alert("Restore Database Sukses!");
+                    simpanPengaturanUmumKeStorage(); 
+                    
+                    // 3. Render ulang UI komponen termasuk dropdown audio announcement
+                    renderSemuaTampilanKomponenUI();
+                    renderDropdownAudioAnnouncement();
+                    
+                    alert("Restore Database & Announcement Sukses!");
                 } catch (err) { alert("File JSON Rusak atau Format Salah!"); }
             };
             reader.readAsText(file);
@@ -2828,6 +2985,171 @@ function hitungJarakAntarKoordinatHaversine(lat1, lon1, lat2, lon2) {
     let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c; // Hasil dalam kilometer
 }
+
+// =========================================================================
+// SCRIPT LENGKAP PENGELOLAAN & PEMICU ANNOUNCEMENT CUSTOM (SELAMAT DATANG & TIBA)
+// =========================================================================
+
+// 1. Variable simpanan data default
+let configAnnouncementCustom = {
+    welcomeText: "SELAMAT DATANG DI ARMADA KAMI. SELAMAT MENIKMATI PERJALANAN ANDA.",
+    welcomeAudio: "",
+    arrivalText: "KITA TELAH TIBA DI LOKASI TUJUAN AKHIR. TERIMA KASIH TELAH BEPERGIAN BERSAMA KAMI.",
+    arrivalAudio: ""
+};
+
+let instanceAudioAnnouncement = null;
+
+// 2. Fungsi untuk mengisi dropdown audio dari database audio yang terdaftar
+function renderDropdownAudioAnnouncement() {
+    const selectWelcome = document.getElementById('cfg-custom-welcome-audio-select');
+    const selectArrival = document.getElementById('cfg-custom-arrival-select');
+
+    if (!selectWelcome || !selectArrival) return;
+
+    // Mengambil daftar audio tersortir dari fungsi/variable bawaan Abang
+    let listAudio = [];
+    if (typeof dapatkanArrayTerfilterDanTersortir === 'function') {
+        listAudio = dapatkanArrayTerfilterDanTersortir('audio', typeof sortModeAudio !== 'undefined' ? sortModeAudio : 'manual');
+    } else if (window.daftarAudioBuiltIn) {
+        listAudio = window.daftarAudioBuiltIn;
+    }
+
+    let optionsHtml = `<option value="">-- Tanpa Audio (Hanya Teks) --</option>`;
+    
+    listAudio.forEach(item => {
+        const path = typeof item === 'object' ? item.path : item;
+        const namaDisplay = typeof item === 'object' ? (item.nama || item.path) : item;
+        optionsHtml += `<option value="${path}">${namaDisplay}</option>`;
+    });
+
+    selectWelcome.innerHTML = optionsHtml;
+    selectArrival.innerHTML = optionsHtml;
+
+    // Set nilai yang tersimpan sebelumnya ke dropdown
+    selectWelcome.value = configAnnouncementCustom.welcomeAudio || "";
+    selectArrival.value = configAnnouncementCustom.arrivalAudio || "";
+}
+
+// 3. Fungsi simpan otomatis ke LocalStorage saat user mengetik/memilih dropdown
+function simpanPengaturanAnnouncementKeStorage() {
+    const elWelcomeText = document.getElementById('cfg-custom-welcome-text');
+    const elWelcomeAudio = document.getElementById('cfg-custom-welcome-audio-select');
+    const elArrivalText = document.getElementById('cfg-custom-arrival-text');
+    const elArrivalAudio = document.getElementById('cfg-custom-arrival-select');
+
+    if (elWelcomeText) configAnnouncementCustom.welcomeText = elWelcomeText.value;
+    if (elWelcomeAudio) configAnnouncementCustom.welcomeAudio = elWelcomeAudio.value;
+    if (elArrivalText) configAnnouncementCustom.arrivalText = elArrivalText.value;
+    if (elArrivalAudio) configAnnouncementCustom.arrivalAudio = elArrivalAudio.value;
+
+    localStorage.setItem('pids_custom_announcement_cfg', JSON.stringify(configAnnouncementCustom));
+}
+
+// 4. Fungsi memuat pengaturan tersimpan saat web pertama kali di-load
+function muatPengaturanAnnouncementFromStorage() {
+    const dataTersimpan = localStorage.getItem('pids_custom_announcement_cfg');
+    if (dataTersimpan) {
+        try {
+            configAnnouncementCustom = JSON.parse(dataTersimpan);
+        } catch (e) {
+            console.error("Gagal membaca config announcement dari localStorage", e);
+        }
+    }
+
+    const inputWelcomeText = document.getElementById('cfg-custom-welcome-text');
+    const inputArrivalText = document.getElementById('cfg-custom-arrival-text');
+
+    if (inputWelcomeText) inputWelcomeText.value = configAnnouncementCustom.welcomeText || "";
+    if (inputArrivalText) inputArrivalText.value = configAnnouncementCustom.arrivalText || "";
+
+    // Render pilihan audio di dropdown
+    renderDropdownAudioAnnouncement();
+}
+
+// 5. FUNGSI PEMICU UTAMA (Dipanggil saat tombol Selamat Datang / Tiba di Tujuan diklik)
+function picuAudioCustom(jenis) {
+    // A. Cek status saklar Announcer (Hanya jalan jika saklar ANNOUNCER ON)
+    if (typeof isAudioAnnouncerActive !== 'undefined' && !isAudioAnnouncerActive) {
+        console.warn("Audio Announcer sedang OFF. Aktifkan saklar ANNOUNCER terlebih dahulu.");
+        return;
+    }
+
+    let teksTampil = "";
+    let pathAudio = "";
+
+    // B. Ambil data teks & audio dari settingan yang tersimpan
+    if (jenis === 'welcome') {
+        teksTampil = configAnnouncementCustom.welcomeText;
+        pathAudio = configAnnouncementCustom.welcomeAudio;
+    } else if (jenis === 'arrival') {
+        teksTampil = configAnnouncementCustom.arrivalText;
+        pathAudio = configAnnouncementCustom.arrivalAudio;
+    }
+
+    // C. Tampilkan Teks di Monitor PIDS & Kunci data-text-mentah (Biar sinkron dengan geofence)
+    const displayNode = document.getElementById('pids-display');
+    if (displayNode && teksTampil) {
+        displayNode.setAttribute('data-text-mentah', teksTampil);
+        
+        if (typeof updateTeksMonitorUtamaPIDS === 'function') {
+            updateTeksMonitorUtamaPIDS(teksTampil);
+        } else {
+            displayNode.innerText = teksTampil;
+        }
+    }
+
+    // D. Memutar Audio Announcement
+    if (pathAudio) {
+        if (typeof putarAnnouncer === 'function') {
+            putarAnnouncer(pathAudio);
+        } else {
+            if (instanceAudioAnnouncement) {
+                instanceAudioAnnouncement.pause();
+                instanceAudioAnnouncement.currentTime = 0;
+            }
+            instanceAudioAnnouncement = new Audio(pathAudio);
+            instanceAudioAnnouncement.play().catch(err => console.log("Audio error/terblokir:", err));
+        }
+    }
+
+    // E. PASANG TIMER 30 DETIK: Kembalikan teks ke Rute Utama secara otomatis!
+    if (typeof fallbackTimerId !== 'undefined' && fallbackTimerId) {
+        clearTimeout(fallbackTimerId); // Reset timer lama jika tombol dipencet berulang
+    }
+
+    fallbackTimerId = setTimeout(() => {
+        if (displayNode && typeof ruteAktifTeks !== 'undefined') {
+            displayNode.setAttribute('data-text-mentah', ruteAktifTeks);
+            if (typeof updateTeksMonitorUtamaPIDS === 'function') {
+                updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+            } else {
+                displayNode.innerText = ruteAktifTeks;
+            }
+            if (typeof pushLogKonsol === 'function') {
+                pushLogKonsol("[System] Teks kembali ke rute utama setelah 30 detik.");
+            }
+        }
+    }, 30000); // 30.000 ms = 30 detik
+
+    if (typeof pushLogKonsol === 'function') {
+        pushLogKonsol(`[Custom] Pemicu Manual: ${jenis === 'welcome' ? 'Selamat Datang' : 'Tiba di Tujuan'} (Auto-reset 30s)`);
+    }
+}
+
+// 6. Integrasikan dengan penambahan file audio baru
+// (Membantu memperbarui isi dropdown secara otomatis jika Abang menambah file audio baru di Settings)
+const _tambahAudioLokalAsli = window.tambahAudioAssetLokal;
+if (typeof _tambahAudioLokalAsli === 'function') {
+    window.tambahAudioAssetLokal = function() {
+        _tambahAudioLokalAsli();
+        renderDropdownAudioAnnouncement();
+    };
+}
+
+// Inisialisasi awal saat halaman selesai dimuat
+document.addEventListener('DOMContentLoaded', muatPengaturanAnnouncementFromStorage);
+
     </script>
 </body>
 </html>
