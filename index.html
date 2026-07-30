@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.3.4</title>
+    <title>PIDS Simulator v3.4.0</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -306,28 +306,27 @@
         .custom-buttons-group {
             display: flex;
             height: 100%;
-            width: 220px; /* Lebar total kelompok tombol custom baru */
+            width: 200px; /* Lebar total kelompok tombol custom baru */
             flex-shrink: 0;
             border-left: 1px solid #ffffff;
         }
 
         /* Tombol Edit Rute (Baris 1 & 2 Merge) */
         .btn-custom-main {
-            width: 50%;
+            width: 200px;
             height: 100%;
             background-color: #0066cc;
             color: #ffffff;
             border: none;
             border-right: 1px solid #ffffff;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 14px;
             cursor: pointer;
             text-transform: uppercase;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 2px;
         }
         .btn-custom-main:active { background-color: #004488; }
 
@@ -335,7 +334,7 @@
         .custom-sub-stack {
             display: flex;
             flex-direction: column;
-            width: 50%;
+            width: 75%;
             height: 100%;
         }
 
@@ -343,14 +342,13 @@
             flex: 1;
             border: none;
             font-weight: bold;
-            font-size: 8.5px;
+            font-size: 9px;
             cursor: pointer;
             text-align: center;
             text-transform: uppercase;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2px;
         }
 
         .btn-welcome {
@@ -451,9 +449,9 @@
         #pids-monitor-mode:fullscreen .gps-item-label { width: 10.5vw !important; }
         #pids-monitor-mode:fullscreen .gps-info-lines { gap: 0.3vw !important; }
         
-        #pids-monitor-mode:fullscreen .custom-buttons-group { width: 26vw !important; }
-        #pids-monitor-mode:fullscreen .btn-custom-main { font-size: 1.2vw !important; }
-        #pids-monitor-mode:fullscreen .btn-custom-sub { font-size: 1.0vw !important; }
+        #pids-monitor-mode:fullscreen .custom-buttons-group { width: 30vw !important; }
+        #pids-monitor-mode:fullscreen .btn-custom-main { font-size: 2.3vw !important; width: 30vw; }
+        #pids-monitor-mode:fullscreen .btn-custom-sub { font-size: 1.1vw !important; width: 13vw; }
 
         #pids-monitor-mode:fullscreen .controls-right-group { width: 22vw; min-width: 22vw; }
         #pids-monitor-mode:fullscreen .vertical-button-stack { width: 13vw; }
@@ -1001,7 +999,7 @@
         </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.3.4</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.4.0</h1>
     </header>
 
     <div class="tab-bar">
@@ -1100,8 +1098,8 @@
                             PILIH RUTE
                         </button>
                         <div class="custom-sub-stack">
-                            <button type="button" class="btn-custom-sub btn-welcome" onclick="picuAudioCustom('welcome')">AWAL PERJALANAN</button>
-                            <button type="button" class="btn-custom-sub btn-arrival" onclick="picuAudioCustom('arrival')">PEMBERHENTIAN
+                            <button type="button" class="btn-custom-sub btn-welcome" onclick="picuAudioCustom('welcome')">AWAL PRJLN</button>
+                            <button type="button" class="btn-custom-sub btn-arrival" onclick="picuAudioCustom('arrival')">PBERHNTIAN
                             </button>
                         </div>
                     </div>
@@ -1245,7 +1243,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.3.4" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.4.0" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1350,7 +1348,7 @@ let configAnnouncementCustom = {
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "PIDS v3.3.4";
+        let ruteAktifTeks = "PIDS v3.4.0";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1400,7 +1398,7 @@ let lastSavedLngForDistance = null;
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.3.4 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.4.0 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1602,7 +1600,7 @@ let lastSavedLngForDistance = null;
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "PIDS v3.3.4";
+                ruteAktifTeks = "PIDS v3.4.0";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1681,7 +1679,7 @@ let lastSavedLngForDistance = null;
     
     let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
     let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.3.4";
+    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.4.0";
 
     if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
     else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -2491,7 +2489,7 @@ if (container) { container.scrollTop = container.scrollHeight; }
 
             // Susun nama file dinamis
             let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-            let namaFile = `${formatWaktu}_backup-pids-v3.3.4.json`;
+            let namaFile = `${formatWaktu}_backup-pids-v3.4.0.json`;
 
             let downloadAnchor = document.createElement('a'); 
             downloadAnchor.setAttribute("href", dataStr); 
