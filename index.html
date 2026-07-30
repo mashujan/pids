@@ -3080,16 +3080,19 @@ function muatPengaturanAnnouncementFromStorage() {
 
 // 5. FUNGSI PEMICU UTAMA (Dipanggil saat tombol Selamat Datang / Tiba di Tujuan diklik)
 function picuAudioCustom(jenis) {
-    // A. Cek status saklar Announcer (Hanya jalan jika saklar ANNOUNCER ON)
-    if (typeof isAudioAnnouncerActive !== 'undefined' && !isAudioAnnouncerActive) {
-        console.warn("Audio Announcer sedang OFF. Aktifkan saklar ANNOUNCER terlebih dahulu.");
+    // 1. Cek Saklar Audio Utama Web Abang (isAudioEnabled)
+    if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) {
+        if (typeof pushLogKonsol === 'function') {
+            pushLogKonsol("[Custom] Tombol ditekan tapi Announcer sedang OFF (isAudioEnabled = false).");
+        }
+        alert("Audio Announcer sedang NONAKTIF! Silakan aktifkan saklar Announcer terlebih dahulu.");
         return;
     }
 
     let teksTampil = "";
     let pathAudio = "";
 
-    // B. Ambil data teks & audio dari settingan yang tersimpan
+    // 2. Ambil data teks & audio custom dari konfigurasi
     if (jenis === 'welcome') {
         teksTampil = configAnnouncementCustom.welcomeText;
         pathAudio = configAnnouncementCustom.welcomeAudio;
@@ -3098,7 +3101,7 @@ function picuAudioCustom(jenis) {
         pathAudio = configAnnouncementCustom.arrivalAudio;
     }
 
-    // C. Tampilkan Teks di Monitor PIDS & Kunci data-text-mentah (Biar sinkron dengan geofence)
+    // 3. Update Teks di Monitor PIDS
     const displayNode = document.getElementById('pids-display');
     if (displayNode && teksTampil) {
         displayNode.setAttribute('data-text-mentah', teksTampil);
@@ -3110,23 +3113,22 @@ function picuAudioCustom(jenis) {
         }
     }
 
-    // D. Memutar Audio Announcement
-    if (pathAudio) {
-        if (typeof putarAnnouncer === 'function') {
-            putarAnnouncer(pathAudio);
-        } else {
-            if (instanceAudioAnnouncement) {
-                instanceAudioAnnouncement.pause();
-                instanceAudioAnnouncement.currentTime = 0;
-            }
-            instanceAudioAnnouncement = new Audio(pathAudio);
-            instanceAudioAnnouncement.play().catch(err => console.log("Audio error/terblokir:", err));
+    // 4. Putar Audio lewat Engine Web Audio API Abang (putarAnnouncer)
+    if (typeof putarAnnouncer === 'function') {
+        // Jika pathAudio kosong, panggil dengan string kosong agar putarAnnouncer 
+        // menjalankan fallback default ("audio/00 Notifikasi Pembuka.mp3")
+        putarAnnouncer(pathAudio || "");
+    } else {
+        // Backup darurat jika fungsi putarAnnouncer tidak terdeteksi
+        if (pathAudio) {
+            let fallbackAudio = new Audio(pathAudio);
+            fallbackAudio.play().catch(e => console.error("Gagal memutar audio fallback:", e));
         }
     }
 
-    // E. PASANG TIMER 30 DETIK: Kembalikan teks ke Rute Utama secara otomatis!
+    // 5. Timer 30 Detik (Kembalikan Teks Monitor ke Rute Utama)
     if (typeof fallbackTimerId !== 'undefined' && fallbackTimerId) {
-        clearTimeout(fallbackTimerId); // Reset timer lama jika tombol dipencet berulang
+        clearTimeout(fallbackTimerId);
     }
 
     fallbackTimerId = setTimeout(() => {
@@ -3138,13 +3140,13 @@ function picuAudioCustom(jenis) {
                 displayNode.innerText = ruteAktifTeks;
             }
             if (typeof pushLogKonsol === 'function') {
-                pushLogKonsol("[System] Teks kembali ke rute utama setelah 30 detik.");
+                pushLogKonsol("[System] Teks monitor kembali ke Rute Utama.");
             }
         }
-    }, 30000); // 30.000 ms = 30 detik
+    }, 30000);
 
     if (typeof pushLogKonsol === 'function') {
-        pushLogKonsol(`[Custom] Pemicu Manual: ${jenis === 'welcome' ? 'Selamat Datang' : 'Tiba di Tujuan'} (Auto-reset 30s)`);
+        pushLogKonsol(`[Custom] Pemicu Manual: ${jenis === 'welcome' ? 'Awal Perjalanan' : 'Tiba di Tujuan'}`);
     }
 }
 
