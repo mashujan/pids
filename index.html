@@ -3059,19 +3059,10 @@ function hitungJarakAntarKoordinatHaversine(lat1, lon1, lat2, lon2) {
 // =========================================================================
 
 function picuAudioCustom(jenis) {
-    // 1. Cek Saklar Audio Utama Web Abang (isAudioEnabled)
-    if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) {
-        if (typeof pushLogKonsol === 'function') {
-            pushLogKonsol("[A] Tombol diklik tapi Announcer OFF (isAudioEnabled = false)");
-        }
-        alert("Audio Announcer sedang NONAKTIF! Silakan aktifkan saklar Announcer terlebih dahulu.");
-        return;
-    }
-
     let teksTampil = "";
     let namaAtauPathAudio = "";
 
-    // 2. Ambil data teks & audio dari objek config
+    // 1. Ambil data teks & audio dari objek config
     if (jenis === 'welcome') {
         teksTampil = configAnnouncementCustom.welcomeText;
         namaAtauPathAudio = configAnnouncementCustom.welcomeAudio;
@@ -3080,7 +3071,7 @@ function picuAudioCustom(jenis) {
         namaAtauPathAudio = configAnnouncementCustom.arrivalAudio;
     }
 
-    // 3. Update Teks di Monitor PIDS & data-text-mentah
+    // 2. Update Teks di Monitor PIDS & data-text-mentah (Selalu jalan walau announcer OFF)
     const displayNode = document.getElementById('pids-display');
     if (displayNode && teksTampil) {
         displayNode.setAttribute('data-text-mentah', teksTampil);
@@ -3092,8 +3083,17 @@ function picuAudioCustom(jenis) {
         }
     }
 
-    // 4. Putar Audio via Web Audio API (putarAnnouncer)
-    if (namaAtauPathAudio) {
+    // 3. Cek Saklar Audio Utama Web Abang (isAudioEnabled) HANYA untuk Audio
+    let izinAudio = true;
+    if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) {
+        izinAudio = false;
+        if (typeof pushLogKonsol === 'function') {
+            pushLogKonsol("[A] Teks diperbarui, tapi Announcer OFF (isAudioEnabled = false), suara dilewati.");
+        }
+    }
+
+    // 4. Putar Audio (Hanya dijalankan jika izinAudio true dan nama audio ada)
+    if (izinAudio && namaAtauPathAudio) {
         let audioUrl = namaAtauPathAudio;
         if (!audioUrl.startsWith('audio/') && !audioUrl.startsWith('blob:') && !audioUrl.startsWith('http')) {
             audioUrl = 'audio/' + audioUrl;
@@ -3105,13 +3105,13 @@ function picuAudioCustom(jenis) {
             let fallbackAudio = new Audio(audioUrl);
             fallbackAudio.play().catch(e => console.error("Gagal memutar audio:", e));
         }
-    } else {
+    } else if (!namaAtauPathAudio) {
         if (typeof pushLogKonsol === 'function') {
             pushLogKonsol("[A] Audio tidak diputar karena pilihan audio di Setting masih kosong.");
         }
     }
 
-    // 5. Reset & Panggil Fallback Timer 30 Detik (SAMA PERSIS DENGAN KODE BAWAAN ABANG)
+    // 5. Reset & Panggil Fallback Timer 30 Detik (Tetap berjalan normal)
     if (typeof fallbackTimerId !== 'undefined' && fallbackTimerId) {
         clearTimeout(fallbackTimerId);
     }
