@@ -2348,12 +2348,21 @@ function hapusLokasi(id) {
         // ==================== CONFIG TAB HANDLING ====================
 
         function simpanPengaturanUmumKeStorage() {
-            let platValue = document.getElementById('cfg-plat-no').value.trim().toUpperCase();
-            localStorage.setItem('pids_plat_nomor', platValue);
-            document.getElementById('pids-plat-view').innerText = platValue; 
-            localStorage.setItem('pids_preset_default_text', document.getElementById('cfg-preset-default-text').value.trim());
-            localStorage.setItem('pids_os_limit', document.getElementById('cfg-overspeed-limit').value);
-        }
+    let platValue = document.getElementById('cfg-plat-no').value.trim().toUpperCase();
+    localStorage.setItem('pids_plat_nomor', platValue);
+    document.getElementById('pids-plat-view').innerText = platValue; 
+    localStorage.setItem('pids_preset_default_text', document.getElementById('cfg-preset-default-text').value.trim());
+    localStorage.setItem('pids_os_limit', document.getElementById('cfg-overspeed-limit').value);
+
+    // SUNTIKAN: Ikut simpan teks & pilihan audio Announcement Custom!
+    if (typeof simpanPengaturanAnnouncementKeStorage === 'function') {
+        simpanPengaturanAnnouncementKeStorage();
+    }
+
+    if (typeof pushLogKonsol === 'function') {
+        pushLogKonsol("[System] Semua Pengaturan Umum & Announcement Custom Berhasil Disimpan.");
+    }
+}
 
         function tambahLokasiBuiltIn() {
     let namaLokasi = document.getElementById('cfg-add-lokasi-nama').value.trim();
