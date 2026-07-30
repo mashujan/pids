@@ -2657,18 +2657,21 @@ if (typeof currentAnnouncerSource === 'undefined') {
 }
 
 // Variabel Global
-let pidsAudioElement = null;
-let pidsAudioSourceNode = null;
+let audioContextPids = null;
+let currentAnnouncerSource = null;
 
 function putarAnnouncer(audioPathUrl) {
-    if (!isAudioEnabled) { pushLogKonsol("[A] Announcer Dinonaktifkan"); return; }
+    if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) { 
+        if (typeof pushLogKonsol === 'function') pushLogKonsol("[A] Announcer Dinonaktifkan"); 
+        return; 
+    }
     
     if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
         audioPathUrl = "audio/00 Notifikasi Pembuka.mp3";
     }
 
     try {
-        // 1. Inisialisasi AudioContext jika belum ada
+        // 1. Inisialisasi AudioContext (Wajib untuk SFX Mode)
         if (!audioContextPids) {
             audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -2677,63 +2680,61 @@ function putarAnnouncer(audioPathUrl) {
             audioContextPids.resume();
         }
 
-        pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl.substring(0,30)}...`);
-
-        // 2. Buat HTMLAudioElement
-        if (!pidsAudioElement) {
-            pidsAudioElement = new Audio();
-            pidsAudioElement.crossOrigin = "anonymous";
-            
-            // Trik Kunci untuk Headunit / Android Auto:
-            // Beri tahu browser bahwa ini adalah audio tipe 'speech' / notifikasi agar Android melakukan DUCKING (mengecilkan lagu), bukan mem-pause total.
-            if ('audioSession' in navigator) {
-                navigator.audioSession.type = 'speech'; 
-            }
-
-            pidsAudioSourceNode = audioContextPids.createMediaElementSource(pidsAudioElement);
-            
-            let gainNode = audioContextPids.createGain();
-            gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime); // Ambient Booster 2.5x
-            
-            pidsAudioSourceNode.connect(gainNode);
-            gainNode.connect(audioContextPids.destination);
+        if (typeof pushLogKonsol === 'function') {
+            pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl.substring(0,30)}...`);
         }
 
-        // 3. Reset jika sedang ada audio berjalan
-        if (!pidsAudioElement.paused) {
-            pidsAudioElement.pause();
-            pidsAudioElement.currentTime = 0;
-        }
+        // 2. Fetch Audio sebagai Buffer (Biar dianggap SFX, bukan Media Player oleh Headunit)
+        fetch(audioPathUrl)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                
+                // 3. SAKELAR TIMPA AUDIO PIDS (Anti Tumpang Tindih antar-announcer)
+                if (currentAnnouncerSource) {
+                    try {
+                        currentAnnouncerSource.stop(0);
+                    } catch (e) {
+                        // Diabaikan jika audio sudah selesai duluan
+                    }
+                }
 
-        pidsAudioElement.src = audioPathUrl;
+                // 4. Buat Buffer Source Baru
+                let source = audioContextPids.createBufferSource();
+                source.buffer = audioBuffer;
+                currentAnnouncerSource = source;
 
-        // 4. Konfigurasi MediaSession Mode Ducking
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: 'Pengumuman PIDS',
-                artist: 'Navigasi / Informasi Armada',
+                // 5. GAIN NODE (Ambient Booster 2.5x)
+                let gainNode = audioContextPids.createGain();
+                gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime);
+
+                // Hubungkan Jalur: Source -> Gain (Booster) -> Speaker
+                source.connect(gainNode);
+                gainNode.connect(audioContextPids.destination);
+
+                // 6. MAIN AKAN BERJALAN DI ATAS MUSIK SPOTIFY TANPA MENIMPA MEDIA
+                source.start(0);
+
+                if (typeof pushLogKonsol === 'function') {
+                    pushLogKonsol("[A] Announcer Diputar via SFX Buffer (Musik Spotify Tetap Jalan).");
+                }
+
+                source.onended = function() {
+                    if (currentAnnouncerSource === source) {
+                        currentAnnouncerSource = null;
+                    }
+                };
+            })
+            .catch(err => {
+                if (typeof pushLogKonsol === 'function') {
+                    pushLogKonsol(`[A] Gagal Memutar Buffer: ${err.message}`);
+                }
             });
-            // Menyebutkan status playing agar OS sadar ada pengumuman masuk
-            navigator.mediaSession.playbackState = "playing";
-        }
-
-        // 5. Putar Audio
-        pidsAudioElement.play().then(() => {
-            pushLogKonsol("[A] Announcer Diputarkan (Mode Ducking Active)");
-        }).catch(err => {
-            pushLogKonsol(`[A] Gagal Memutar: ${err.message}`);
-        });
-
-        // 6. Saat Selesai -> Langsung 'none' kan MediaSession agar volume Spotify balik kencang
-        pidsAudioElement.onended = function() {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = "none";
-            }
-            pushLogKonsol("[A] Announcer Selesai. Volume musik normal kembali.");
-        };
 
     } catch (e) {
-        pushLogKonsol(`[A] Announcer Error: ${e.message}`);
+        if (typeof pushLogKonsol === 'function') {
+            pushLogKonsol(`[A] Web Audio Error: ${e.message}`);
+        }
     }
 }
 
