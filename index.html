@@ -2652,63 +2652,47 @@ let audioContextPids = null;
 let currentAnnouncerSource = null;
 
 function putarAnnouncer(audioPathUrl) {
-    if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) { 
-        if (typeof pushLogKonsol === 'function') pushLogKonsol("[A] Announcer Dinonaktifkan"); 
-        return; 
-    }
+    if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) { return; }
     
     if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
         audioPathUrl = "audio/00 Notifikasi Pembuka.mp3";
     }
 
     try {
-        // 1. Inisialisasi AudioContext (Wajib untuk SFX Mode)
         if (!audioContextPids) {
             audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
         }
-        
         if (audioContextPids.state === 'suspended') {
             audioContextPids.resume();
         }
 
-        if (typeof pushLogKonsol === 'function') {
-            pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl.substring(0,30)}...`);
+        // COBA SET AUDIO SESSION KE SPEECH (Jika browser/PWA mendukung)
+        if ('audioSession' in navigator) {
+            navigator.audioSession.type = 'speech'; // Meminta Android untuk mengecilkan musik
         }
 
-        // 2. Fetch Audio sebagai Buffer (Biar dianggap SFX, bukan Media Player oleh Headunit)
         fetch(audioPathUrl)
             .then(response => response.arrayBuffer())
             .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
             .then(audioBuffer => {
                 
-                // 3. SAKELAR TIMPA AUDIO PIDS (Anti Tumpang Tindih antar-announcer)
                 if (currentAnnouncerSource) {
-                    try {
-                        currentAnnouncerSource.stop(0);
-                    } catch (e) {
-                        // Diabaikan jika audio sudah selesai duluan
-                    }
+                    try { currentAnnouncerSource.stop(0); } catch (e) {}
                 }
 
-                // 4. Buat Buffer Source Baru
                 let source = audioContextPids.createBufferSource();
                 source.buffer = audioBuffer;
                 currentAnnouncerSource = source;
 
-                // 5. GAIN NODE (Ambient Booster 2.5x)
                 let gainNode = audioContextPids.createGain();
-                gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime);
+                // SET VOLUME ANNOUNCER SANGAT KENCANG (3.0x - 300%)
+                // Agar suara pengumuman "menenggelamkan" lagu Spotify
+                gainNode.gain.setValueAtTime(3.0, audioContextPids.currentTime);
 
-                // Hubungkan Jalur: Source -> Gain (Booster) -> Speaker
                 source.connect(gainNode);
                 gainNode.connect(audioContextPids.destination);
 
-                // 6. MAIN AKAN BERJALAN DI ATAS MUSIK SPOTIFY TANPA MENIMPA MEDIA
                 source.start(0);
-
-                if (typeof pushLogKonsol === 'function') {
-                    pushLogKonsol("[A] Announcer Diputar via SFX Buffer (Musik Spotify Tetap Jalan).");
-                }
 
                 source.onended = function() {
                     if (currentAnnouncerSource === source) {
@@ -2716,16 +2700,10 @@ function putarAnnouncer(audioPathUrl) {
                     }
                 };
             })
-            .catch(err => {
-                if (typeof pushLogKonsol === 'function') {
-                    pushLogKonsol(`[A] Gagal Memutar Buffer: ${err.message}`);
-                }
-            });
+            .catch(err => console.error("Gagal play buffer:", err));
 
     } catch (e) {
-        if (typeof pushLogKonsol === 'function') {
-            pushLogKonsol(`[A] Web Audio Error: ${e.message}`);
-        }
+        console.error("Web Audio Error:", e);
     }
 }
 
