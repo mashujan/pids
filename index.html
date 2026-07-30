@@ -1331,10 +1331,18 @@
         const LOGIN_USER = "admin";
         const LOGIN_PASS = "mashujan";
 
-        // MASTER STATE (Masing-masing penampung membawa orderIndex internal kustom)
-        let dbLokasi = [];
-        let lokasiSingleList = []; 
-        let audioAssetList = [];
+        // MASTER STATE
+let dbLokasi = [];
+let lokasiSingleList = []; 
+let audioAssetList = [];
+
+// Tambahkan deklarasi variabel objek ini:
+let configAnnouncementCustom = {
+    welcomeText: "",
+    welcomeAudio: "",
+    arrivalText: "",
+    arrivalAudio: ""
+};
         
         // SORT ENGINE STATE
         let sortModeGeofence = "manual";
@@ -2117,38 +2125,34 @@ function editLokasiBuiltIn(id) {
 function renderDropdownAudioDb() {
     let listProses = dapatkanArrayTerfilterDanTersortir('audio', sortModeAudio);
 
-    // 1. Buat opsi pilihan untuk Geofence & Announcement Custom
+    // 1. Buat opsi pilihan
     let htmlGeofence = `<option value="none">- Tanpa Suara -</option>`;
     let htmlCustom = `<option value="">-- Tanpa Audio (Hanya Teks) --</option>`;
 
     listProses.forEach(item => {
-        // Ambil path file audio (atau nama jika path tidak ada)
-        let valAudio = item.path || item.nama;
-        
+        let valAudio = item.nama || item.path;
         htmlGeofence += `<option value="${item.nama}">${item.nama}</option>`;
         htmlCustom += `<option value="${valAudio}">${item.nama}</option>`;
     });
 
-    // 2. Isi ke Dropdown Geofence Database (Bawaan Web Abang)
+    // 2. Isi ke Dropdown Geofence Database
     let selectDb = document.getElementById('input-audio-asset-dropdown');
     if (selectDb) selectDb.innerHTML = htmlGeofence;
 
-    // 3. Isi ke Dropdown Custom Announcement (Selamat Datang)
+    // 3. Isi ke Dropdown Custom Announcement (Selamat Datang) & KUNCI VALUE
     let selectWelcome = document.getElementById('cfg-custom-welcome-audio-select');
     if (selectWelcome) {
         selectWelcome.innerHTML = htmlCustom;
-        // Kunci nilai tersimpan biar GAK BALIK KE ATAS
-        if (typeof configAnnouncementCustom !== 'undefined' && configAnnouncementCustom.welcomeAudio) {
+        if (configAnnouncementCustom && configAnnouncementCustom.welcomeAudio) {
             selectWelcome.value = configAnnouncementCustom.welcomeAudio;
         }
     }
 
-    // 4. Isi ke Dropdown Custom Announcement (Tiba di Tujuan)
+    // 4. Isi ke Dropdown Custom Announcement (Tiba di Tujuan) & KUNCI VALUE
     let selectArrival = document.getElementById('cfg-custom-arrival-select');
     if (selectArrival) {
         selectArrival.innerHTML = htmlCustom;
-        // Kunci nilai tersimpan biar GAK BALIK KE ATAS
-        if (typeof configAnnouncementCustom !== 'undefined' && configAnnouncementCustom.arrivalAudio) {
+        if (configAnnouncementCustom && configAnnouncementCustom.arrivalAudio) {
             selectArrival.value = configAnnouncementCustom.arrivalAudio;
         }
     }
@@ -2347,20 +2351,21 @@ function hapusLokasi(id) {
 
         // ==================== CONFIG TAB HANDLING ====================
 
-        function simpanPengaturanUmumKeStorage() {
-    let platValue = document.getElementById('cfg-plat-no').value.trim().toUpperCase();
-    localStorage.setItem('pids_plat_nomor', platValue);
-    document.getElementById('pids-plat-view').innerText = platValue; 
-    localStorage.setItem('pids_preset_default_text', document.getElementById('cfg-preset-default-text').value.trim());
-    localStorage.setItem('pids_os_limit', document.getElementById('cfg-overspeed-limit').value);
+        function simpanPengaturanAnnouncementKeStorage() {
+    const elWelcomeText = document.getElementById('cfg-custom-welcome-text');
+    const elWelcomeAudio = document.getElementById('cfg-custom-welcome-audio-select');
+    const elArrivalText = document.getElementById('cfg-custom-arrival-text');
+    const elArrivalAudio = document.getElementById('cfg-custom-arrival-select');
 
-    // SUNTIKAN: Ikut simpan teks & pilihan audio Announcement Custom!
-    if (typeof simpanPengaturanAnnouncementKeStorage === 'function') {
-        simpanPengaturanAnnouncementKeStorage();
-    }
+    if (elWelcomeText) configAnnouncementCustom.welcomeText = elWelcomeText.value.trim();
+    if (elWelcomeAudio) configAnnouncementCustom.welcomeAudio = elWelcomeAudio.value;
+    if (elArrivalText) configAnnouncementCustom.arrivalText = elArrivalText.value.trim();
+    if (elArrivalAudio) configAnnouncementCustom.arrivalAudio = elArrivalAudio.value;
 
+    localStorage.setItem('pids_custom_announcement_cfg', JSON.stringify(configAnnouncementCustom));
+    
     if (typeof pushLogKonsol === 'function') {
-        pushLogKonsol("[System] Semua Pengaturan Umum & Announcement Custom Berhasil Disimpan.");
+        pushLogKonsol("[System] Pengaturan Announcement Custom berhasil disimpan.");
     }
 }
 
@@ -2531,7 +2536,9 @@ if (container) { container.scrollTop = container.scrollHeight; }
                     
                     // 3. Render ulang UI komponen termasuk dropdown audio announcement
                     renderSemuaTampilanKomponenUI();
-                    renderDropdownAudioAnnouncement();
+                    if (typeof renderDropdownAudioDb === 'function') {
+    renderDropdownAudioDb();
+}
                     
                     alert("Restore Database & Announcement Sukses!");
                 } catch (err) { alert("File JSON Rusak atau Format Salah!"); }
