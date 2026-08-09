@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.4.1</title>
+    <title>PIDS Simulator v3.4.2</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -999,7 +999,7 @@
         </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.4.1</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.4.2</h1>
     </header>
 
     <div class="tab-bar">
@@ -1243,7 +1243,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.4.1" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.4.2" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1348,7 +1348,7 @@ let configAnnouncementCustom = {
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "PIDS v3.4.1";
+        let ruteAktifTeks = "PIDS v3.4.2";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1398,7 +1398,7 @@ let lastSavedLngForDistance = null;
             inisialisasiPeta();
             renderSemuaTampilanKomponenUI();
             monitorFullscreenStateChange();
-            pushLogKonsol("PIDS v3.4.1 Siap Beroperasi.");
+            pushLogKonsol("PIDS v3.4.2 Siap Beroperasi.");
 
             document.getElementById('login-pass').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
             document.getElementById('login-user').addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1600,7 +1600,7 @@ let lastSavedLngForDistance = null;
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "PIDS v3.4.1";
+                ruteAktifTeks = "PIDS v3.4.2";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1679,7 +1679,7 @@ let lastSavedLngForDistance = null;
     
     let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
     let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.4.1";
+    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.4.2";
 
     if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
     else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -2466,7 +2466,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let configPackage = {
         platNomor: document.getElementById('cfg-plat-no')?.value.trim().toUpperCase() || "",
         overspeedLimit: document.getElementById('cfg-overspeed-limit')?.value || "50",
-        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v3.4.1",
+        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v3.4.2",
         
         // Paket Data Custom Announcement
         announcementCustom: {
@@ -2494,7 +2494,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
     let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-    let namaFile = `${formatWaktu}_backup-pids-v3.4.1.json`;
+    let namaFile = `${formatWaktu}_backup-pids-v3.4.2.json`;
 
     let downloadAnchor = document.createElement('a'); 
     downloadAnchor.setAttribute("href", dataStr); 
@@ -2528,7 +2528,7 @@ function importDataDariJsonCombinedAllInOne(event) {
                     document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                 }
                 if (document.getElementById('cfg-preset-default-text')) {
-                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v3.4.1";
+                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v3.4.2";
                 }
 
                 // 2. Restore Custom Announcement (Teks & Audio)
@@ -3173,6 +3173,34 @@ function picuAudioCustom(jenis) {
     // 6. Cetak Log Konsol
     if (typeof pushLogKonsol === 'function') {
         pushLogKonsol(`[Custom] Pemicu Manual: ${jenis === 'welcome' ? 'Awal Perjalanan' : 'Tiba di Tujuan'}`);
+    }
+}
+
+function simpanPengaturanUmumKeStorage() {
+    // 1. Ambil elemen input dari DOM
+    const elPlat = document.getElementById('cfg-plat-no');
+    const elOs = document.getElementById('cfg-overspeed-limit');
+    const elPreset = document.getElementById('cfg-preset-default-text');
+
+    // 2. Ambil nilai input
+    const platNomor = elPlat ? elPlat.value.trim().toUpperCase() : "";
+    const osLimit = elOs ? elOs.value.trim() : "50";
+    const presetText = elPreset ? elPreset.value.trim() : "PIDS v3.4.2";
+
+    // 3. Simpan permanen ke LocalStorage sesuai key sistem PIDS
+    localStorage.setItem('pids_plat_nomor', platNomor);
+    localStorage.setItem('pids_os_limit', osLimit);
+    localStorage.setItem('pids_preset_default_text', presetText);
+
+    // 4. Update tampilan live monitor Plat Nomor jika elemen tersedia
+    const elPlatView = document.getElementById('pids-plat-view');
+    if (elPlatView) {
+        elPlatView.innerText = platNomor || "---";
+    }
+
+    // 5. Cetak log ke sistem konsol PIDS
+    if (typeof pushLogKonsol === 'function') {
+        pushLogKonsol(`[System] Pengaturan Umum tersimpan: Plat [${platNomor}] | Speed Limit [${osLimit} km/h]`);
     }
 }
 
