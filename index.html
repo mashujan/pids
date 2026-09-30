@@ -1567,7 +1567,7 @@ function meSensitisedDate(date) {
     displayNode.offsetHeight; 
 
     // ─── JALUR TEKS PENDEK (DIEM DI TENGAH) ───
-    if (teksBersih.length <= 24) {
+    if (teksBersih.length <= 18) {
         displayNode.textContent = teksBersih; 
         
         // Reset padding dan paksa pakai kelas statis semalam
@@ -3466,7 +3466,7 @@ var evBeepLoopInterval = null;
 
 function cekEvBeepStatus(currentSpeed) {
     // Berbunyi jika fitur aktif dan kecepatan antara > 0 dan <= 10 km/jam
-    if (isEvBeepEnabled && currentSpeed > 0 && currentSpeed <= 10) {
+    if (isEvBeepEnabled && currentSpeed >= 1 && currentSpeed <= 10) {
         if (!evBeepLoopInterval) {
             bunyiEvBeep();
             // Total siklus = 2000 ms (1000 ms bunyi + 1000 ms jeda hening)
