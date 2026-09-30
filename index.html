@@ -1469,6 +1469,10 @@ let tripTimerInterval = null;
 let lastSavedLatForDistance = null;
 let lastSavedLngForDistance = null;
 
+let isEvBeepEnabled = true;
+let lastKnownAltitude = 0;
+let evBeepAudioContext = null;
+
 window.onload = function() {
     if (sessionStorage.getItem('pids_logged_in') === 'true') {
         document.getElementById('login-screen').style.display = 'none';
@@ -1641,6 +1645,10 @@ function meSensitisedDate(date) {
         if (speedNode) speedNode.innerText = speedKMH.toFixed(1);
         
         if (typeof cekOverspeedStatus === "function") cekOverspeedStatus(speedKMH);
+        
+        // ─── TAMBAHAN: PEMICU EV BEEP UNTUK KECEPATAN GPS FISIK (1 - 10 KM/H) ───
+        if (typeof cekEvBeepStatus === "function") cekEvBeepStatus(speedKMH);
+
         if (typeof updateKompasArahMataAngin === "function") updateKompasArahMataAngin(position.coords.heading, speedKMH);
         if (typeof prosesEvaluasiGeofenceRealtime === "function") prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, speedKMH);
         
@@ -3454,7 +3462,6 @@ function simpanPengaturanUmumKeStorage() {
     }
 }
 
-var isEvBeepEnabled = true;
 var evBeepLoopInterval = null;
 
 function cekEvBeepStatus(currentSpeed) {
@@ -3490,7 +3497,7 @@ function bunyiEvBeep() {
         osc.frequency.setValueAtTime(440, now); // Nada sedang khas AVAS (850Hz)
         
         // Pengaturan Envelope Volume yang Sangat Halus
-        let maxVolume = 0.05; // Volume kecil agar tidak bising
+        let maxVolume = 0.2; // Volume kecil agar tidak bising
         
         gain.gain.setValueAtTime(0.0001, now);
         gain.gain.linearRampToValueAtTime(maxVolume, now + 0.15); // Fade In halus (0.15 detik)
