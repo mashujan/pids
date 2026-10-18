@@ -1472,6 +1472,7 @@ let lastSavedLngForDistance = null;
 let isEvBeepEnabled = true;
 let lastKnownAltitude = 0;
 let evBeepAudioContext = null;
+let evBeepLoopInterval = null;
 
 window.onload = function() {
     if (sessionStorage.getItem('pids_logged_in') === 'true') {
@@ -1713,6 +1714,7 @@ function meSensitisedDate(date) {
             unlockAudioAutoplayContext(); 
             if (isTrackingActiveUI) {
                 if (overspeedLoopInterval) { clearInterval(overspeedLoopInterval); overspeedLoopInterval = null; }
+				if (evBeepLoopInterval) { clearInterval(evBeepLoopInterval); evBeepLoopInterval = null; }
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
@@ -3466,11 +3468,11 @@ function simpanPengaturanAnnouncementKeStorage() {
 }
 
 function cekEvBeepStatus(currentSpeed) {
-    // Berbunyi jika fitur aktif dan kecepatan antara > 0 dan <= 10 km/jam
+    // Berbunyi jika fitur aktif dan kecepatan antara 1 km/jam sampai 10 km/jam
     if (isEvBeepEnabled && currentSpeed >= 1 && currentSpeed <= 10) {
         if (!evBeepLoopInterval) {
             bunyiEvBeep();
-            // Total siklus = 2000 ms (1000 ms bunyi + 1000 ms jeda hening)
+            // Siklus per 1 detik (1000 ms)
             evBeepLoopInterval = setInterval(bunyiEvBeep, 1000); 
         }
     } else {
@@ -3488,29 +3490,30 @@ function bunyiEvBeep() {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         
         let now = audioCtx.currentTime;
-        let duration = 0.5; // Durasi bunyi persis 1 detik
+        let duration = 0.5; // Durasi total bunyi 0.5 detik
         
         let osc = audioCtx.createOscillator(); 
         let gain = audioCtx.createGain();
         
-        // Gelombang sine untuk nada paling mulus & halus
         osc.type = 'sine'; 
-        osc.frequency.setValueAtTime(440, now); // Nada sedang khas AVAS (850Hz)
+        osc.frequency.setValueAtTime(440, now); // Frekuensi 440 Hz nada EV
         
-        // Pengaturan Envelope Volume yang Sangat Halus
-        let maxVolume = 1; // Volume kecil agar tidak bising
+        let maxVolume = 0.25; // Volume proporsional dan tidak menusuk telinga
         
+        // Envelope timing yang benar dan berurutan
         gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.linearRampToValueAtTime(maxVolume, now + 0.15); // Fade In halus (0.15 detik)
-        gain.gain.setValueAtTime(maxVolume, now + 0.85);          // Tahan volume
-        gain.gain.linearRampToValueAtTime(0.0001, now + duration); // Fade Out halus (0.15 detik)
+        gain.gain.linearRampToValueAtTime(maxVolume, now + 0.1);          // Fade in halus (0.1 detik)
+        gain.gain.setValueAtTime(maxVolume, now + 0.35);                  // Tahan volume sampai 0.35 detik
+        gain.gain.linearRampToValueAtTime(0.0001, now + duration);        // Fade out halus sampai 0.5 detik
         
         osc.connect(gain); 
         gain.connect(audioCtx.destination); 
         
         osc.start(now); 
         osc.stop(now + duration); 
-    } catch(e){}
+    } catch(e) {
+        console.error("Gagal memutar EV Beep:", e);
+    }
 }
 
 function toggleEvBeepButton() {
