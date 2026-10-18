@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.5.1-u1</title>
+    <title>PIDS Simulator v3.5.1-u3</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -872,7 +872,7 @@
         </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.5.1-u1</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.5.1-u3</h1>
     </header>
 
     <div class="tab-bar">
@@ -1103,7 +1103,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.5.1-u1" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.5.1-u3" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1232,7 +1232,7 @@ let configAnnouncementCustom = {
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "PIDS v3.5.1-u1";
+        let ruteAktifTeks = "PIDS v3.5.1-u3";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1300,7 +1300,7 @@ window.onload = function() {
     inisialisasiPeta();
     renderSemuaTampilanKomponenUI();
     monitorFullscreenStateChange();
-    pushLogKonsol("PIDS v3.5.1-u1 Siap Beroperasi.");
+    pushLogKonsol("PIDS v3.5.1-u3 Siap Beroperasi.");
 
     document.getElementById('login-pass')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
     document.getElementById('login-user')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1490,7 +1490,7 @@ function meSensitisedDate(date) {
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "PIDS v3.5.1-u1";
+                ruteAktifTeks = "PIDS v3.5.1-u3";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1569,7 +1569,7 @@ function meSensitisedDate(date) {
     
     let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
     let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.5.1-u1";
+    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.5.1-u3";
 
     if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
     else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -2404,7 +2404,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let configPackage = {
         platNomor: document.getElementById('cfg-plat-no')?.value.trim().toUpperCase() || "",
         overspeedLimit: document.getElementById('cfg-overspeed-limit')?.value || "50",
-        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v3.5.1-u1",
+        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v3.5.1-u3",
         
         // Paket Data Custom Announcement (Termasuk Pintu)
         announcementCustom: {
@@ -2436,7 +2436,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
     let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-    let namaFile = `${formatWaktu}_backup-pids-v3.5.1-u1.json`;
+    let namaFile = `${formatWaktu}_backup-pids-v3.5.1-u3.json`;
 
     let downloadAnchor = document.createElement('a'); 
     downloadAnchor.setAttribute("href", dataStr); 
@@ -2472,7 +2472,7 @@ function importDataDariJsonCombinedAllInOne(event) {
                     document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                 }
                 if (document.getElementById('cfg-preset-default-text')) {
-                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v3.5.1-u1";
+                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v3.5.1-u3";
                 }
 
                 // 2. Restore Custom Announcement (Teks & Audio)
@@ -2643,18 +2643,18 @@ function monitorFullscreenStateChange() {
         }
 
 // =========================================================================
-// SISTEM PEMUTAR ANNOUNCER (BOOSTER 2.5X + AUTO DUCKING SPOTIFY)
+// SISTEM PEMUTAR ANNOUNCER (BOOSTER 2.5X + AUTO DUCKING & RESTORE SPOTIFY)
 // =========================================================================
 let audioContextPids = null;
 let currentAnnouncerSource = null;
 let duckingTriggerAudio = null;
 let silentWavBlobUrl = null;
 
-// Fungsi pembuat file hening 2 detik murni (WAV PCM) agar Android mendeteksi audio aktif
+// Pembuat file hening 2 detik (WAV PCM)
 function dapatkanUrlAudioHening() {
     if (silentWavBlobUrl) return silentWavBlobUrl;
     const sampleRate = 8000;
-    const numSamples = sampleRate * 2; // 2 Detik hening
+    const numSamples = sampleRate * 2;
     const buffer = new ArrayBuffer(44 + numSamples);
     const view = new DataView(buffer);
     
@@ -2667,16 +2667,16 @@ function dapatkanUrlAudioHening() {
     writeString(8, 'WAVE');
     writeString(12, 'fmt ');
     view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);  // PCM
-    view.setUint16(22, 1, true);  // Mono
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
     view.setUint32(24, sampleRate, true);
     view.setUint32(28, sampleRate, true);
     view.setUint16(32, 1, true);
-    view.setUint16(34, 8, true);  // 8-bit
+    view.setUint16(34, 8, true);
     writeString(36, 'data');
     view.setUint32(40, numSamples, true);
 
-    new Uint8Array(buffer, 44, numSamples).fill(128); // Isi gelombang hening
+    new Uint8Array(buffer, 44, numSamples).fill(128);
     silentWavBlobUrl = URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
     return silentWavBlobUrl;
 }
@@ -2685,20 +2685,43 @@ function mulaiDuckingSpotify() {
     try {
         if (!duckingTriggerAudio) {
             duckingTriggerAudio = new Audio();
-            duckingTriggerAudio.src = dapatkanUrlAudioHening();
-            duckingTriggerAudio.loop = true; // KUNCI: Wajib loop agar musik tetap kecil selama announcer bicara
         }
+        duckingTriggerAudio.src = dapatkanUrlAudioHening();
         duckingTriggerAudio.loop = true;
+        
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+        }
+        
         duckingTriggerAudio.currentTime = 0;
         duckingTriggerAudio.play().catch(() => {});
     } catch(e){}
 }
 
 function hentikanDuckingSpotify() {
+    // 1. Matikan dan kosongkan elemen pancingan hening secara total
     if (duckingTriggerAudio) {
         try {
+            duckingTriggerAudio.loop = false;
             duckingTriggerAudio.pause();
             duckingTriggerAudio.currentTime = 0;
+            // Menghapus src dan me-load ulang memaksa Chrome melepas Audio Focus ke Android
+            duckingTriggerAudio.removeAttribute('src');
+            duckingTriggerAudio.load();
+        } catch(e){}
+    }
+
+    // 2. Beritahu OS Android bahwa media session di Chrome sudah 'none' (selesai total)
+    if ('mediaSession' in navigator) {
+        try {
+            navigator.mediaSession.playbackState = 'none';
+        } catch(e){}
+    }
+
+    // 3. KUNCI UTAMA: Tidurkan hardware audio stream Chrome agar Spotify langsung kembali normal
+    if (audioContextPids && audioContextPids.state === 'running') {
+        try {
+            audioContextPids.suspend().catch(() => {});
         } catch(e){}
     }
 }
@@ -2714,7 +2737,7 @@ function putarAnnouncer(audioPathUrl) {
     }
 
     try {
-        // 1. Inisialisasi AudioContext Web Audio API
+        // Inisialisasi AudioContext & bangunkan jika sedang tidur
         if (!audioContextPids) {
             audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -2722,20 +2745,20 @@ function putarAnnouncer(audioPathUrl) {
             audioContextPids.resume();
         }
 
-        // Hentikan suara announcer sebelumnya jika sedang berbunyi
+        // Hentikan suara announcer sebelumnya jika sedang jalan
         if (currentAnnouncerSource) {
             try { currentAnnouncerSource.stop(0); } catch (e) {}
             currentAnnouncerSource = null;
         }
 
-        // 2. PICU DUCKING SEJAK AWAL: Spotify langsung mengecil di pencetan pertama
+        // Pancing Android agar mengecilkan Spotify sejak detik pertama
         mulaiDuckingSpotify();
 
         if (typeof pushLogKonsol === 'function') {
             pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl}`);
         }
 
-        // 3. Fetch file audio & naikkan volume via GainNode (2.5x Booster)
+        // Ambil file audio & naikkan volume via GainNode (2.5x Booster)
         fetch(audioPathUrl)
             .then(response => {
                 if (!response.ok) throw new Error("Gagal mengambil file audio");
@@ -2756,19 +2779,18 @@ function putarAnnouncer(audioPathUrl) {
 
                 source.start(0);
 
-                // 4. KETIKA ANNOUNCER SELESAI: Lepas ducking otomatis, musik kembali normal!
+                // KETIKA ANNOUNCER SELESAI: Lepas ducking total, musik otomatis kencang kembali!
                 source.onended = function() {
                     if (currentAnnouncerSource === source) {
                         currentAnnouncerSource = null;
                     }
                     hentikanDuckingSpotify();
                     if (typeof pushLogKonsol === 'function') {
-                        pushLogKonsol("[A] Announcer selesai, volume lagu kembali normal.");
+                        pushLogKonsol("[A] Announcer selesai, volume lagu otomatis normal.");
                     }
                 };
             })
             .catch(err => {
-                // Jika file audio tidak ditemukan, jangan biarkan musik tetap kecil
                 hentikanDuckingSpotify();
                 if (typeof pushLogKonsol === 'function') {
                     pushLogKonsol(`[A] Gagal memutar: ${err.message}`);
@@ -3140,7 +3162,7 @@ function picuAudioCustom(jenis) {
     }
 
     fallbackTimerId = setTimeout(() => { 
-        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v3.5.1-u1");
+        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v3.5.1-u3");
         if (displayNode) {
             displayNode.setAttribute('data-text-mentah', defaultText);
             displayNode.innerText = defaultText;
@@ -3178,7 +3200,7 @@ function simpanPengaturanUmumKeStorage() {
         localStorage.setItem('pids_preset_default_text', valDef);
         // Jika sedang tidak ada rute aktif, update teks monitor langsung
         if (!isTrackingActiveUI) {
-            ruteAktifTeks = valDef || "PIDS v3.5.1-u1";
+            ruteAktifTeks = valDef || "PIDS v3.5.1-u3";
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
         }
     }
