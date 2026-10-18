@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS Simulator v3.5.1</title>
+    <title>PIDS Simulator v3.5.1-u1</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -834,173 +834,9 @@
     display: none;
 }
 
-/* --- CSS STATISTIK PERJALANAN (KONDISI NORMAL) --- */
-.stats-label { 
-    font-size: 12px; 
-    color: #888888;          
-    text-transform: uppercase; 
-    margin-bottom: 8px; 
-    display: block; 
-    text-align: center; 
-    width: 100%;
-}
-.stats-box { 
-    font-size: 14px; 
-    color: #ffffff; 
-    font-weight: normal;     
-    display: flex; 
-    flex-direction: column; 
-    gap: 1px;                
-    padding-left: 6px;       
-    white-space: nowrap; 
-    width: 100%; 
-    box-sizing: border-box; 
-}
-.stats-item-label {
-    width: 135px;            
-    display: inline-block;
-    text-align: left;
-    flex-shrink: 0;          
-}
-.stats-value {
-    color: #ffffff;
-    font-weight: bold;       
-    margin-left: 0;          
-}
-
-/* --- KONDISI KHUSUS LAYAR HP PORTRAIT --- */
-@media (max-width: 575px) {
-    .stats-box {
-        font-size: 11px;     
-        padding-left: 2px;
-    }
-    .stats-item-label {
-        width: auto;         
-        margin-right: 2px;   
-    }
-    .stats-box .stats-value-wrapper {
-        justify-content: flex-start !important; 
-        padding-left: 4px;
-    }
-}
-
-/* ─── SINKRONISASI TOTAL PAS LAYAR MONITOR FULLSCREEN (KALIBRASI TOTAL CENTER) ─── */
-
-/* 1. KALIBRASI TURUN: Menarik satu paket kompas & statistik ke bawah agar rata tengah layar */
-#pids-monitor-mode:fullscreen .kompas-wrap {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;      
-    justify-content: center !important;
-    height: 100% !important;
-    box-sizing: border-box !important;
-    position: relative !important;        
-    /* --- DORONG KESELURUHAN KE BAWAH DI SINI --- */
-    padding-top: 4.0vw !important;        /* Menambahkan ruang kosong di atas agar seluruh konten melorot turun ke tengah layar */
-}
-
-/* ──── TRIK PAMUNGKAS: MEMBUAT GARIS TENGAH MENTOK ATAS BAWAH TANPA PINDAHIN TULISAN ──── */
-#pids-monitor-mode:fullscreen .kompas-wrap::after {
-    content: "" !important;
-    position: absolute !important;
-    top: 0 !important;                     /* Mentok paling atas layar */
-    bottom: 0 !important;                  /* Mentok paling bawah layar */
-    left: 40% !important;                  /* Posisi horizontal pas di tengah pembatas kolom (sesuai width 40% kiri / 60% kanan) */
-    width: 2px !important;                 /* Ketebalan garis */
-    background-color: rgba(255,255,255,0.15) !important; /* Warna garis asli Abang */
-    z-index: 1 !important;
-}
-
-/* 2. Kolom Kiri & Kanan */
-#pids-monitor-mode:fullscreen .kompas-wrap > div {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;  
-    align-items: center !important;
-    height: 100% !important;               
-    box-sizing: border-box !important;
-}
-
-/* HAPUS BORDER ASLI BAWAAN HTML AGAR TIDAK DOUBLE */
-#pids-monitor-mode:fullscreen .kompas-wrap > div {
-    border-left: none !important;
-}
-
-/* 3. Menyesuaikan posisi judul yang ikut turun selaras dengan padding kontainer luar */
-#pids-monitor-mode:fullscreen .kompas-label,
-#pids-monitor-mode:fullscreen .stats-label { 
-    position: absolute !important;        
-    top: 6.0vw !important;                /* Jarak judul dari atas monitor, diselaraskan agar pas di atas angka */
-    font-size: 1.8vw !important; 
-    color: #888888 !important; 
-    margin: 0 !important;
-    line-height: 1.2 !important;
-    text-align: center !important;
-}
-
-/* Kunci posisi horizontal masing-masing judul agar pas di tengah kolomnya */
-#pids-monitor-mode:fullscreen .kompas-label {
-    width: 40% !important;                
-    left: 0 !important;
-}
-#pids-monitor-mode:fullscreen .stats-label {
-    width: 60% !important;                
-    right: 0 !important;
-}
-
-/* 4. Konten Angka Kompas */
-#pids-monitor-mode:fullscreen .kompas-value { 
-    font-size: 12vw !important; 
-    line-height: 1 !important;             
-    display: block !important;
-    margin-top: 0 !important;             
-    margin-bottom: 0 !important;
-}
-
-/* 5. Konten Box Kotak Statistik */
-#pids-monitor-mode:fullscreen .stats-box { 
-    font-size: 2.0vw !important;    
-    font-weight: normal !important; 
-    gap: 0.5vw !important;          
-    padding-left: 1vw !important; 
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    margin-top: 0 !important;             
-}
-
-/* 6. Lebar teks judul item statistik kiri */
-#pids-monitor-mode:fullscreen .stats-item-label {
-    width: 19.5vw !important; 
-}
-
-/* 7. Angka nilai statistik tetap tebal */
-#pids-monitor-mode:fullscreen .stats-value {
-    font-weight: bold !important;
-	}
-	
-/* ─── AMUNISI UNIVERSAL: MEMPAN DI INSPECT CHROME & HP ASLI ─── */
-@media screen and (max-width: 956px) and (orientation: landscape) {
-
-    /* ─── AMUNISI UNIVERSAL: KALIBRASI HP LANDSCAPE & INSPECT ─── */
-@media screen and (max-width: 956px) and (orientation: landscape) {
-
-    /* 1. ATUR POSISI JUDUL ATAS (Mata Angin & Statistik) */
-    #pids-monitor-mode:fullscreen .kompas-label,
-    #pids-monitor-mode:fullscreen .stats-label,
-    #pids-monitor-mode.fullscreen .kompas-label,
-    #pids-monitor-mode.fullscreen .stats-label { 
-        top: 4.0vw !important;              /* JIKA JUDUL KURANG TURUN, BESARKAN ANGKA INI (misal: 3.0vw) */
-        transform: none !important;         /* Kita matikan transform minusnya biar gak tabrakan */
-    }
-
-    /* 2. ATUR POSISI ANGKA & KOTAK KONTEN DI BAWAHNYA */
-    #pids-monitor-mode:fullscreen .kompas-wrap,
-    #pids-monitor-mode.fullscreen .kompas-wrap {
-        padding-top: 2vw !important;      /* JIKA KONTEN KURANG NAIK (KEJAUHAN), KECILKAN ANGKA INI (misal: 6.0vw atau 5.0vw) */
-    }
-}
+/* --- KALIBRASI KOMPAS & SPEEDOMETER SAAT FULLSCREEN --- */
+        #pids-monitor-mode:fullscreen .kompas-label { font-size: 2vw; margin-bottom: 0vw; }
+        #pids-monitor-mode:fullscreen .kompas-value { font-size: 14vw; }
     </style>
 </head>
 <body>
@@ -1036,7 +872,7 @@
         </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.5.1</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v3.5.1-u1</h1>
     </header>
 
     <div class="tab-bar">
@@ -1060,38 +896,9 @@
                 </div>
 
                 <div class="pids-row-2">
-                    <div class="kompas-wrap" style="display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; padding: 5px 0;">
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; box-sizing: border-box;">
-                            <span class="kompas-label" style="margin-bottom: 8px; display: block; width: 100%;">Arah Mata Angin</span>
-                            <span class="kompas-value" id="pids-compass">-</span>
-                        </div>
-                        
-                        <div style="flex: 1.55; display: flex; flex-direction: column; justify-content: center; align-items: center; border-left: 2px solid rgba(255,255,255,0.15); height: 90%; box-sizing: border-box;">
-                            <span class="stats-label" style="margin-bottom: 8px; display: block; width: 100%;">Statistika Perjalanan</span>
-                            <div class="stats-box" id="pids-trip-stats-box">
-                                <div style="display: flex; align-items: center; width: 100%;">
-                                    <span class="stats-item-label">Waktu Perjalanan:</span>
-                                    <span></span>
-                                    <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
-                                        <span id="pids-trip-duration" class="stats-value">00.00.00</span>
-                                    </div>
-                                </div>
-                                <div style="display: flex; align-items: center; width: 100%;">
-                                    <span class="stats-item-label">Jarak Perjalanan:</span>
-                                    <span></span>
-                                    <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
-                                        <span id="pids-trip-distance" class="stats-value">0.00 km</span>
-                                    </div>
-                                </div>
-                                <div style="display: flex; align-items: center; width: 100%;">
-                                    <span class="stats-item-label">Rata-Rata Kecepatan:</span>
-                                    <span></span>
-                                    <div class="stats-value-wrapper" style="flex: 1; display: flex; justify-content: center;">
-                                        <span id="pids-trip-avg-speed" class="stats-value">0.0 km/j</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="kompas-wrap">
+                        <span class="kompas-label">Arah Mata Angin</span>
+                        <span class="kompas-value" id="pids-compass">-</span>
                     </div>
 
                     <div class="speedo-wrap-v2">
@@ -1228,9 +1035,6 @@
 
     </div>
 
-<div>
-        <span id="range-val-preview" style="display: none;">0 Meter</span>
-    </div>
 </div>
             <div class="form-group">
                 <label>Dibunyikan Saat</label>
@@ -1299,7 +1103,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.5.1" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v3.5.1-u1" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1428,7 +1232,7 @@ let configAnnouncementCustom = {
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "PIDS v3.5.1";
+        let ruteAktifTeks = "PIDS v3.5.1-u1";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1460,15 +1264,6 @@ let configAnnouncementCustom = {
         let dragSrcEl = null;
         let dragTypeRegistry = "";
 		
-		// Variabel State Statistik Perjalanan
-let totalTripDistanceKM = 0.0;
-let totalTripDurationSeconds = 0;
-let totalMovingDurationSeconds = 0; // <--- TAMBAHKAN INI (Menggunakan let agar seragam)
-let tripTimerInterval = null;
-
-let lastSavedLatForDistance = null;
-let lastSavedLngForDistance = null;
-
 let isEvBeepEnabled = true;
 let lastKnownAltitude = 0;
 let evBeepAudioContext = null;
@@ -1505,7 +1300,7 @@ window.onload = function() {
     inisialisasiPeta();
     renderSemuaTampilanKomponenUI();
     monitorFullscreenStateChange();
-    pushLogKonsol("PIDS v3.5.1 Siap Beroperasi.");
+    pushLogKonsol("PIDS v3.5.1-u1 Siap Beroperasi.");
 
     document.getElementById('login-pass')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
     document.getElementById('login-user')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1661,29 +1456,6 @@ function meSensitisedDate(date) {
 
         if (typeof updateKompasArahMataAngin === "function") updateKompasArahMataAngin(position.coords.heading, speedKMH);
         if (typeof prosesEvaluasiGeofenceRealtime === "function") prosesEvaluasiGeofenceRealtime(lastKnownLat, lastKnownLng, speedKMH);
-        
-        // Kalkulasi Jarak Perjalanan Real-time dari Gerakan GPS
-        if (lastSavedLatForDistance !== null && lastSavedLngForDistance !== null) {
-            let deltaJarakKM = hitungJarakAntarKoordinatHaversine(
-                lastSavedLatForDistance, lastSavedLngForDistance, 
-                lastKnownLat, lastKnownLng
-            );
-            
-            if (deltaJarakKM > 0 && deltaJarakKM < 1.0) {
-                totalTripDistanceKM += deltaJarakKM;
-                let distanceNode = document.getElementById('pids-trip-distance');
-                if (distanceNode) distanceNode.innerText = totalTripDistanceKM.toFixed(2) + " km";
-            }
-        }
-        
-        lastSavedLatForDistance = lastKnownLat;
-        lastSavedLngForDistance = lastKnownLng;
-    } else {
-        // Jika status tracking mati (misal di-stop), matikan juga interval timernya
-        if (tripTimerInterval !== null) {
-            clearInterval(tripTimerInterval);
-            tripTimerInterval = null;
-        }
     }
 }
 
@@ -1718,7 +1490,7 @@ function meSensitisedDate(date) {
                 if (fallbackTimerId) { clearTimeout(fallbackTimerId); fallbackTimerId = null; }
                 lepasWakeLock(); isTrackingActiveUI = false;
                 document.getElementById('btn-toggle-gps').innerText = "MULAI PERJALANAN";
-                ruteAktifTeks = "PIDS v3.5.1";
+                ruteAktifTeks = "PIDS v3.5.1-u1";
                 updateTeksMonitorUtamaPIDS(ruteAktifTeks);
                 document.getElementById('pids-speed').innerText = "0.0";
                 document.getElementById('pids-speed').classList.remove('blink-red');
@@ -1797,7 +1569,7 @@ function meSensitisedDate(date) {
     
     let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.replace(/^\s+|\s+$/g, '') : selAsal;
     let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.replace(/^\s+|\s+$/g, '') : selTujuan;
-    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.5.1";
+    let defText = document.getElementById('cfg-preset-default-text').value.replace(/^\s+|\s+$/g, '') || "PIDS v3.5.1-u1";
 
     if (asal !== "" && tujuan === "") ruteAktifTeks = asal + "-"; 
     else if (asal !== "" && tujuan !== "") ruteAktifTeks = asal + "-" + tujuan; 
@@ -1808,9 +1580,6 @@ function meSensitisedDate(date) {
     // ─── 1. AKTIFKAN TRACKING ───
     isTrackingActiveUI = true;
     
-    // ─── 2. NYALAKAN TIMER STATISTIK SEJAK KLIK KONFIRMASI (TAMBAHKAN INI) ───
-    startTripStatistics(); 
-
     document.getElementById('btn-toggle-gps').innerText = "SELESAIKAN PERJALANAN";
     updateTeksMonitorUtamaPIDS(ruteAktifTeks);
     document.getElementById('pids-nearest-object').innerText = "Mencari Titik...";
@@ -2517,25 +2286,7 @@ function hapusLokasi(id) {
 
         // ==================== CONFIG TAB HANDLING ====================
 
-        function simpanPengaturanAnnouncementKeStorage() {
-    const elWelcomeText = document.getElementById('cfg-custom-welcome-text');
-    const elWelcomeAudio = document.getElementById('cfg-custom-welcome-audio-select');
-    const elArrivalText = document.getElementById('cfg-custom-arrival-text');
-    const elArrivalAudio = document.getElementById('cfg-custom-arrival-select');
-
-    if (elWelcomeText) configAnnouncementCustom.welcomeText = elWelcomeText.value.trim();
-    if (elWelcomeAudio) configAnnouncementCustom.welcomeAudio = elWelcomeAudio.value;
-    if (elArrivalText) configAnnouncementCustom.arrivalText = elArrivalText.value.trim();
-    if (elArrivalAudio) configAnnouncementCustom.arrivalAudio = elArrivalAudio.value;
-
-    localStorage.setItem('pids_custom_announcement_cfg', JSON.stringify(configAnnouncementCustom));
-    
-    if (typeof pushLogKonsol === 'function') {
-        pushLogKonsol("[System] Pengaturan Announcement Custom berhasil disimpan.");
-    }
-}
-
-        function tambahLokasiBuiltIn() {
+               function tambahLokasiBuiltIn() {
     let namaLokasi = document.getElementById('cfg-add-lokasi-nama').value.trim();
     if (namaLokasi === "") { alert("Nama titik kosong!"); return; }
     
@@ -2653,7 +2404,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let configPackage = {
         platNomor: document.getElementById('cfg-plat-no')?.value.trim().toUpperCase() || "",
         overspeedLimit: document.getElementById('cfg-overspeed-limit')?.value || "50",
-        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v3.5.1",
+        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v3.5.1-u1",
         
         // Paket Data Custom Announcement (Termasuk Pintu)
         announcementCustom: {
@@ -2685,7 +2436,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
     let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-    let namaFile = `${formatWaktu}_backup-pids-v3.5.1.json`;
+    let namaFile = `${formatWaktu}_backup-pids-v3.5.1-u1.json`;
 
     let downloadAnchor = document.createElement('a'); 
     downloadAnchor.setAttribute("href", dataStr); 
@@ -2721,7 +2472,7 @@ function importDataDariJsonCombinedAllInOne(event) {
                     document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                 }
                 if (document.getElementById('cfg-preset-default-text')) {
-                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v3.5.1";
+                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v3.5.1-u1";
                 }
 
                 // 2. Restore Custom Announcement (Teks & Audio)
@@ -2892,95 +2643,85 @@ function monitorFullscreenStateChange() {
         }
 
 // Variabel Global
-let audioContextPids = null;
-let currentAnnouncerSource = null;
-let duckingTriggerAudio = null; // Elemen audio pancingan untuk ducking
+// Variabel Global Pemutar Announcer
+let currentAnnouncerAudio = null;
 
 function putarAnnouncer(audioPathUrl) {
+    // Cek apakah sakelar announcer di dashboard sedang aktif (ON)
     if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) { 
-        if (typeof pushLogKonsol === 'function') pushLogKonsol("[A] Announcer Dinonaktifkan"); 
+        if (typeof pushLogKonsol === 'function') pushLogKonsol("[A] Announcer Dinonaktifkan."); 
         return; 
     }
     
+    // Default fallback jika path kosong
     if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
         audioPathUrl = "audio/00 Notifikasi Pembuka.mp3";
     }
 
+    // 1. Matikan announcer sebelumnya jika masih bunyi agar tidak dobel/tumpang tindih
+    if (currentAnnouncerAudio) {
+        currentAnnouncerAudio.pause();
+        currentAnnouncerAudio.currentTime = 0;
+        currentAnnouncerAudio.removeAttribute('src');
+        currentAnnouncerAudio.load();
+        currentAnnouncerAudio = null;
+    }
+
     try {
-        // 1. Inisialisasi AudioContext
-        if (!audioContextPids) {
-            audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioContextPids.state === 'suspended') {
-            audioContextPids.resume();
+        // Amankan format path folder audio/
+        let cleanPath = audioPathUrl.trim();
+        if (!cleanPath.startsWith('audio/') && !cleanPath.startsWith('http') && !cleanPath.startsWith('blob:') && !cleanPath.startsWith('data:')) {
+            cleanPath = 'audio/' + cleanPath;
         }
 
-        // 2. ELEMEN PANCINGAN AUDIO DUCKING (Pemicu agar Android mengecilkan lagu)
-        if (!duckingTriggerAudio) {
-            duckingTriggerAudio = new Audio();
-            // Trik khusus: Pakai data audio hening (silent) pendek
-            duckingTriggerAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-            
-            if ('audioSession' in navigator) {
-                navigator.audioSession.type = 'speech';
-            }
-        }
-        
-        // Pemicu ducking dijalankan
-        duckingTriggerAudio.play().catch(() => {});
+        // Encode nama file agar aman dari spasi atau tanda baca
+        let pathAman = cleanPath.split('/').map(encodeURIComponent).join('/');
+        let audio = new Audio(pathAman);
+        currentAnnouncerAudio = audio;
 
-        if (typeof pushLogKonsol === 'function') {
-            pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl.substring(0,30)}...`);
-        }
+        // Set volume maksimal
+        audio.volume = 2.5;
 
-        // 3. Fetch & Play Audio Announcer Asli via Web Audio API Buffer
-        fetch(audioPathUrl)
-            .then(response => response.arrayBuffer())
-            .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
-            .then(audioBuffer => {
+        // 2. FUNGSI PELEPAS FOKUS: Menjamin musik kembali normal setelah selesai
+        const restoreMusikNormal = () => {
+            if (currentAnnouncerAudio === audio) {
+                audio.pause();
+                audio.currentTime = 0;
+                // Menghapus atribut 'src' adalah kunci agar Android segera mengembalikan volume Spotify
+                audio.removeAttribute('src');
+                audio.load();
+                currentAnnouncerAudio = null;
                 
-                // Stop audio PIDS sebelumnya jika belum selesai
-                if (currentAnnouncerSource) {
-                    try { currentAnnouncerSource.stop(0); } catch (e) {}
-                }
-
-                let source = audioContextPids.createBufferSource();
-                source.buffer = audioBuffer;
-                currentAnnouncerSource = source;
-
-                // Ambient Booster 2.5x
-                let gainNode = audioContextPids.createGain();
-                gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime);
-
-                source.connect(gainNode);
-                gainNode.connect(audioContextPids.destination);
-
-                // Mainkan suara announcer PIDS
-                source.start(0);
-
-                // 4. Ketika Announcer Selesai -> Lepas Ducking agar Spotify kencang kembali
-                source.onended = function() {
-                    if (currentAnnouncerSource === source) {
-                        currentAnnouncerSource = null;
-                    }
-                    if (duckingTriggerAudio) {
-                        duckingTriggerAudio.pause();
-                        duckingTriggerAudio.currentTime = 0;
-                    }
-                    if (typeof pushLogKonsol === 'function') {
-                        pushLogKonsol("[A] Announcer Selesai, volume lagu kembali normal.");
-                    }
-                };
-            })
-            .catch(err => {
                 if (typeof pushLogKonsol === 'function') {
-                    pushLogKonsol(`[A] Gagal Memutar: ${err.message}`);
+                    pushLogKonsol("[A] Announcer selesai, volume musik kembali normal.");
                 }
-            });
+            }
+        };
+
+        // Pasang event listener saat audio selesai atau jika gagal
+        audio.onended = restoreMusikNormal;
+        audio.onerror = (e) => {
+            if (typeof pushLogKonsol === 'function') {
+                pushLogKonsol(`[A] Gagal memuat file suara: ${audioPathUrl}`);
+            }
+            restoreMusikNormal();
+        };
+
+        // 3. Putar suara announcer
+        audio.play().then(() => {
+            if (typeof pushLogKonsol === 'function') {
+                pushLogKonsol(`[A] Memutar: ${audioPathUrl}`);
+            }
+        }).catch(err => {
+            restoreMusikNormal();
+            if (typeof pushLogKonsol === 'function') {
+                pushLogKonsol(`[A] Autoplay audio terhambat: ${err.message}`);
+            }
+        });
 
     } catch (e) {
         if (typeof pushLogKonsol === 'function') {
-            pushLogKonsol(`[A] Web Audio Error: ${e.message}`);
+            pushLogKonsol(`[A] Terjadi kesalahan audio: ${e.message}`);
         }
     }
 }
@@ -3240,75 +2981,6 @@ function buatDatabaseBaruDenganBackup() {
     }
 }
 
-function startTripStatistics() {
-    if (tripTimerInterval) clearInterval(tripTimerInterval);
-    
-    tripTimerInterval = setInterval(() => {
-        // 1. Timer utama (Waktu Perjalanan) tetap jalan terus
-        totalTripDurationSeconds++;
-        
-        // Format & Update Tampilan Durasi Utama (HH.MM.SS pakai titik sesuai HTML lo)
-        let hrs = Math.floor(totalTripDurationSeconds / 3600).toString().padStart(2, '0');
-        let mins = Math.floor((totalTripDurationSeconds % 3600) / 60).toString().padStart(2, '0');
-        let secs = (totalTripDurationSeconds % 60).toString().padStart(2, '0');
-        
-        let durationNode = document.getElementById('pids-trip-duration');
-        if (durationNode) durationNode.innerText = `${hrs}.${mins}.${secs}`;
-        
-        // 2. Ambil data kecepatan real-time saat ini dari layar dashboard
-        let speedNode = document.getElementById('pids-speed');
-        let currentSpeed = 0.0;
-        if (speedNode) {
-            currentSpeed = parseFloat(speedNode.innerText) || 0.0;
-        }
-        
-        // 3. LOGIKA UTAMA: Hanya hitung waktu bergerak jika kecepatan > 0 km/j
-        if (currentSpeed > 0) {
-            totalMovingDurationSeconds++;
-        }
-        
-        // 4. Hitung Rata-Rata Kecepatan murni dari waktu pas roda berputar/bergerak
-        let avgSpeed = 0.0;
-        if (totalMovingDurationSeconds > 0) {
-            let durationHours = totalMovingDurationSeconds / 3600;
-            avgSpeed = totalTripDistanceKM / durationHours;
-        }
-        
-        let avgSpeedNode = document.getElementById('pids-trip-avg-speed');
-        if (avgSpeedNode) {
-            avgSpeedNode.innerText = avgSpeed.toFixed(1) + " km/j";
-        }
-        
-    }, 1000);
-}
-
-function resetTripStatistics() {
-    if (tripTimerInterval) {
-        clearInterval(tripTimerInterval);
-        tripTimerInterval = null;
-    }
-    totalTripDistanceKM = 0.0;
-    totalTripDurationSeconds = 0;
-    totalMovingDurationSeconds = 0; // <--- IKUT DI-RESET JADI NOL DI SINI
-    lastSavedLatForDistance = null;
-    lastSavedLngForDistance = null;
-    
-    if(document.getElementById('pids-trip-duration')) document.getElementById('pids-trip-duration').innerText = "00.00.00";
-    if(document.getElementById('pids-trip-distance')) document.getElementById('pids-trip-distance').innerText = "0.00 km";
-    if(document.getElementById('pids-trip-avg-speed')) document.getElementById('pids-trip-avg-speed').innerText = "0.0 km/j";
-}
-
-// Rumus Haversine: Menghitung jarak presisi antar 2 koordinat GPS bumi
-function hitungJarakAntarKoordinatHaversine(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radius bumi dalam kilometer
-    let dLat = (lat2 - lat1) * Math.PI / 180;
-    let dLon = (lon2 - lon1) * Math.PI / 180;
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; // Hasil dalam kilometer
-}
-
 // =========================================================================
 // FUNGSI PEMICU ANNOUNCEMENT CUSTOM (DENGAN MULTI-ID AUTO DETECTOR)
 // =========================================================================
@@ -3411,7 +3083,7 @@ function picuAudioCustom(jenis) {
     }
 
     fallbackTimerId = setTimeout(() => { 
-        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v3.5.1");
+        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v3.5.1-u1");
         if (displayNode) {
             displayNode.setAttribute('data-text-mentah', defaultText);
             displayNode.innerText = defaultText;
@@ -3424,6 +3096,34 @@ function picuAudioCustom(jenis) {
     // 5. CETAK LOG SYSTEM
     if (typeof pushLogKonsol === 'function') {
         pushLogKonsol(`[Custom] Pemicu Manual: ${labelLog}`);
+    }
+}
+
+// --- FUNGSI SIMPAN PENGATURAN UMUM KE STORAGE (PLAT, OS LIMIT, TEKS DEFAULT) ---
+function simpanPengaturanUmumKeStorage() {
+    let platEl = document.getElementById('cfg-plat-no');
+    let osEl = document.getElementById('cfg-overspeed-limit');
+    let defTextEl = document.getElementById('cfg-preset-default-text');
+
+    if (platEl) {
+        let valPlat = platEl.value.trim().toUpperCase();
+        localStorage.setItem('pids_plat_nomor', valPlat);
+        let monitorPlat = document.getElementById('pids-plat-view');
+        if (monitorPlat) monitorPlat.innerText = valPlat || "NOMOR PLAT";
+    }
+
+    if (osEl) {
+        localStorage.setItem('pids_os_limit', osEl.value);
+    }
+
+    if (defTextEl) {
+        let valDef = defTextEl.value.trim();
+        localStorage.setItem('pids_preset_default_text', valDef);
+        // Jika sedang tidak ada rute aktif, update teks monitor langsung
+        if (!isTrackingActiveUI) {
+            ruteAktifTeks = valDef || "PIDS v3.5.1-u1";
+            updateTeksMonitorUtamaPIDS(ruteAktifTeks);
+        }
     }
 }
 
