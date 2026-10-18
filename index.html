@@ -2642,86 +2642,143 @@ function monitorFullscreenStateChange() {
             } catch(e){}
         }
 
-// Variabel Global
-// Variabel Global Pemutar Announcer
-let currentAnnouncerAudio = null;
+// =========================================================================
+// SISTEM PEMUTAR ANNOUNCER (BOOSTER 2.5X + AUTO DUCKING SPOTIFY)
+// =========================================================================
+let audioContextPids = null;
+let currentAnnouncerSource = null;
+let duckingTriggerAudio = null;
+let silentWavBlobUrl = null;
+
+// Fungsi pembuat file hening 2 detik murni (WAV PCM) agar Android mendeteksi audio aktif
+function dapatkanUrlAudioHening() {
+    if (silentWavBlobUrl) return silentWavBlobUrl;
+    const sampleRate = 8000;
+    const numSamples = sampleRate * 2; // 2 Detik hening
+    const buffer = new ArrayBuffer(44 + numSamples);
+    const view = new DataView(buffer);
+    
+    const writeString = (offset, str) => {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    };
+
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + numSamples, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);  // PCM
+    view.setUint16(22, 1, true);  // Mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate, true);
+    view.setUint16(32, 1, true);
+    view.setUint16(34, 8, true);  // 8-bit
+    writeString(36, 'data');
+    view.setUint32(40, numSamples, true);
+
+    new Uint8Array(buffer, 44, numSamples).fill(128); // Isi gelombang hening
+    silentWavBlobUrl = URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
+    return silentWavBlobUrl;
+}
+
+function mulaiDuckingSpotify() {
+    try {
+        if (!duckingTriggerAudio) {
+            duckingTriggerAudio = new Audio();
+            duckingTriggerAudio.src = dapatkanUrlAudioHening();
+            duckingTriggerAudio.loop = true; // KUNCI: Wajib loop agar musik tetap kecil selama announcer bicara
+        }
+        duckingTriggerAudio.loop = true;
+        duckingTriggerAudio.currentTime = 0;
+        duckingTriggerAudio.play().catch(() => {});
+    } catch(e){}
+}
+
+function hentikanDuckingSpotify() {
+    if (duckingTriggerAudio) {
+        try {
+            duckingTriggerAudio.pause();
+            duckingTriggerAudio.currentTime = 0;
+        } catch(e){}
+    }
+}
 
 function putarAnnouncer(audioPathUrl) {
-    // Cek apakah sakelar announcer di dashboard sedang aktif (ON)
     if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) { 
-        if (typeof pushLogKonsol === 'function') pushLogKonsol("[A] Announcer Dinonaktifkan."); 
+        if (typeof pushLogKonsol === 'function') pushLogKonsol("[A] Announcer Dinonaktifkan"); 
         return; 
     }
     
-    // Default fallback jika path kosong
     if (!audioPathUrl || audioPathUrl === "none" || audioPathUrl.trim() === "") {
         audioPathUrl = "audio/00 Notifikasi Pembuka.mp3";
     }
 
-    // 1. Matikan announcer sebelumnya jika masih bunyi agar tidak dobel/tumpang tindih
-    if (currentAnnouncerAudio) {
-        currentAnnouncerAudio.pause();
-        currentAnnouncerAudio.currentTime = 0;
-        currentAnnouncerAudio.removeAttribute('src');
-        currentAnnouncerAudio.load();
-        currentAnnouncerAudio = null;
-    }
-
     try {
-        // Amankan format path folder audio/
-        let cleanPath = audioPathUrl.trim();
-        if (!cleanPath.startsWith('audio/') && !cleanPath.startsWith('http') && !cleanPath.startsWith('blob:') && !cleanPath.startsWith('data:')) {
-            cleanPath = 'audio/' + cleanPath;
+        // 1. Inisialisasi AudioContext Web Audio API
+        if (!audioContextPids) {
+            audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContextPids.state === 'suspended') {
+            audioContextPids.resume();
         }
 
-        // Encode nama file agar aman dari spasi atau tanda baca
-        let pathAman = cleanPath.split('/').map(encodeURIComponent).join('/');
-        let audio = new Audio(pathAman);
-        currentAnnouncerAudio = audio;
+        // Hentikan suara announcer sebelumnya jika sedang berbunyi
+        if (currentAnnouncerSource) {
+            try { currentAnnouncerSource.stop(0); } catch (e) {}
+            currentAnnouncerSource = null;
+        }
 
-        // Set volume maksimal
-        audio.volume = 2.5;
+        // 2. PICU DUCKING SEJAK AWAL: Spotify langsung mengecil di pencetan pertama
+        mulaiDuckingSpotify();
 
-        // 2. FUNGSI PELEPAS FOKUS: Menjamin musik kembali normal setelah selesai
-        const restoreMusikNormal = () => {
-            if (currentAnnouncerAudio === audio) {
-                audio.pause();
-                audio.currentTime = 0;
-                // Menghapus atribut 'src' adalah kunci agar Android segera mengembalikan volume Spotify
-                audio.removeAttribute('src');
-                audio.load();
-                currentAnnouncerAudio = null;
-                
+        if (typeof pushLogKonsol === 'function') {
+            pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl}`);
+        }
+
+        // 3. Fetch file audio & naikkan volume via GainNode (2.5x Booster)
+        fetch(audioPathUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("Gagal mengambil file audio");
+                return response.arrayBuffer();
+            })
+            .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                let source = audioContextPids.createBufferSource();
+                source.buffer = audioBuffer;
+                currentAnnouncerSource = source;
+
+                // BOOSTER AMBIENT 2.5X UNTUK SPEAKER MOBIL
+                let gainNode = audioContextPids.createGain();
+                gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime);
+
+                source.connect(gainNode);
+                gainNode.connect(audioContextPids.destination);
+
+                source.start(0);
+
+                // 4. KETIKA ANNOUNCER SELESAI: Lepas ducking otomatis, musik kembali normal!
+                source.onended = function() {
+                    if (currentAnnouncerSource === source) {
+                        currentAnnouncerSource = null;
+                    }
+                    hentikanDuckingSpotify();
+                    if (typeof pushLogKonsol === 'function') {
+                        pushLogKonsol("[A] Announcer selesai, volume lagu kembali normal.");
+                    }
+                };
+            })
+            .catch(err => {
+                // Jika file audio tidak ditemukan, jangan biarkan musik tetap kecil
+                hentikanDuckingSpotify();
                 if (typeof pushLogKonsol === 'function') {
-                    pushLogKonsol("[A] Announcer selesai, volume musik kembali normal.");
+                    pushLogKonsol(`[A] Gagal memutar: ${err.message}`);
                 }
-            }
-        };
-
-        // Pasang event listener saat audio selesai atau jika gagal
-        audio.onended = restoreMusikNormal;
-        audio.onerror = (e) => {
-            if (typeof pushLogKonsol === 'function') {
-                pushLogKonsol(`[A] Gagal memuat file suara: ${audioPathUrl}`);
-            }
-            restoreMusikNormal();
-        };
-
-        // 3. Putar suara announcer
-        audio.play().then(() => {
-            if (typeof pushLogKonsol === 'function') {
-                pushLogKonsol(`[A] Memutar: ${audioPathUrl}`);
-            }
-        }).catch(err => {
-            restoreMusikNormal();
-            if (typeof pushLogKonsol === 'function') {
-                pushLogKonsol(`[A] Autoplay audio terhambat: ${err.message}`);
-            }
-        });
+            });
 
     } catch (e) {
+        hentikanDuckingSpotify();
         if (typeof pushLogKonsol === 'function') {
-            pushLogKonsol(`[A] Terjadi kesalahan audio: ${e.message}`);
+            pushLogKonsol(`[A] Web Audio Error: ${e.message}`);
         }
     }
 }
