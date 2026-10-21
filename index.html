@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS v4.0.0-u1</title>
+    <title>PIDS v4.0.0-u2</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -885,7 +885,38 @@
             user-select: none;
         }
 
-        /* Baris 1: 3 Kotak (Plat, Tanggal+Jam, Cuaca) - DIBESARKAN */
+        /* --- KALIBRASI KOMPAS FULLSCREEN (TERKUNCI TIDAK TURUN & PROPORSIONAL) --- */
+        #pids-monitor-mode:fullscreen .kompas-wrap {
+            position: relative !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        #pids-monitor-mode:fullscreen .kompas-label {
+            position: absolute !important;
+            top: 2vw !important; /* Judul selalu terkunci di atas, tidak akan turun */
+            font-size: 2vw !important;
+            margin: 0 !important;
+        }
+        #pids-monitor-mode:fullscreen .kompas-value {
+            font-size: 4.8vw !important; /* Dikecilkan agar Barat Laut (NW) muat rapi */
+            line-height: 1.1 !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+        }
+        #pids-monitor-mode:fullscreen #pids-compass-sub {
+            font-size: 4.2vw !important; /* Derajat dibesarkan sebagai subtitle jelas */
+            color: #ffb703 !important;
+            font-weight: bold !important;
+            margin-top: 0.5vw !important;
+        }
+
+        /* =======================================================
+           COCKPIT PORTRAIT (BARIS 1 s/d 4 REVISI MAKSIMAL)
+           ======================================================= */
+
+        /* Baris 1: 3 Kotak (Plat, Tanggal+Jam, Cuaca) - DIGEDEKAN */
         .cp-row-1 {
             display: flex;
             gap: 6px;
@@ -898,28 +929,28 @@
             background-color: #111111;
             border: 1px solid #282828;
             border-radius: 8px;
-            padding: 8px 4px; /* Lebih tebal dan tinggi */
+            padding: 8px 4px; /* Kotak lebih tinggi & empuk */
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px; /* Font dibesarkan */
             font-weight: bold;
             white-space: nowrap;
             overflow: hidden;
+            box-sizing: border-box;
         }
-        .cp-pill-plat     { flex: 1.0; font-size: 13px; }
-        .cp-pill-datetime { flex: 1.6; font-size: 12px; }
-        .cp-pill-weather  { flex: 0.8; font-size: 13px; }
+        .cp-pill-plat     { flex: 1.0; font-size: 15px; } /* Plat digedein */
+        .cp-pill-datetime { flex: 1.6; font-size: 13px; } /* Jam & Tanggal digedein */
+        .cp-pill-weather  { flex: 0.85; font-size: 15px; } /* Cuaca digedein */
 
-        /* Baris 2: Layar Teks Rute & Halte (Muat 3 Baris & Font 16px) */
+        /* Baris 2: Layar Teks Rute & Halte (DIBESARKAN & SIAP 3 BARIS) */
         .cp-row-2 {
             background-color: #000000;
             border: 1px solid #333333;
             border-radius: 6px;
-            padding: 6px 10px;
+            padding: 6px 12px;
             text-align: center;
-            min-height: 56px;
+            height: 76px; /* Tinggi kotak ditambah agar muat 3 baris teks besar */
             box-sizing: border-box;
             display: flex;
             align-items: center;
@@ -927,17 +958,17 @@
         }
         .cp-main-text {
             color: #ffff00;
-            font-size: 16px;
+            font-size: 19px; /* Ukuran font dibesarkan agar sangat jelas */
             font-weight: bold;
-            line-height: 1.25;
+            line-height: 1.2;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 3; /* Terkunci rapi maksimal 3 baris */
             -webkit-box-orient: vertical;
             overflow: hidden;
             word-break: break-word;
         }
 
-        /* ANIMASI KELIP FADE 3X (SUDAH DIKEMBALIKAN) */
+        /* Animasi Kelip Fade 3x */
         @keyframes cp-fade-3x {
             0%   { opacity: 0; }
             17%  { opacity: 1; }
@@ -948,7 +979,7 @@
             100% { opacity: 1; }
         }
         .cp-fade-blink {
-            animation: cp-fade-3x 2.3s ease-in-out forwards !important;
+            animation: cp-fade-3x 2s ease-in-out forwards !important;
         }
 
         /* Baris 3: Area Inti (Peta Vertikal & Speedo/Kompas) */
@@ -1001,52 +1032,54 @@
             text-transform: uppercase;
             line-height: 1.15;
             flex-shrink: 0;
-            width: 55px; /* Mengunci lebar judul */
+            width: 50px;
         }
         
-        /* ISI KECEPATAN CENTERED */
+        /* ISI KECEPATAN: FORMAT ATAS-BAWAH (ANGKA BESAR DI ATAS, KM/J KECIL DI BAWAH) */
         .cp-widget-val-wrap {
             flex: 1;
             display: flex;
-            align-items: baseline;
-            justify-content: center; /* Posisi angka tepat di tengah */
-            gap: 3px;
+            flex-direction: column; /* Ditumpuk atas-bawah */
+            align-items: center;    /* Centered */
+            justify-content: center;
+            text-align: center;
         }
         .cp-speed-val {
-            font-size: 28px;
+            font-size: 38px; /* Angka bisa sangat besar tanpa terhimpit */
             font-weight: bold;
             color: #00ff00;
-            line-height: 1;
+            line-height: 0.95;
+            letter-spacing: -1.5px;
         }
         .cp-unit-sm {
-            font-size: 10px;
+            font-size: 11px;
             color: #888888;
+            font-weight: bold;
+            margin-top: 3px;
         }
 
-        /* ISI KOMPAS CENTERED */
+        /* ISI KOMPAS: PERSIS DI TENGAH, DERAJAT LEBIH BESAR & POSISI TERKUNCI */
         .cp-compass-wrap-fixed {
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;     /* Posisi teks tepat di tengah */
+            align-items: center;     /* Centered */
             justify-content: center;
             text-align: center;
-            min-height: 38px;
+            min-height: 42px;        /* Mengunci tinggi agar tidak naik-turun */
         }
         .cp-compass-main {
             font-size: 13px;
             font-weight: bold;
             color: #ffb703;
             line-height: 1.2;
-            text-align: center;
             white-space: nowrap;
         }
         .cp-compass-sub {
-            font-size: 10px;
-            color: #aaaaaa;
+            font-size: 13px;         /* Derajat di cockpit dibesarkan */
+            color: #ffb703;
             line-height: 1.2;
             font-weight: bold;
-            text-align: center;
         }
 
         /* Baris 4: Telemetri Sejajar Rata Kanan-Kiri */
@@ -1069,21 +1102,23 @@
             white-space: nowrap;
         }
         
-        /* POSISI ANDA: LABEL TIPIS, ANGKA TEBAL */
+        /* POSISI ANDA: LABEL TIDAK BOLD, ISINYA TETAP BOLD */
         .cp-tele-coords {
             display: flex;
             justify-content: space-between;
             width: 100%;
             color: #ffffff;
         }
-        .cp-tele-label-normal {
-            font-weight: normal !important; /* HANYA label "Posisi Anda:" yang tidak bold */
+        .cp-label-normal {
+            font-weight: normal !important; /* HANYA "Posisi Anda:" yang tidak bold */
             color: #ffffff;
         }
-        .cp-tele-coords span:not(.cp-tele-label-normal) {
-            font-weight: bold !important;   /* Isian Lat, Lng, Alt TETAP BOLD */
+        .cp-val-bold {
+            font-weight: bold !important;   /* Lat, Lng, Alt TETAP BOLD */
+            color: #ffffff;
         }
 
+        /* TITIK TERDEKAT */
         .cp-nearest-wrap {
             display: flex;
             align-items: center;
@@ -1297,7 +1332,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v4.0.0-u1</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v4.0.0-u2</h1>
     </header>
 
     <div class="tab-bar">
@@ -1389,7 +1424,7 @@
 
                 <!-- BARIS 2: LAYAR TEKS RUTE & HALTE (MUAT HINGGA 3 BARIS, FONT LEBIH BESAR) -->
                 <div class="cp-row-2">
-                    <div class="cp-main-text" id="cp-display-text">PIDS v4.0.0-u1</div>
+                    <div class="cp-main-text" id="cp-display-text">PIDS v4.0.0-u2</div>
                 </div>
 
                 <!-- BARIS 3: AREA INTI (PETA VERTIKAL + SPEEDO & KOMPAS FORMAT HORIZONTAL) -->
@@ -1400,12 +1435,12 @@
                     <div class="cp-widgets-col">
                         <!-- WIDGET KECEPATAN: FORMAT KIRI-KANAN -->
                         <div class="cp-widget-card cp-widget-speed-h">
-                            <span class="cp-widget-label-h">KECEPATAN</span>
-                            <div class="cp-widget-val-wrap">
-                                <span class="cp-speed-val" id="cp-speed">0.0</span>
-                                <span class="cp-unit-sm">km/j</span>
-                            </div>
-                        </div>
+    <span class="cp-widget-label-h">KECEPATAN</span>
+    <div class="cp-widget-val-wrap">
+        <span class="cp-speed-val" id="cp-speed">0.0</span>
+        <span class="cp-unit-sm">km/j</span>
+    </div>
+</div>
                         <!-- WIDGET KOMPAS: FORMAT KIRI-KANAN (POSISI TERKUNCI TIDAK NAIK-TURUN) -->
                         <div class="cp-widget-card cp-widget-compass-h">
                             <span class="cp-widget-label-h" style="text-align:center;">ARAH<br>MATA ANGIN</span>
@@ -1417,27 +1452,29 @@
                     </div>
                 </div>
 
-                <!-- BARIS 4: TELEMETRI & SENSOR GPS -->
+                <!-- BARIS 4: TELEMETRI (ID SUDAH DIPISAH TOTAL) -->
                 <div class="cp-row-4">
+                    <!-- Baris 1: Durasi | Status GPS | Akurasi | Titik -->
                     <div class="cp-tele-line">
-                        <span>Durasi: <strong id="cp-trip-duration" style="color:#ffffff;">00.00.00</strong></span>
+                        <span>Durasi: <strong id="cp-trip-duration" style="color:#ffffff;">00:00:00</strong></span>
                         <span>Status GPS: <strong id="cp-gps-status" style="color:#cc0000;">OFF</strong></span>
                         <span>Akurasi: <strong id="cp-gps-accuracy" style="color:#ffffff;">-</strong></span>
                         <span>Titik: <strong id="cp-total-titik" style="color:#ffffff;">0</strong></span>
                     </div>
-                    <!-- POSISI ANDA DIBUAT FONT NORMAL (TIDAK BOLD) -->
+
+                    <!-- Baris 2: Posisi Anda (Label Tidak Bold, Angka Bold) -->
                     <div class="cp-tele-coords">
-                        <span style="font-weight:normal; color:#ffffff;">Posisi Anda:</span>
-                        <span id="cp-lat">Lat -</span>
-                        <span id="cp-lng">Lng -</span>
-                        <span id="cp-alt">Alt 0.0 m</span>
+                        <span class="cp-label-normal">Posisi Anda:</span>
+                        <span class="cp-val-bold" id="cp-lat">Lat -</span>
+                        <span class="cp-val-bold" id="cp-lng">Lng -</span>
+                        <span class="cp-val-bold" id="cp-alt">Alt 0.0 m</span>
                     </div>
-                    <!-- LABEL POSISI ANDA TIDAK BOLD, ISINYA TETAP BOLD -->
-                    <div class="cp-tele-coords">
-                        <span class="cp-tele-label-normal">Posisi Anda:</span>
-                        <span id="cp-lat">Lat -</span>
-                        <span id="cp-lng">Lng -</span>
-                        <span id="cp-alt">Alt 0.0 m</span>
+
+                    <!-- Baris 3: Titik Terdekat Murni (Nama Halte & Jarak) -->
+                    <div class="cp-nearest-wrap">
+                        <span class="cp-nearest-label">Titik Terdekat:</span>
+                        <span class="cp-nearest-name" id="cp-nearest-name">Rute Tidak Tersedia</span>
+                        <span class="cp-nearest-dist" id="cp-nearest-dist">-</span>
                     </div>
                 </div>
 
@@ -1592,7 +1629,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v4.0.0-u1" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v4.0.0-u2" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1721,7 +1758,7 @@ let configAnnouncementCustom = {
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "PIDS v4.0.0-u1";
+        let ruteAktifTeks = "PIDS v4.0.0-u2";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1803,7 +1840,7 @@ window.onload = function() {
     renderSemuaTampilanKomponenUI();
     monitorFullscreenStateChange();
     sinkronkanSemuaSwitchUI();
-    pushLogKonsol("PIDS v4.0.0-u1 Siap Beroperasi.");
+    pushLogKonsol("PIDS v4.0.0-u2 Siap Beroperasi.");
 
     document.getElementById('login-pass')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
     document.getElementById('login-user')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1962,14 +1999,14 @@ function meSensitisedDate(date) {
         document.getElementById('gps-current-coord').innerText = `Lat: ${lastKnownLat.toFixed(5)}, Lng: ${lastKnownLng.toFixed(5)}, Alt: ${lastKnownAltitude.toFixed(1)} m`;
     }
 
-    // 2. UPDATE DATA TELEMETRI BARIS 4 COCKPIT PORTRAIT
+    // Update data Baris 4 Cockpit Portrait
     let elCpGPS = document.getElementById('cp-gps-status');
     if (elCpGPS) { elCpGPS.innerText = "ON"; elCpGPS.style.color = "#00ff00"; }
     if (document.getElementById('cp-gps-accuracy')) {
         document.getElementById('cp-gps-accuracy').innerText = `${accuracy.toFixed(1)}m`;
     }
     
-    // Pecah data posisi agar rata kanan-kiri
+    // Tembak langsung ke elemen koordinat masing-masing (Angka Bold)
     let elLat = document.getElementById('cp-lat');
     let elLng = document.getElementById('cp-lng');
     let elAlt = document.getElementById('cp-alt');
@@ -2054,7 +2091,7 @@ function meSensitisedDate(date) {
     let cpCompassMain = document.getElementById('cp-compass-main');
     let cpCompassSub = document.getElementById('cp-compass-sub');
 
-    // Kecepatan rendah / diam: pertahankan posisi teks dengan strip "-"
+    // Kecepatan rendah / berhenti: pertahankan tanda "-" di posisi yang sama
     if (speed <= 1 || headingDeg === null || headingDeg === undefined || isNaN(headingDeg)) {
         if (compassNode) compassNode.innerText = "";
         if (compassSubNode) compassSubNode.innerText = "";
@@ -2077,7 +2114,7 @@ function meSensitisedDate(date) {
     if (compassNode) compassNode.innerText = strNamaArah;
     if (compassSubNode) compassSubNode.innerText = strDerajat;
 
-    // Update di Cockpit Portrait
+    // Update di Cockpit Portrait (Centered)
     if (cpCompassMain) cpCompassMain.innerText = strNamaArah;
     if (cpCompassSub) cpCompassSub.innerText = strDerajat;
 }
@@ -3082,7 +3119,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let configPackage = {
         platNomor: document.getElementById('cfg-plat-no')?.value.trim().toUpperCase() || "",
         overspeedLimit: document.getElementById('cfg-overspeed-limit')?.value || "50",
-        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v4.0.0-u1",
+        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v4.0.0-u2",
         
         // Paket Data Custom Announcement (Termasuk Pintu)
         announcementCustom: {
@@ -3114,7 +3151,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
     let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-    let namaFile = `${formatWaktu}_backup-pids-v4.0.0-u1.json`;
+    let namaFile = `${formatWaktu}_backup-pids-v4.0.0-u2.json`;
 
     let downloadAnchor = document.createElement('a'); 
     downloadAnchor.setAttribute("href", dataStr); 
@@ -3150,7 +3187,7 @@ function importDataDariJsonCombinedAllInOne(event) {
                     document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                 }
                 if (document.getElementById('cfg-preset-default-text')) {
-                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v4.0.0-u1";
+                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v4.0.0-u2";
                 }
 
                 // 2. Restore Custom Announcement (Teks & Audio)
@@ -4078,7 +4115,7 @@ function picuAudioCustom(jenis) {
     }
 
     fallbackTimerId = setTimeout(() => { 
-        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v4.0.0-u1");
+        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v4.0.0-u2");
         if (displayNode) {
             displayNode.setAttribute('data-text-mentah', defaultText);
             displayNode.innerText = defaultText;
