@@ -886,30 +886,33 @@
         }
 
         /* --- KALIBRASI KOMPAS FULLSCREEN (TERKUNCI TIDAK TURUN & PROPORSIONAL) --- */
+        /* --- KALIBRASI KOMPAS FULLSCREEN (POSISI PROPORSIONAL & FONT LEBIH GAGAH) --- */
         #pids-monitor-mode:fullscreen .kompas-wrap {
             position: relative !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
             align-items: center !important;
+            padding-top: 3.5vw !important; /* Mendorong teks sedikit ke bawah agar rata tengah sempurna */
+            box-sizing: border-box !important;
         }
         #pids-monitor-mode:fullscreen .kompas-label {
             position: absolute !important;
-            top: 2vw !important; /* Judul selalu terkunci di atas, tidak akan turun */
+            top: 2vw !important; /* Judul tetap terkunci rapi di atas */
             font-size: 2vw !important;
             margin: 0 !important;
         }
         #pids-monitor-mode:fullscreen .kompas-value {
-            font-size: 4.8vw !important; /* Dikecilkan agar Barat Laut (NW) muat rapi */
-            line-height: 1.1 !important;
+            font-size: 5.6vw !important; /* Dibesarkan dari 4.8vw agar lebih dominan */
+            line-height: 1.15 !important;
             white-space: nowrap !important;
             text-align: center !important;
         }
         #pids-monitor-mode:fullscreen #pids-compass-sub {
-            font-size: 4.2vw !important; /* Derajat dibesarkan sebagai subtitle jelas */
+            font-size: 4.6vw !important; /* Derajat ikut dibesarkan */
             color: #ffb703 !important;
             font-weight: bold !important;
-            margin-top: 0.5vw !important;
+            margin-top: 0.6vw !important;
         }
 
         /* =======================================================
@@ -1058,28 +1061,29 @@
             margin-top: 3px;
         }
 
-        /* ISI KOMPAS: PERSIS DI TENGAH, DERAJAT LEBIH BESAR & POSISI TERKUNCI */
+        /* ISI KOMPAS COCKPIT: FONT DIBESARKAN */
         .cp-compass-wrap-fixed {
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;     /* Centered */
+            align-items: center;
             justify-content: center;
             text-align: center;
-            min-height: 42px;        /* Mengunci tinggi agar tidak naik-turun */
+            min-height: 44px;
         }
         .cp-compass-main {
-            font-size: 13px;
+            font-size: 15px; /* Dibesarkan dari 13px */
             font-weight: bold;
             color: #ffb703;
             line-height: 1.2;
             white-space: nowrap;
         }
         .cp-compass-sub {
-            font-size: 13px;         /* Derajat di cockpit dibesarkan */
+            font-size: 14px; /* Dibesarkan dari 13px */
             color: #ffb703;
             line-height: 1.2;
             font-weight: bold;
+            margin-top: 2px;
         }
 
         /* Baris 4: Telemetri Sejajar Rata Kanan-Kiri */
@@ -1359,8 +1363,8 @@
                 <div class="pids-row-2">
                     <div class="kompas-wrap">
                         <span class="kompas-label">Arah Mata Angin</span>
-                        <span class="kompas-value" id="pids-compass" style="font-size:9vw; line-height:1.1;"></span>
-                        <span id="pids-compass-sub" style="font-size:3.5vw; color:#aaaaaa; font-weight:bold;"></span>
+                        <span class="kompas-value" id="pids-compass"></span>
+                        <span id="pids-compass-sub"></span>
                     </div>
                     <div class="speedo-wrap-v2">
                         <span class="speedo-value-v2" id="pids-speed">0.0</span>
@@ -1922,51 +1926,51 @@ function meSensitisedDate(date) {
     if (cpTextNode) {
         cpTextNode.innerText = teksBersih;
         cpTextNode.classList.remove('cp-fade-blink');
-        void cpTextNode.offsetWidth; // Reset paksa animasi agar langsung replay
+        void cpTextNode.offsetWidth; // Reset reflow animasi
         cpTextNode.classList.add('cp-fade-blink');
     }
-    let displayNode = document.getElementById('pids-display'); if (!displayNode) return;
+
+    // 2. LOGIKA MONITOR FULL SCREEN (PENGUKURAN FISIK PIKSEL)
+    let displayNode = document.getElementById('pids-display'); 
+    if (!displayNode) return;
     let containerNode = document.querySelector('.marquee-container');
+    if (!containerNode) return;
     
-    // ─── SUNTIK BARIS INI (WAJIB) ───
-    // Biar geofence tahu teks apa yang lagi aktif di layar tanpa ketipu spasi gaib
+    // Simpan teks mentah agar geofence tidak tertipu
     displayNode.setAttribute('data-text-mentah', teksBaru);
 
-    // Reset total animasi dan paksa reflow biar browser gak kaget/ngelag pas ganti rute
-    displayNode.style.animation = 'none'; 
-    displayNode.offsetHeight; 
+    // Siapkan teks aman dari spasi gaib
+    let teksAmanSpasi = teksBersih.replace(/ /g, '\u00A0');
+    displayNode.textContent = teksAmanSpasi;
 
-    // ─── JALUR TEKS PENDEK (DIEM DI TENGAH) ───
-    if (teksBersih.length <= 21) {
-        displayNode.textContent = teksBersih; 
-        
-        // Reset padding dan paksa pakai kelas statis semalam
+    // Reset sementara class & animasi agar browser bisa mengukur lebar alami teks
+    displayNode.style.animation = 'none';
+    displayNode.className = "marquee-text";
+    displayNode.style.paddingLeft = '0px';
+    displayNode.style.width = 'auto';
+
+    // UKUR FISIK PIKSEL: Bandingkan lebar teks dengan lebar layar monitor saat ini
+    let lebarTeksPiksel = displayNode.scrollWidth;
+    let lebarLayarPiksel = containerNode.clientWidth;
+
+    // Beri toleransi aman 25 piksel agar tidak mepet ke tepi garis monitor
+    let teksMuatDiLayar = lebarTeksPiksel <= (lebarLayarPiksel - 25);
+
+    // KONDISI A: JIKA TEKS MUAT DI LAYAR -> DIAM DI TENGAH (MODE STATIS)
+    if (teksMuatDiLayar) {
         displayNode.className = "marquee-text mode-statis";
+        displayNode.style.width = '100%';
         displayNode.style.paddingLeft = '0px';
-        
-        if (containerNode) {
-            containerNode.className = "marquee-container parent-statis";
-        }
+        displayNode.style.animation = 'none';
     } 
-    // ─── JALUR TEKS PANJANG (PURA-PURA BALIK KE KODE ASLI LO YANG SMOOTH) ───
+    // KONDISI B: JIKA TEKS LEBIH PANJANG DARI LAYAR -> JALAN (MODE MARQUEE)
     else {
-        // Balikin kelas container ke setelan pabrik lo semalam
-        if (containerNode) {
-            containerNode.className = "marquee-container";
-        }
-        
-        // Kembalikan kelas teks ke mode jalan bawaan CSS asli lo
         displayNode.className = "marquee-text mode-jalan";
+        displayNode.style.width = '';
+        displayNode.style.paddingLeft = ''; // Kembalikan ke padding CSS
         
-        // HAPUS PADDING GAIB: Kembalikan kontrol penuh ke file CSS asli lo biar gak mulai dari tengah
-        displayNode.style.paddingLeft = ''; 
-
-        // Jalankan TRICK FIX SPASI bawaan asli lo kemarin
-        let teksAmanSpasi = teksBersih.replace(/ /g, '\u00A0');
-        displayNode.textContent = teksAmanSpasi; 
-        
-        // Hitung durasi & jalankan animasi murni persis gaya lama lo
-        hitungDanSetDurasiMarquee(teksAmanSpasi); 
+        // Hitung durasi kecepatan jalan secara proporsional
+        hitungDanSetDurasiMarquee(teksAmanSpasi);
         displayNode.style.animation = 'marquee-static-engine var(--marquee-duration) linear infinite';
     }
 }
@@ -3320,7 +3324,17 @@ function toggleLayarPenuhAPI() {
 
 function monitorFullscreenStateChange() {
     document.addEventListener('fullscreenchange', () => { 
-        document.getElementById('btn-fs-floating').innerText = document.fullscreenElement ? "EXIT" : "⛶"; 
+        let btnFs = document.getElementById('btn-fs-floating');
+        if (btnFs) btnFs.innerText = document.fullscreenElement ? "EXIT" : "FS";
+
+        // Beri jeda 150ms agar ukuran layar penuh stabil, lalu ukur ulang teksnya
+        setTimeout(() => {
+            let displayNode = document.getElementById('pids-display');
+            let teksSaatIni = displayNode ? displayNode.getAttribute('data-text-mentah') : ruteAktifTeks;
+            if (teksSaatIni) {
+                updateTeksMonitorUtamaPIDS(teksSaatIni);
+            }
+        }, 150);
     });
 }
 
