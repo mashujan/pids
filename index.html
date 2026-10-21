@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIDS v4.0.0</title>
+    <title>PIDS v4.0.0-u1</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -885,10 +885,10 @@
             user-select: none;
         }
 
-        /* Baris 1: 4 Kotak Bulat Terpisah (Plat, Tanggal, Jam, Cuaca) */
+        /* Baris 1: 3 Kotak (Plat, Tanggal+Jam, Cuaca) - DIBESARKAN */
         .cp-row-1 {
             display: flex;
-            gap: 5px;
+            gap: 6px;
             width: 100%;
             background: none !important;
             border: none !important;
@@ -898,29 +898,28 @@
             background-color: #111111;
             border: 1px solid #282828;
             border-radius: 8px;
-            padding: 5px 2px;
+            padding: 8px 4px; /* Lebih tebal dan tinggi */
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 13px; /* Font dibesarkan */
             font-weight: bold;
             white-space: nowrap;
             overflow: hidden;
         }
-        .cp-pill-plat    { flex: 1.1; }
-        .cp-pill-date    { flex: 1.0; }
-        .cp-pill-clock   { flex: 0.9; }
-        .cp-pill-weather { flex: 0.8; } /* Kotak cuaca lebih kecil */
+        .cp-pill-plat     { flex: 1.0; font-size: 13px; }
+        .cp-pill-datetime { flex: 1.6; font-size: 12px; }
+        .cp-pill-weather  { flex: 0.8; font-size: 13px; }
 
-        /* Baris 2: Layar Teks Rute & Halte */
+        /* Baris 2: Layar Teks Rute & Halte (Muat 3 Baris & Font 16px) */
         .cp-row-2 {
             background-color: #000000;
             border: 1px solid #333333;
             border-radius: 6px;
-            padding: 4px 8px;
+            padding: 6px 10px;
             text-align: center;
-            height: 44px;
+            min-height: 56px;
             box-sizing: border-box;
             display: flex;
             align-items: center;
@@ -928,28 +927,28 @@
         }
         .cp-main-text {
             color: #ffff00;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             line-height: 1.25;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
             word-break: break-word;
         }
 
-        /* Animasi Transisi Teks: Off -> Fade In 3x (Total 2 Detik) */
+        /* ANIMASI KELIP FADE 3X (SUDAH DIKEMBALIKAN) */
         @keyframes cp-fade-3x {
-            0%   { opacity: 0; } /* Padam / Off di awal */
-            17%  { opacity: 1; } /* Muncul ke-1 */
-            33%  { opacity: 0; } /* Padam ke-2 */
-            50%  { opacity: 1; } /* Muncul ke-2 */
-            67%  { opacity: 0; } /* Padam ke-3 */
-            84%  { opacity: 1; } /* Muncul ke-3 */
-            100% { opacity: 1; } /* Tampil terus / Menyala permanen */
+            0%   { opacity: 0; }
+            17%  { opacity: 1; }
+            33%  { opacity: 0; }
+            50%  { opacity: 1; }
+            67%  { opacity: 0; }
+            84%  { opacity: 1; }
+            100% { opacity: 1; }
         }
         .cp-fade-blink {
-            animation: cp-fade-3x 2.3s ease-in-out forwards;
+            animation: cp-fade-3x 2.3s ease-in-out forwards !important;
         }
 
         /* Baris 3: Area Inti (Peta Vertikal & Speedo/Kompas) */
@@ -969,8 +968,12 @@
             position: relative;
         }
         #portrait-live-map {
-            width: 100%;
-            height: 100%;
+            width: 170% !important;
+            height: 170% !important;
+            position: absolute !important;
+            top: -35% !important;
+            left: -35% !important;
+            transform-origin: center center !important;
             transition: transform 0.4s ease-out;
         }
         .cp-widgets-col {
@@ -986,18 +989,28 @@
             border: 1px solid #2c2c2c;
             border-radius: 6px;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 2px;
-            text-align: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            box-sizing: border-box;
         }
-        .cp-widget-label {
+        .cp-widget-label-h {
             font-size: 9px;
             color: #888888;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 2px;
+            line-height: 1.15;
+            flex-shrink: 0;
+            width: 55px; /* Mengunci lebar judul */
+        }
+        
+        /* ISI KECEPATAN CENTERED */
+        .cp-widget-val-wrap {
+            flex: 1;
+            display: flex;
+            align-items: baseline;
+            justify-content: center; /* Posisi angka tepat di tengah */
+            gap: 3px;
         }
         .cp-speed-val {
             font-size: 28px;
@@ -1005,23 +1018,43 @@
             color: #00ff00;
             line-height: 1;
         }
-        .cp-speed-val.blink-red {
-            color: #ff0000;
-            animation: os-strobe 0.3s steps(1) infinite;
+        .cp-unit-sm {
+            font-size: 10px;
+            color: #888888;
         }
-        .cp-compass-val {
-            font-size: 12px;
+
+        /* ISI KOMPAS CENTERED */
+        .cp-compass-wrap-fixed {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;     /* Posisi teks tepat di tengah */
+            justify-content: center;
+            text-align: center;
+            min-height: 38px;
+        }
+        .cp-compass-main {
+            font-size: 13px;
             font-weight: bold;
             color: #ffb703;
             line-height: 1.2;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .cp-compass-sub {
+            font-size: 10px;
+            color: #aaaaaa;
+            line-height: 1.2;
+            font-weight: bold;
+            text-align: center;
         }
 
-        /* Baris 4: Telemetri & Status GPS (Tabel Sejajar Rata Kanan-Kiri) */
+        /* Baris 4: Telemetri Sejajar Rata Kanan-Kiri */
         .cp-row-4 {
             background-color: #111111;
             border: 1px solid #282828;
             border-radius: 6px;
-            padding: 6px 8px;
+            padding: 6px 10px;
             display: flex;
             flex-direction: column;
             gap: 4px;
@@ -1035,13 +1068,22 @@
             width: 100%;
             white-space: nowrap;
         }
+        
+        /* POSISI ANDA: LABEL TIPIS, ANGKA TEBAL */
         .cp-tele-coords {
             display: flex;
             justify-content: space-between;
             width: 100%;
             color: #ffffff;
-            font-weight: bold;
         }
+        .cp-tele-label-normal {
+            font-weight: normal !important; /* HANYA label "Posisi Anda:" yang tidak bold */
+            color: #ffffff;
+        }
+        .cp-tele-coords span:not(.cp-tele-label-normal) {
+            font-weight: bold !important;   /* Isian Lat, Lng, Alt TETAP BOLD */
+        }
+
         .cp-nearest-wrap {
             display: flex;
             align-items: center;
@@ -1050,6 +1092,7 @@
         .cp-nearest-label {
             flex-shrink: 0;
             color: #ffffff;
+            font-weight: normal;
             margin-right: 6px;
         }
         .cp-nearest-name {
@@ -1254,7 +1297,7 @@
     </div>
 
     <header>
-        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v4.0.0</h1>
+        <h1>PASSENGER INFORMATION DISPLAY SYSTEM v4.0.0-u1</h1>
     </header>
 
     <div class="tab-bar">
@@ -1274,14 +1317,15 @@
                     <div class="right-header-group">
                         <div class="weather-v2" id="pids-weather">--°C ☁️</div>
                         <div class="date-v2" id="pids-date">00/00/0000</div>
-                        <div class="clock-v2" id="pids-clock">00:00:00</div>
+                        <div class="clock-v2" id="pids-clock">00.00.00</div>
                     </div>
                 </div>
 
                 <div class="pids-row-2">
                     <div class="kompas-wrap">
                         <span class="kompas-label">Arah Mata Angin</span>
-                        <span class="kompas-value" id="pids-compass">-</span>
+                        <span class="kompas-value" id="pids-compass" style="font-size:9vw; line-height:1.1;"></span>
+                        <span id="pids-compass-sub" style="font-size:3.5vw; color:#aaaaaa; font-weight:bold;"></span>
                     </div>
                     <div class="speedo-wrap-v2">
                         <span class="speedo-value-v2" id="pids-speed">0.0</span>
@@ -1330,67 +1374,70 @@
             <!-- ========================================================= -->
             <div id="cockpit-portrait-view">
                 
-                <!-- BARIS 1: 4 KOTAK (PLAT, TANGGAL, JAM, CUACA KECIL) -->
+                <!-- BARIS 1: 3 KOTAK (PLAT, TANGGAL & JAM JADI SATU, CUACA KECIL) -->
                 <div class="cp-row-1">
                     <div class="cp-status-pill cp-pill-plat">
                         <span id="cp-plat-view" style="color:#ffffff;">NOMOR PLAT</span>
                     </div>
-                    <div class="cp-status-pill cp-pill-date">
-                        <span id="cp-date-view" style="color:#ffffff;">00/00/0000</span>
-                    </div>
-                    <div class="cp-status-pill cp-pill-clock">
-                        <span id="cp-clock-view" style="color:#ffffff;">00:00:00</span>
+                    <div class="cp-status-pill cp-pill-datetime">
+                        <span id="cp-datetime-view" style="color:#ffffff;">00/00/00 • 00:00:00</span>
                     </div>
                     <div class="cp-status-pill cp-pill-weather">
                         <span id="cp-weather-view" style="color:#ffb703;">--°C ☁️</span>
                     </div>
                 </div>
 
-                <!-- BARIS 2: LAYAR TEKS RUTE & HALTE (TERKUNCI 2 BARIS, BEBAS CAPSLOCK) -->
+                <!-- BARIS 2: LAYAR TEKS RUTE & HALTE (MUAT HINGGA 3 BARIS, FONT LEBIH BESAR) -->
                 <div class="cp-row-2">
-                    <div class="cp-main-text" id="cp-display-text">PIDS v4.0.0</div>
+                    <div class="cp-main-text" id="cp-display-text">PIDS v4.0.0-u1</div>
                 </div>
 
-                <!-- BARIS 3: AREA INTI (PETA VERTIKAL & SPEEDO/KOMPAS) -->
+                <!-- BARIS 3: AREA INTI (PETA VERTIKAL + SPEEDO & KOMPAS FORMAT HORIZONTAL) -->
                 <div class="cp-row-3">
                     <div class="cp-map-box">
                         <div id="portrait-live-map"></div>
                     </div>
                     <div class="cp-widgets-col">
-                        <div class="cp-widget-card">
-                            <span class="cp-widget-label">Kecepatan</span>
-                            <span class="cp-speed-val" id="cp-speed">0.0</span>
-                            <span style="font-size:10px; color:#888;">km/j</span>
+                        <!-- WIDGET KECEPATAN: FORMAT KIRI-KANAN -->
+                        <div class="cp-widget-card cp-widget-speed-h">
+                            <span class="cp-widget-label-h">KECEPATAN</span>
+                            <div class="cp-widget-val-wrap">
+                                <span class="cp-speed-val" id="cp-speed">0.0</span>
+                                <span class="cp-unit-sm">km/j</span>
+                            </div>
                         </div>
-                        <div class="cp-widget-card">
-                            <span class="cp-widget-label">Arah Mata Angin</span>
-                            <span class="cp-compass-val" id="cp-compass">-</span>
+                        <!-- WIDGET KOMPAS: FORMAT KIRI-KANAN (POSISI TERKUNCI TIDAK NAIK-TURUN) -->
+                        <div class="cp-widget-card cp-widget-compass-h">
+                            <span class="cp-widget-label-h" style="text-align:center;">ARAH<br>MATA ANGIN</span>
+                            <div class="cp-compass-wrap-fixed">
+                                <span class="cp-compass-main" id="cp-compass-main"></span>
+                                <span class="cp-compass-sub" id="cp-compass-sub"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- BARIS 4: TELEMETRI (DURASI, STATUS GPS, JUMLAH TITIK, KOORDINAT DITARIK RATA, JARAK MEPET KANAN) -->
+                <!-- BARIS 4: TELEMETRI & SENSOR GPS -->
                 <div class="cp-row-4">
-                    <!-- Baris 1 Telemetri: Durasi | Status GPS | Jumlah Titik -->
                     <div class="cp-tele-line">
-                        <span>Durasi: <strong id="cp-trip-duration" style="color:#ffffff;">00:00:00</strong></span>
-                        <span>Status GPS: <strong id="cp-gps-status" style="color:#cc0000;">OFF</strong> (<span id="cp-gps-accuracy">-</span>)</span>
+                        <span>Durasi: <strong id="cp-trip-duration" style="color:#ffffff;">00.00.00</strong></span>
+                        <span>Status GPS: <strong id="cp-gps-status" style="color:#cc0000;">OFF</strong></span>
+                        <span>Akurasi: <strong id="cp-gps-accuracy" style="color:#ffffff;">-</strong></span>
                         <span>Titik: <strong id="cp-total-titik" style="color:#ffffff;">0</strong></span>
                     </div>
-
-                    <!-- Baris 2 Telemetri: Ditarik rata kanan-kiri (Justified) -->
+                    <!-- POSISI ANDA DIBUAT FONT NORMAL (TIDAK BOLD) -->
                     <div class="cp-tele-coords">
-                        <span>Posisi Anda:</span>
+                        <span style="font-weight:normal; color:#ffffff;">Posisi Anda:</span>
                         <span id="cp-lat">Lat -</span>
                         <span id="cp-lng">Lng -</span>
                         <span id="cp-alt">Alt 0.0 m</span>
                     </div>
-
-                    <!-- Baris 3 Telemetri: Nama Halte dengan Ellipsis (...) & Jarak Mepet Kanan -->
-                    <div class="cp-nearest-wrap">
-                        <span class="cp-nearest-label">Titik Terdekat:</span>
-                        <span class="cp-nearest-name" id="cp-nearest-name">Rute Tidak Tersedia</span>
-                        <span class="cp-nearest-dist" id="cp-nearest-dist"></span>
+                    <!-- LABEL POSISI ANDA TIDAK BOLD, ISINYA TETAP BOLD -->
+                    <div class="cp-tele-coords">
+                        <span class="cp-tele-label-normal">Posisi Anda:</span>
+                        <span id="cp-lat">Lat -</span>
+                        <span id="cp-lng">Lng -</span>
+                        <span id="cp-alt">Alt 0.0 m</span>
                     </div>
                 </div>
 
@@ -1545,7 +1592,7 @@
                 </div>
                 <div class="form-group">
                     <label>Tampilan Running Text Bawaan (Jika Input Rute Dikosongkan):</label>
-                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v4.0.0" oninput="simpanPengaturanUmumKeStorage()">
+                    <input type="text" id="cfg-preset-default-text" class="form-control" value="PIDS v4.0.0-u1" oninput="simpanPengaturanUmumKeStorage()">
                 </div>
             </div>
 
@@ -1674,7 +1721,7 @@ let configAnnouncementCustom = {
         let sortModeAudio = "manual";
 
         let isTrackingActiveUI = false; 
-        let ruteAktifTeks = "PIDS v4.0.0";
+        let ruteAktifTeks = "PIDS v4.0.0-u1";
         let fallbackTimerId = null;
 
         let map = null;
@@ -1756,7 +1803,7 @@ window.onload = function() {
     renderSemuaTampilanKomponenUI();
     monitorFullscreenStateChange();
     sinkronkanSemuaSwitchUI();
-    pushLogKonsol("PIDS v4.0.0 Siap Beroperasi.");
+    pushLogKonsol("PIDS v4.0.0-u1 Siap Beroperasi.");
 
     document.getElementById('login-pass')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
     document.getElementById('login-user')?.addEventListener('keypress', function(e) { if (e.key === 'Enter') cekLogin(); });
@@ -1775,15 +1822,15 @@ window.onload = function() {
         let sekarang = new Date();
         const elClock = document.getElementById('pids-clock');
         const elDate = document.getElementById('pids-date');
-        const elCpClock = document.getElementById('cp-clock-view');
-        const elCpDate = document.getElementById('cp-date-view'); // TAMBAHKAN INI
+        const elCpDateTime = document.getElementById('cp-datetime-view');
         
         let jamStr = sekarang.toLocaleTimeString('id-ID');
         let tglStr = sekarang.toLocaleDateString('id-ID');
+
         if (elClock) elClock.innerText = jamStr;
-        if (elCpClock) elCpClock.innerText = jamStr;
         if (elDate) elDate.innerText = tglStr;
-        if (elCpDate) elCpDate.innerText = tglStr; // TAMBAHKAN INI
+        // Tanggal & Jam bersatu rapi di cockpit
+        if (elCpDateTime) elCpDateTime.innerText = `${tglStr} • ${jamStr}`;
     }, 1000);
     
     if (typeof ruteAktifTeks !== 'undefined' && typeof updateTeksMonitorUtamaPIDS === 'function') {
@@ -2003,15 +2050,19 @@ function meSensitisedDate(date) {
 
         function updateKompasArahMataAngin(headingDeg, speed) {
     let compassNode = document.getElementById('pids-compass');
-    let cpCompassNode = document.getElementById('cp-compass');
+    let compassSubNode = document.getElementById('pids-compass-sub');
+    let cpCompassMain = document.getElementById('cp-compass-main');
+    let cpCompassSub = document.getElementById('cp-compass-sub');
 
-    if (speed <= 3 || headingDeg === null || headingDeg === undefined || isNaN(headingDeg)) {
-        if (compassNode) compassNode.innerText = "-";
-        if (cpCompassNode) cpCompassNode.innerText = "-";
+    // Kecepatan rendah / diam: pertahankan posisi teks dengan strip "-"
+    if (speed <= 1 || headingDeg === null || headingDeg === undefined || isNaN(headingDeg)) {
+        if (compassNode) compassNode.innerText = "";
+        if (compassSubNode) compassSubNode.innerText = "";
+        if (cpCompassMain) cpCompassMain.innerText = "";
+        if (cpCompassSub) cpCompassSub.innerText = "";
         return;
     }
 
-    const mataAnginSingkat = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
     const mataAnginLengkap = [
         "Utara (N)", "Timur Laut (NE)", "Timur (E)", "Tenggara (SE)",
         "Selatan (S)", "Barat Daya (SW)", "Barat (W)", "Barat Laut (NW)"
@@ -2019,9 +2070,16 @@ function meSensitisedDate(date) {
 
     let index = Math.round(headingDeg / 45) % 8;
     let degBulat = Math.round(headingDeg);
+    let strNamaArah = mataAnginLengkap[index];
+    let strDerajat = `${degBulat}°`;
 
-    if (compassNode) compassNode.innerText = mataAnginSingkat[index];
-    if (cpCompassNode) cpCompassNode.innerText = `${degBulat}° ${mataAnginLengkap[index]}`;
+    // Update di Full Screen
+    if (compassNode) compassNode.innerText = strNamaArah;
+    if (compassSubNode) compassSubNode.innerText = strDerajat;
+
+    // Update di Cockpit Portrait
+    if (cpCompassMain) cpCompassMain.innerText = strNamaArah;
+    if (cpCompassSub) cpCompassSub.innerText = strDerajat;
 }
 
         function klikTombolPemicuGpsUtama() {
@@ -2037,7 +2095,7 @@ function meSensitisedDate(date) {
         // Reset tombol utama ke awal
         let btnGps = document.getElementById('btn-toggle-gps');
         if (btnGps) {
-            btnGps.innerText = "PILIH RUTE & MULAI";
+            btnGps.innerHTML = "PILIH RUTE DAN<br>MULAI PERJALANAN";
             btnGps.classList.remove('tracking-stop');
         }
 
@@ -2150,32 +2208,6 @@ function geserOpsiRute(jenis, arah) {
     }
 }
 
-// --- SISTEM WAKE LOCK (AGAR LAYAR HP TIDAK MATI SAAT BERKENDARA) ---
-async function mintaWakeLock() {
-    try {
-        if ('wakeLock' in navigator) {
-            wakeLock = await navigator.wakeLock.request('screen');
-            pushLogKonsol("Layar Always-On Aktif (WakeLock).");
-            wakeLock.addEventListener('release', () => {
-                wakeLock = null;
-            });
-        }
-    } catch (err) {
-        console.warn("Gagal mengaktifkan WakeLock:", err.message);
-    }
-}
-
-function lepasWakeLock() {
-    if (wakeLock !== null) {
-        wakeLock.release().then(() => {
-            wakeLock = null;
-            pushLogKonsol("WakeLock dilepas.");
-        }).catch(() => {
-            wakeLock = null;
-        });
-    }
-}
-
         function konfirmasiMulaiTrackingRute() {
     let selAsal = document.getElementById('modal-select-asal').value;
     let selTujuan = document.getElementById('modal-select-tujuan').value;
@@ -2206,8 +2238,9 @@ function lepasWakeLock() {
         btnGps.classList.add('tracking-stop');
     }
 
-    // Jalankan timer durasi perjalanan di Baris 4
-    mulaiTimerDurasiPortrait();
+    // Jika belum jalan -> Perjalanan Baru (Reset ke 0)
+    // Jika sudah jalan -> Edit Rute (Lanjutkan timer tanpa reset)
+    mulaiTimerDurasiPortrait(!isTrackingActiveUI);
 
     updateTeksMonitorUtamaPIDS(ruteAktifTeks);
     
@@ -3049,7 +3082,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let configPackage = {
         platNomor: document.getElementById('cfg-plat-no')?.value.trim().toUpperCase() || "",
         overspeedLimit: document.getElementById('cfg-overspeed-limit')?.value || "50",
-        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v4.0.0",
+        presetDefaultText: document.getElementById('cfg-preset-default-text')?.value.trim() || "PIDS v4.0.0-u1",
         
         // Paket Data Custom Announcement (Termasuk Pintu)
         announcementCustom: {
@@ -3081,7 +3114,7 @@ function exportDataKeJsonCombinedAllInOne() {
     let detik = String(sekarang.getSeconds()).padStart(2, '0');
 
     let formatWaktu = `${tahun}${bulan}${tanggal}_${jam}${menit}${detik}`;
-    let namaFile = `${formatWaktu}_backup-pids-v4.0.0.json`;
+    let namaFile = `${formatWaktu}_backup-pids-v4.0.0-u1.json`;
 
     let downloadAnchor = document.createElement('a'); 
     downloadAnchor.setAttribute("href", dataStr); 
@@ -3117,7 +3150,7 @@ function importDataDariJsonCombinedAllInOne(event) {
                     document.getElementById('cfg-overspeed-limit').value = parsedData.overspeedLimit || "50";
                 }
                 if (document.getElementById('cfg-preset-default-text')) {
-                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v4.0.0";
+                    document.getElementById('cfg-preset-default-text').value = parsedData.presetDefaultText || "PIDS v4.0.0-u1";
                 }
 
                 // 2. Restore Custom Announcement (Teks & Audio)
@@ -3184,32 +3217,37 @@ function importDataDariJsonCombinedAllInOne(event) {
     reader.readAsText(file);
 }
 
-        // ==================== SYSTEM PERIPHERAL SIMULATION ====================
-
-        // Siapkan variabel global di paling atas script lo untuk menampung status kunci layar
+        // --- SISTEM ALWAYS-ON / WAKELOCK TERPADU ---
 let pidsWakeLock = null;
 
-// Fungsi untuk mengaktifkan Always On
 async function aktifkanAlwaysOn() {
     try {
         if ('wakeLock' in navigator) {
             pidsWakeLock = await navigator.wakeLock.request('screen');
-            pushLogKonsol('Layar akan menyala selama mode full screen.');
+            pushLogKonsol('Layar Always-On Aktif.');
+            pidsWakeLock.addEventListener('release', () => {
+                pidsWakeLock = null;
+            });
         }
     } catch (err) {
-        pushLogKonsol(`Gagal mengaktifkan Always On: ${err.message}`);
+        console.warn("WakeLock Error:", err.message);
     }
 }
 
-// Fungsi untuk mematikan Always On
 function matikanAlwaysOn() {
     if (pidsWakeLock !== null) {
         pidsWakeLock.release().then(() => {
             pidsWakeLock = null;
-            pushLogKonsol('Layar kembali ke mode normal.');
+            pushLogKonsol('Layar Always-On Nonaktif.');
+        }).catch(() => {
+            pidsWakeLock = null;
         });
     }
 }
+
+// Jembatan resmi agar semua panggilan fungsi seragam
+const mintaWakeLock = aktifkanAlwaysOn;
+const lepasWakeLock = matikanAlwaysOn;
 
 // UPDATE FUNGSI TOGGLE FULLSCREEN LO JADI SEPERTI INI:
 function toggleLayarPenuhAPI() {
@@ -3370,6 +3408,7 @@ function hentikanDuckingSpotify() {
         } catch(e){}
     }
 }
+let announcerAudioRequestId = 0;
 
 function putarAnnouncer(audioPathUrl) {
     if (typeof isAudioEnabled !== 'undefined' && !isAudioEnabled) { 
@@ -3381,8 +3420,10 @@ function putarAnnouncer(audioPathUrl) {
         audioPathUrl = "audio/00 Notifikasi Pembuka.mp3";
     }
 
+    // Tiket pemutaran unik agar audio baru tidak dibunuh oleh audio lama
+    let currentReqId = ++announcerAudioRequestId;
+
     try {
-        // Inisialisasi AudioContext & bangunkan jika sedang tidur
         if (!audioContextPids) {
             audioContextPids = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -3390,20 +3431,21 @@ function putarAnnouncer(audioPathUrl) {
             audioContextPids.resume();
         }
 
-        // Hentikan suara announcer sebelumnya jika sedang jalan
+        // Hentikan suara announcer lama secara bersih TANPA memicu pelepasan audio
         if (currentAnnouncerSource) {
-            try { currentAnnouncerSource.stop(0); } catch (e) {}
+            try {
+                currentAnnouncerSource.onended = null; // Putus event agar tidak mematikan sistem
+                currentAnnouncerSource.stop(0);
+            } catch (e) {}
             currentAnnouncerSource = null;
         }
 
-        // Pancing Android agar mengecilkan Spotify sejak detik pertama
         mulaiDuckingSpotify();
 
         if (typeof pushLogKonsol === 'function') {
             pushLogKonsol(`[A] Memutar Announcer: ${audioPathUrl}`);
         }
 
-        // Ambil file audio & naikkan volume via GainNode (2.5x Booster)
         fetch(audioPathUrl)
             .then(response => {
                 if (!response.ok) throw new Error("Gagal mengambil file audio");
@@ -3411,11 +3453,13 @@ function putarAnnouncer(audioPathUrl) {
             })
             .then(arrayBuffer => audioContextPids.decodeAudioData(arrayBuffer))
             .then(audioBuffer => {
+                // Jika sudah ada suara baru lain yang dipicu selama loading, batalkan suara ini
+                if (currentReqId !== announcerAudioRequestId) return;
+
                 let source = audioContextPids.createBufferSource();
                 source.buffer = audioBuffer;
                 currentAnnouncerSource = source;
 
-                // BOOSTER AMBIENT 2.5X UNTUK SPEAKER MOBIL
                 let gainNode = audioContextPids.createGain();
                 gainNode.gain.setValueAtTime(2.5, audioContextPids.currentTime);
 
@@ -3424,26 +3468,30 @@ function putarAnnouncer(audioPathUrl) {
 
                 source.start(0);
 
-                // KETIKA ANNOUNCER SELESAI: Lepas ducking total, musik otomatis kencang kembali!
                 source.onended = function() {
-                    if (currentAnnouncerSource === source) {
+                    // Hanya matikan ducking jika ini adalah suara terakhir yang aktif
+                    if (currentReqId === announcerAudioRequestId) {
                         currentAnnouncerSource = null;
-                    }
-                    hentikanDuckingSpotify();
-                    if (typeof pushLogKonsol === 'function') {
-                        pushLogKonsol("[A] Announcer selesai, volume lagu otomatis normal.");
+                        hentikanDuckingSpotify();
+                        if (typeof pushLogKonsol === 'function') {
+                            pushLogKonsol("[A] Announcer selesai, volume lagu otomatis normal.");
+                        }
                     }
                 };
             })
             .catch(err => {
-                hentikanDuckingSpotify();
+                if (currentReqId === announcerAudioRequestId) {
+                    hentikanDuckingSpotify();
+                }
                 if (typeof pushLogKonsol === 'function') {
                     pushLogKonsol(`[A] Gagal memutar: ${err.message}`);
                 }
             });
 
     } catch (e) {
-        hentikanDuckingSpotify();
+        if (currentReqId === announcerAudioRequestId) {
+            hentikanDuckingSpotify();
+        }
         if (typeof pushLogKonsol === 'function') {
             pushLogKonsol(`[A] Web Audio Error: ${e.message}`);
         }
@@ -3657,7 +3705,7 @@ function inisialisasiPetaPortrait() {
     mapPortrait = L.map('portrait-live-map', { 
         zoomControl: false, 
         attributionControl: false 
-    }).setView([-6.1754, 106.8272], 14);
+    }).setView([-6.1754, 106.8272], 17);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mapPortrait);
 
@@ -3711,30 +3759,32 @@ function plotHalteKePetaPortrait() {
 }
 
 // --- FUNGSI TIMER DURASI PERJALANAN (PORTRAIT) ---
-function mulaiTimerDurasiPortrait() {
+function mulaiTimerDurasiPortrait(isNewTrip = false) {
     if (portraitTimerInterval) clearInterval(portraitTimerInterval);
-    portraitSecondsCounter = 0;
+    
+    // Hanya reset ke 0 jika perjalanan baru, bukan saat edit rute
+    if (isNewTrip) {
+        portraitSecondsCounter = 0;
+    }
+    
     portraitTimerInterval = setInterval(() => {
         portraitSecondsCounter++;
         let hrs = Math.floor(portraitSecondsCounter / 3600).toString().padStart(2, '0');
         let mins = Math.floor((portraitSecondsCounter % 3600) / 60).toString().padStart(2, '0');
         let secs = (portraitSecondsCounter % 60).toString().padStart(2, '0');
         let el = document.getElementById('cp-trip-duration');
-        if (el) el.innerText = `${hrs}:${mins}:${secs}`;
+        if (el) el.innerText = `${hrs}.${mins}.${secs}`;
     }, 1000);
 }
 
 function stopTimerDurasiPortrait() {
+    // Hanya jeda (pause) timer, TIDAK MERESET detiknya agar catatan waktu tetap terlihat
     if (portraitTimerInterval) {
         clearInterval(portraitTimerInterval);
         portraitTimerInterval = null;
     }
-    portraitSecondsCounter = 0;
-    let el = document.getElementById('cp-trip-duration');
-    if (el) el.innerText = "00:00:00";
 }
 
-// --- SIMULASI OTOMATIS: MASUK TITIK -> SUARA BUNYI -> KELUAR SENDIRI ---
 // --- SIMULASI OTOMATIS: MASUK TITIK -> SUARA BUNYI -> KELUAR SENDIRI ---
 function eksekusiSimulasiOtomatis() {
     unlockAudioAutoplayContext();
@@ -4028,7 +4078,7 @@ function picuAudioCustom(jenis) {
     }
 
     fallbackTimerId = setTimeout(() => { 
-        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v4.0.0");
+        let defaultText = typeof ruteAktifTeks !== 'undefined' ? ruteAktifTeks : (localStorage.getItem('pids_preset_default_text') || "PIDS v4.0.0-u1");
         if (displayNode) {
             displayNode.setAttribute('data-text-mentah', defaultText);
             displayNode.innerText = defaultText;
