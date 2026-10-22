@@ -1374,7 +1374,7 @@
 
                 <div class="pids-row-3">
                     <div class="marquee-container">
-                        <div class="marquee-text" id="pids-display">PIDS v3.5.1</div>
+                        <div class="marquee-text" id="pids-display">PIDS v4.0.1</div>
                     </div>
                 </div>
 
@@ -2143,7 +2143,7 @@ function meSensitisedDate(date) {
         // Hentikan dan reset timer durasi perjalanan
         stopTimerDurasiPortrait();
 
-        ruteAktifTeks = "PIDS v3.5.1";
+        ruteAktifTeks = "PIDS v4.0.1";
         updateTeksMonitorUtamaPIDS(ruteAktifTeks);
 
         let elSpeed = document.getElementById('pids-speed');
@@ -2255,7 +2255,7 @@ function geserOpsiRute(jenis, arah) {
     
     let asal = (selAsal === 'custom') ? document.getElementById('modal-input-asal-manual').value.trim() : selAsal;
     let tujuan = (selTujuan === 'custom') ? document.getElementById('modal-input-tujuan-manual').value.trim() : selTujuan;
-    let defText = document.getElementById('cfg-preset-default-text').value.trim() || "PIDS v3.5.1";
+    let defText = document.getElementById('cfg-preset-default-text').value.trim() || "PIDS v4.0.1";
 
     if (asal !== "" && tujuan !== "") {
         ruteAktifTeks = asal + " - " + tujuan;
@@ -4172,7 +4172,7 @@ function simpanPengaturanUmumKeStorage() {
         let valDef = defTextEl.value.trim();
         localStorage.setItem('pids_preset_default_text', valDef);
         if (!isTrackingActiveUI) {
-            ruteAktifTeks = valDef || "PIDS v3.5.1";
+            ruteAktifTeks = valDef || "PIDS v4.0.1";
             updateTeksMonitorUtamaPIDS(ruteAktifTeks);
         }
     }
